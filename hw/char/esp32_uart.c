@@ -23,10 +23,10 @@
 #include "hw/qdev-properties.h"
 #include "hw/qdev-properties-system.h"
 #include "hw/char/esp32_uart.h"
+#include "hw/xtensa/esp32_clk.h"
 #include "trace.h"
 
 #include "../softmmu/simuliface.h"
-#include "../xtensa/esp32-simul.h"
 
 
 //static gboolean uart_transmit(void *do_not_use, GIOCondition cond, void *opaque);

@@ -4,9 +4,9 @@
 #include "qemu/error-report.h"
 #include "hw/i2c/esp32_i2c.h"
 #include "hw/irq.h"
+#include "hw/xtensa/esp32_clk.h"
 
 #include "../softmmu/simuliface.h"
-#include "../xtensa/esp32-simul.h"
 
 
 static uint8_t fifo8_peek(Fifo8 *fifo)
@@ -36,10 +36,15 @@ static void esp32_i2c_do_transaction( void* opaque )
     {
     case I2C_OPCODE_RSTART:
     {
-        //writeReg( (s->iomem.addr & 0x000FFFFF)+A_I2C_CMD, cmd ); // dfOne at write_CTR()
+        // Espelha o proprio comando RSTART (opcode ainda intacto em `cmd`) ANTES de avancar pro
+        // proximo -- e' o unico jeito do lado Core (que gera SCL/SDA reais) distinguir "comeca uma
+        // transacao nova/repeated-START agora" de "so' mais um byte do mesmo burst de escrita".
+        // Sem isto, RSTART era invisivel na arena e o START real (inclusive um REPEATED START no
+        // meio de uma transacao, ex: i2c_master_write_read_device()) nunca acontecia no barramento
+        // eletrico de verdade -- so' no proprio QEMU, que sempre "via" a transacao completar.
+        writeReg( s->iomem.addr+A_I2C_CMD, cmd );
         s->bytesTx = 0;
         s->sr_reg |= 1<<4;                // I2C_BUS_BUSY
-        //printf("Qemu: esp32_i2c CMD Start\n"); fflush( stdout );
         time = 2*s->period_ns/2;
 
         s->lastCMD++;
@@ -60,17 +65,15 @@ static void esp32_i2c_do_transaction( void* opaque )
 
     case I2C_OPCODE_READ:
     {
-        //writeReg( (s->iomem.addr & 0x000FFFFF)+A_I2C_CMD, cmd );
-        /// size_t length = FIELD_EX32( cmd, I2C_CMD, BYTE_NUM );
-
-        /// for( size_t nbytes=0; nbytes<length; ++nbytes)
-        /// {
-        ///     if( fifo8_num_free( &s->rx_fifo ) == 0 ) error_report("esp32_i2c: RX FIFO overflow");
-        ///     else {
-        ///         /// uint8_t data = i2c_recv( s->bus );
-        ///         /// fifo8_push(&s->rx_fifo, data);
-        ///     }
-        /// }
+        // Espelha o comando READ (opcode + ACK_VAL + BYTE_NUM, todos em `cmd`) pro lado Core, que
+        // e' quem de fato clockeia os 8 bits reais em SCL/SDA a partir do escravo endereçado e
+        // decide ACK(continua lendo)/NACK(ultimo byte) conforme ACK_VAL -- mesmo papel que o WRITE
+        // acima ja tinha pro sentido contrario. O byte realmente recebido so' fica disponivel
+        // depois que o timer abaixo disparar esp32_i2c_event() (mesmo pacing de um WRITE: um byte
+        // "no barramento" real dura o mesmo tempo em qualquer direcao).
+        if( s->bytesTx == 0 ) s->bytesTx = cmd & 0xFF;
+        writeReg( s->iomem.addr+A_I2C_CMD, cmd );
+        time += (19*s->period_ns)/2;
     }break;
 
     case I2C_OPCODE_STOP:
@@ -101,13 +104,14 @@ static void esp32_i2c_event( void* opaque ) // Timer event
 {
     Esp32I2CState* s = Esp32_I2C(opaque);
 
-    uint8_t ackT = 0;
-    uint8_t ackR = 0;
-
     //printf("Qemu: esp32_i2c_event %i %lu\n", s->lastOpcode, getQemu_ps() ); fflush( stdout );
 
+    // Le' o ACK/NACK REAL que o Core observou no barramento eletrico (bit0 = 1 quando o outro lado
+    // NAO puxou SDA pra baixo -- ver Esp32Adapter.cpp::i2cReadRegister, mesmo canal privado
+    // Core<->QEMU deste arquivo, nunca visivel do firmware). Antes disto sempre 0 (fixo) -- o
+    // ACK_ERR abaixo nunca podia disparar de verdade, com ou sem escravo respondendo.
     uint64_t status = readReg( s->iomem.addr+A_I2C_STATUS );
-    /// TODO: get ACK from status
+    uint8_t ackT = (uint8_t)(status & 1u);
 
     switch( s->lastOpcode )
     {
@@ -125,13 +129,18 @@ static void esp32_i2c_event( void* opaque ) // Timer event
         s->sr_reg &= ~1;
         s->sr_reg |= ackT;                    // I2C_ACK_REC
 
+        // ACK_ERR real: so' dispara quando o firmware pediu conferencia (ACK_CHECK_EN) E o ACK
+        // observado de verdade no barramento (ackT) diverge do que o firmware esperava (ACK_EXP) --
+        // antes disto, ackERR vinha so' dos bits que o proprio firmware escreveu (ACK_CHECK_EN/
+        // ACK_EXP), nunca comparados contra o ACK real: um escravo que nunca respondesse (endereco
+        // errado, dispositivo ausente) nunca gerava ACK_ERR nenhum.
         bool ackERR = false;
         uint32_t cmd = s->cmd_reg[s->lastCMD];
 
         if( cmd & 1<<8 )                      // ACK_CHECK_EN
         {
-            bool ackEXP = (cmd & 1<<9) == 0;  // ACK_EXP
-            ackERR = !ackEXP;
+            bool ackExpectsNack = (cmd & 1<<9) != 0;  // ACK_EXP: 1 = firmware espera NACK deste byte
+            ackERR = (ackT != 0) != ackExpectsNack;
         }
 
         if( ackERR ){
@@ -145,6 +154,15 @@ static void esp32_i2c_event( void* opaque ) // Timer event
 
     case I2C_OPCODE_READ:
     {
+        // Byte que o Core JA' recebeu eletricamente (8 bits clockados + ACK/NACK do MESTRE enviado
+        // na janela certa, ver esp32_i2c_do_transaction acima) -- disponivel no mesmo canal privado
+        // A_I2C_CMD que o WRITE usa pro sentido contrario.
+        uint8_t data = (uint8_t)readReg( s->iomem.addr+A_I2C_CMD );
+        if( fifo8_num_free(&s->rx_fifo) == 0 ) error_report("esp32_i2c: RX FIFO overflow");
+        else fifo8_push( &s->rx_fifo, data );
+
+        s->bytesTx--;
+        s->int_raw_reg |= 1<<6;               // I2C_BYTE_TRANS
     }break;
 
     case I2C_OPCODE_STOP:
@@ -161,7 +179,7 @@ static void esp32_i2c_event( void* opaque ) // Timer event
     }
 
 
-    if( s->lastOpcode == I2C_OPCODE_WRITE && s->bytesTx )
+    if( (s->lastOpcode == I2C_OPCODE_WRITE || s->lastOpcode == I2C_OPCODE_READ) && s->bytesTx )
     {
         ;
     }

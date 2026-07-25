@@ -20,9 +20,9 @@
 #include "hw/ssi/ssi.h"
 #include "hw/ssi/esp32_spi.h"
 #include "hw/misc/esp32_flash_enc.h"
+#include "hw/xtensa/esp32_clk.h"
 
 #include "../softmmu/simuliface.h"
-#include "../xtensa/esp32-simul.h"
 
 enum {
     CMD_RES = 0xab,
@@ -62,7 +62,14 @@ static void esp32_spi_event( void* opaque ) // Timer event
         writeReg( s->iomem.addr+0x80, s->data_reg[s->bytesDone] );
         timer_mod_ns( &s->event_timer, getQemu_ns()+s->period*bits );
     }
-    else s->do_command = 0;
+    else{
+        s->do_command = 0;
+        // Fim real da transacao (numero>=2, HSPI/VSPI -- SPI0/SPI1 usam esp32_spi_cs_set() via
+        // qemu_irq interno, nunca chegam aqui): desativa CS0 automaticamente, mesmo bracket que o
+        // hardware real aplica ao redor de QUALQUER comando USR, sem exigir nenhum firmware/
+        // biblioteca especifica -- ver A_SPI_CMD tambem espelhado no inicio da transacao abaixo.
+        writeReg( s->iomem.addr+A_SPI_CMD, 0 );
+    }
 
     //printf("esp32_spi_event %i %i %i %lu\n", s->number, s->bytesDone, s->dataBytes, getQemu_ps() ); fflush( stdout );
 }
@@ -135,7 +142,12 @@ static void esp32_spi_write(void *opaque, hwaddr addr, uint64_t value, unsigned 
     case A_SPI_USER2:     s->user2_reg     = value; break;
     case A_SPI_MOSI_DLEN: s->mosi_dlen_reg = value; break;
     case A_SPI_MISO_DLEN: s->miso_dlen_reg = value; break;
-    case A_SPI_PIN:       s->pin_reg       = value; break;
+    case A_SPI_PIN:
+        s->pin_reg = value;
+        // Espelha CS0_DIS/CS0_POL (e os demais CS, ainda que so' CS0 seja roteado pro Core hoje --
+        // ver Esp32Adapter.cpp) pro lado que de fato pilota o pino eletrico em HSPI/VSPI.
+        writeReg( s->iomem.addr+A_SPI_PIN, value );
+        break;
     case A_SPI_SLAVE:
         writeReg( s->iomem.addr+A_SPI_SLAVE, value );
         break;
@@ -311,6 +323,11 @@ static void esp32_spi_do_command( Esp32SpiState* s, uint32_t cmd_reg )
         //printf("\nesp32_spi_cmd %i %i %i\n", s->number, s->bytesDone, s->dataBytes ); fflush( stdout );
 
         s->bytesDone = 0;
+        // Inicio real da transacao (numero>=2, HSPI/VSPI): ativa CS0 automaticamente ANTES do
+        // primeiro byte, mesmo bracket que o hardware real aplica ao redor de qualquer comando USR
+        // -- ver o fim espelhado em esp32_spi_event() acima. Nenhum firmware/biblioteca especifica
+        // e' assumida: isto vale pra qualquer transacao SPI, USR ou nao, que chegue por este caminho.
+        writeReg( s->iomem.addr+A_SPI_CMD, 1 );
         writeReg( s->iomem.addr+0x80, s->data_reg[0] );
         int bits = 8;
         timer_mod_ns( &s->event_timer, getQemu_ns()+s->period*bits);
