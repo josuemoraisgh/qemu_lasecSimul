@@ -1,0 +1,98 @@
+[
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/bench/benchmark-crypto-hash.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {},
+    "name": "benchmark-crypto-hash",
+    "workdir": null,
+    "timeout": 0,
+    "suite": [
+      "qemu:speed"
+    ],
+    "is_parallel": false,
+    "priority": 0,
+    "protocol": "tap",
+    "depends": [
+      "6da0042@@benchmark-crypto-hash@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/bench",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/bench/benchmark-crypto-hmac.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {},
+    "name": "benchmark-crypto-hmac",
+    "workdir": null,
+    "timeout": 0,
+    "suite": [
+      "qemu:speed"
+    ],
+    "is_parallel": false,
+    "priority": 0,
+    "protocol": "tap",
+    "depends": [
+      "6da0042@@benchmark-crypto-hmac@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/bench",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/bench/benchmark-crypto-cipher.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {},
+    "name": "benchmark-crypto-cipher",
+    "workdir": null,
+    "timeout": 0,
+    "suite": [
+      "qemu:speed"
+    ],
+    "is_parallel": false,
+    "priority": 0,
+    "protocol": "tap",
+    "depends": [
+      "6da0042@@benchmark-crypto-cipher@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/bench",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/bench/benchmark-crypto-akcipher.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {},
+    "name": "benchmark-crypto-akcipher",
+    "workdir": null,
+    "timeout": 0,
+    "suite": [
+      "qemu:speed"
+    ],
+    "is_parallel": false,
+    "priority": 0,
+    "protocol": "tap",
+    "depends": [
+      "6da0042@@benchmark-crypto-akcipher@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/bench",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  }
+]

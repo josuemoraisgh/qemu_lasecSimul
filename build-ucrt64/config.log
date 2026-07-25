@@ -1,0 +1,44 @@
+# QEMU configure log Sat Jul 18 13:51:04 -03 2026
+# Configured with: '../configure' '--target-list=xtensa-softmmu' '--disable-werror' '--disable-docs' '--disable-gtk' '--disable-sdl' '--disable-vnc' '--disable-curses' '--disable-opengl' '--disable-pa' '--disable-alsa' '--disable-dsound' '--disable-coreaudio' '--disable-virtfs' '--disable-capstone' '--disable-bpf' '--disable-fdt' '--enable-gcrypt' '--enable-slirp'
+
+#
+
+funcs: do_compiler do_cc compile_object check_define main
+lines: 127 132 344 353 0
+cc -c -o config-temp/qemu-conf.o config-temp/qemu-conf.c
+config-temp/qemu-conf.c:2:2: error: #error __linux__ not defined
+    2 | #error __linux__ not defined
+      |  ^~~~~
+
+funcs: do_compiler do_cc compile_object check_define main
+lines: 127 132 344 355 0
+cc -c -o config-temp/qemu-conf.o config-temp/qemu-conf.c
+
+funcs: do_compiler do_cc compile_object check_define main
+lines: 127 132 344 426 0
+cc -c -o config-temp/qemu-conf.o config-temp/qemu-conf.c
+config-temp/qemu-conf.c:2:2: error: #error __i386__ not defined
+    2 | #error __i386__ not defined
+      |  ^~~~~
+
+funcs: do_compiler do_cc compile_object check_define main
+lines: 127 132 344 428 0
+cc -c -o config-temp/qemu-conf.o config-temp/qemu-conf.c
+
+funcs: do_compiler do_cc compile_object check_define main
+lines: 127 132 344 429 0
+cc -c -o config-temp/qemu-conf.o config-temp/qemu-conf.c
+config-temp/qemu-conf.c:2:2: error: #error __ILP32__ not defined
+    2 | #error __ILP32__ not defined
+      |  ^~~~~
+
+funcs: do_compiler do_cc compile_prog main
+lines: 127 138 1191 0
+cc -m64 -mcx16 -o config-temp/qemu-conf.exe config-temp/qemu-conf.c
+config-temp/qemu-conf.c:2:3: error: #error LITTLE
+    2 | # error LITTLE
+      |   ^~~~~
+
+funcs: do_compiler do_cc compile_object main
+lines: 127 132 1233 0
+cc -m64 -mcx16 -Werror -c -o config-temp/qemu-conf.o config-temp/qemu-conf.c

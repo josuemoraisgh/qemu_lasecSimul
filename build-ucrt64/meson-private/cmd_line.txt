@@ -1,0 +1,25 @@
+[options]
+prefix = C:/SourceCode/tools/msys64/qemu
+gtk = disabled
+sdl = disabled
+vnc = disabled
+curses = disabled
+opengl = disabled
+pa = disabled
+alsa = disabled
+dsound = disabled
+coreaudio = disabled
+virtfs = disabled
+capstone = disabled
+bpf = disabled
+fdt = disabled
+gcrypt = enabled
+slirp = enabled
+bindir = 
+b_pie = false
+docs = disabled
+qemu_suffix = 
+
+[properties]
+native_file = ['C:/SourceCode/qemu_lasecSimul/build-ucrt64/config-meson.cross']
+

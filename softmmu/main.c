@@ -1,0 +1,70 @@
+/*
+ * QEMU System Emulator
+ *
+ * Copyright (c) 2003-2020 Fabrice Bellard
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+ * THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
+#include "qemu/osdep.h"
+#include "qemu-main.h"
+#include "sysemu/sysemu.h"
+
+#include "simuliface.h"
+
+#ifdef CONFIG_SDL
+#include <SDL.h>
+#endif
+
+int qemu_default_main(void)
+{
+    int status;
+
+    status = qemu_main_loop();
+
+    return status;
+}
+
+int (*qemu_main)(void) = qemu_default_main;
+
+static int qemu_standalone_main(int argc, char **argv)
+{
+    int status;
+
+    qemu_init(argc, argv);
+    status = qemu_main_loop();
+    qemu_cleanup();
+
+    return status;
+}
+
+int main(int argc, char **argv)
+{
+    /*
+     * SimulIDE's existing launcher passes the shared-memory key as the first
+     * positional argument.  Normal QEMU invocations begin with an option (or
+     * have no arguments), so retain the integration protocol while restoring
+     * the standard command-line and qtest entry points.
+     */
+    if (argc == 1 || argv[1][0] == '-') {
+        return qemu_standalone_main(argc, argv);
+    }
+
+    return simuMain(argc, argv);
+}

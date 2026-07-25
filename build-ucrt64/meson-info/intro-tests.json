@@ -1,0 +1,3938 @@
+[
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/qtest/qom-test.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "QTEST_QEMU_IMG": "./qemu-img",
+      "G_TEST_DBUS_DAEMON": "C:/SourceCode/qemu_lasecSimul/tests/dbus-vmstate-daemon.sh",
+      "QTEST_QEMU_BINARY": "./qemu-system-xtensa"
+    },
+    "name": "qtest-xtensa/qom-test",
+    "workdir": null,
+    "timeout": 300,
+    "suite": [
+      "qemu:qtest",
+      "qemu:qtest-xtensa"
+    ],
+    "is_parallel": true,
+    "priority": 300,
+    "protocol": "tap",
+    "depends": [
+      "qemu-img@exe",
+      "7134ae4@@qom-test@exe",
+      "qemu-system-xtensa@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/qtest",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/qtest/test-hmp.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "QTEST_QEMU_IMG": "./qemu-img",
+      "G_TEST_DBUS_DAEMON": "C:/SourceCode/qemu_lasecSimul/tests/dbus-vmstate-daemon.sh",
+      "QTEST_QEMU_BINARY": "./qemu-system-xtensa"
+    },
+    "name": "qtest-xtensa/test-hmp",
+    "workdir": null,
+    "timeout": 120,
+    "suite": [
+      "qemu:qtest",
+      "qemu:qtest-xtensa"
+    ],
+    "is_parallel": true,
+    "priority": 120,
+    "protocol": "tap",
+    "depends": [
+      "7134ae4@@test-hmp@exe",
+      "qemu-img@exe",
+      "qemu-system-xtensa@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/qtest",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/qtest/qos-test.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "QTEST_QEMU_IMG": "./qemu-img",
+      "G_TEST_DBUS_DAEMON": "C:/SourceCode/qemu_lasecSimul/tests/dbus-vmstate-daemon.sh",
+      "QTEST_QEMU_BINARY": "./qemu-system-xtensa"
+    },
+    "name": "qtest-xtensa/qos-test",
+    "workdir": null,
+    "timeout": 60,
+    "suite": [
+      "qemu:qtest",
+      "qemu:qtest-xtensa"
+    ],
+    "is_parallel": true,
+    "priority": 60,
+    "protocol": "tap",
+    "depends": [
+      "qemu-img@exe",
+      "7134ae4@@qos-test@exe",
+      "qemu-system-xtensa@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/qtest",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/check-block-qdict.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "check-block-qdict",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@check-block-qdict@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/check-qdict.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "check-qdict",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@check-qdict@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/check-qnum.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "check-qnum",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@check-qnum@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/check-qstring.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "check-qstring",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@check-qstring@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/check-qlist.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "check-qlist",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@check-qlist@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/check-qnull.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "check-qnull",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@check-qnull@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/check-qobject.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "check-qobject",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@check-qobject@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/check-qjson.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "check-qjson",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@check-qjson@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/check-qlit.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "check-qlit",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@check-qlit@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-error-report.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-error-report",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-error-report@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-qobject-output-visitor.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-qobject-output-visitor",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-qobject-output-visitor@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-clone-visitor.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-clone-visitor",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-clone-visitor@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-qobject-input-visitor.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-qobject-input-visitor",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-qobject-input-visitor@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-forward-visitor.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-forward-visitor",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-forward-visitor@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-string-input-visitor.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-string-input-visitor",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-string-input-visitor@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-string-output-visitor.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-string-output-visitor",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-string-output-visitor@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-opts-visitor.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-opts-visitor",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-opts-visitor@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-visitor-serialization.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-visitor-serialization",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-visitor-serialization@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-bitmap.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-bitmap",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-bitmap@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-x86-cpuid.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-x86-cpuid",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-x86-cpuid@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-cutils.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-cutils",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-cutils@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-div128.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-div128",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-div128@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-shift128.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-shift128",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-shift128@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-mul64.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-mul64",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-mul64@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-int128.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-int128",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-int128@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/rcutorture.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "rcutorture",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@rcutorture@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-rcu-list.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-rcu-list",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-rcu-list@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-rcu-simpleq.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-rcu-simpleq",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-rcu-simpleq@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-rcu-tailq.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-rcu-tailq",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-rcu-tailq@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-rcu-slist.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-rcu-slist",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-rcu-slist@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-qdist.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-qdist",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-qdist@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-qht.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-qht",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-qht@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-qtree.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-qtree",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-qtree@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-bitops.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-bitops",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-bitops@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-bitcnt.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-bitcnt",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-bitcnt@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-qgraph.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-qgraph",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-qgraph@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/check-qom-interface.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "check-qom-interface",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@check-qom-interface@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/check-qom-proplist.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "check-qom-proplist",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@check-qom-proplist@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-qemu-opts.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-qemu-opts",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-qemu-opts@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-keyval.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-keyval",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-keyval@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-logging.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-logging",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-logging@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-uuid.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-uuid",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-uuid@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/ptimer-test.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "ptimer-test",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@ptimer-test@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-qapi-util.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-qapi-util",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-qapi-util@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-interval-tree.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-interval-tree",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-interval-tree@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-xs-node.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-xs-node",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-xs-node@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-qmp-event.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-qmp-event",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-qmp-event@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-coroutine.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-coroutine",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-coroutine@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-aio.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-aio",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-aio@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-aio-multithread.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-aio-multithread",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-aio-multithread@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-throttle.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-throttle",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-throttle@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-thread-pool.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-thread-pool",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-thread-pool@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-hbitmap.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-hbitmap",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-hbitmap@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-bdrv-drain.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-bdrv-drain",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-bdrv-drain@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-bdrv-graph-mod.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-bdrv-graph-mod",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-bdrv-graph-mod@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-blockjob.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-blockjob",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-blockjob@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-blockjob-txn.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-blockjob-txn",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-blockjob-txn@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-block-backend.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-block-backend",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-block-backend@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-block-iothread.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-block-iothread",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-block-iothread@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-write-threshold.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-write-threshold",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-write-threshold@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-crypto-hash.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-crypto-hash",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-crypto-hash@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-crypto-hmac.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-crypto-hmac",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-crypto-hmac@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-crypto-cipher.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-crypto-cipher",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-crypto-cipher@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-crypto-akcipher.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-crypto-akcipher",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-crypto-akcipher@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-crypto-secret.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-crypto-secret",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-crypto-secret@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-crypto-der.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-crypto-der",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-crypto-der@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-authz-simple.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-authz-simple",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-authz-simple@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-authz-list.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-authz-list",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-authz-list@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-authz-listfile.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-authz-listfile",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-authz-listfile@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-io-task.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-io-task",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-io-task@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-io-channel-socket.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-io-channel-socket",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-io-channel-socket@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-io-channel-file.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-io-channel-file",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-io-channel-file@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-io-channel-command.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-io-channel-command",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-io-channel-command@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-io-channel-buffer.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-io-channel-buffer",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-io-channel-buffer@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-io-channel-null.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-io-channel-null",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-io-channel-null@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-crypto-ivgen.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-crypto-ivgen",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-crypto-ivgen@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-crypto-afsplit.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-crypto-afsplit",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-crypto-afsplit@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-crypto-block.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-crypto-block",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-crypto-block@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-replication.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-replication",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-replication@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-crypto-pbkdf.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-crypto-pbkdf",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-crypto-pbkdf@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-iov.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-iov",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-iov@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-qmp-cmds.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-qmp-cmds",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-qmp-cmds@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-xbzrle.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-xbzrle",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-xbzrle@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-timed-average.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-timed-average",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-timed-average@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-util-sockets.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-util-sockets",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-util-sockets@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-base64.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-base64",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-base64@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-bufferiszero.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-bufferiszero",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-bufferiszero@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-smp-parse.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-smp-parse",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-smp-parse@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-vmstate.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-vmstate",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-vmstate@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-yank.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-yank",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-yank@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit/test-qdev-global-props.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "G_TEST_SRCDIR": "C:/SourceCode/qemu_lasecSimul/tests/unit",
+      "G_TEST_BUILDDIR": "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit"
+    },
+    "name": "test-qdev-global-props",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "3fcb9fe@@test-qdev-global-props@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/unit",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/qtest/cdrom-test.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "QTEST_QEMU_IMG": "./qemu-img",
+      "G_TEST_DBUS_DAEMON": "C:/SourceCode/qemu_lasecSimul/tests/dbus-vmstate-daemon.sh",
+      "QTEST_QEMU_BINARY": "./qemu-system-xtensa"
+    },
+    "name": "qtest-xtensa/cdrom-test",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:qtest",
+      "qemu:qtest-xtensa"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "qemu-img@exe",
+      "7134ae4@@cdrom-test@exe",
+      "qemu-system-xtensa@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/qtest",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/qtest/device-introspect-test.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "QTEST_QEMU_IMG": "./qemu-img",
+      "G_TEST_DBUS_DAEMON": "C:/SourceCode/qemu_lasecSimul/tests/dbus-vmstate-daemon.sh",
+      "QTEST_QEMU_BINARY": "./qemu-system-xtensa"
+    },
+    "name": "qtest-xtensa/device-introspect-test",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:qtest",
+      "qemu:qtest-xtensa"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "qemu-img@exe",
+      "7134ae4@@device-introspect-test@exe",
+      "qemu-system-xtensa@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/qtest",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/qtest/machine-none-test.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "QTEST_QEMU_IMG": "./qemu-img",
+      "G_TEST_DBUS_DAEMON": "C:/SourceCode/qemu_lasecSimul/tests/dbus-vmstate-daemon.sh",
+      "QTEST_QEMU_BINARY": "./qemu-system-xtensa"
+    },
+    "name": "qtest-xtensa/machine-none-test",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:qtest",
+      "qemu:qtest-xtensa"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "qemu-img@exe",
+      "7134ae4@@machine-none-test@exe",
+      "qemu-system-xtensa@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/qtest",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/qtest/qmp-test.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "QTEST_QEMU_IMG": "./qemu-img",
+      "G_TEST_DBUS_DAEMON": "C:/SourceCode/qemu_lasecSimul/tests/dbus-vmstate-daemon.sh",
+      "QTEST_QEMU_BINARY": "./qemu-system-xtensa"
+    },
+    "name": "qtest-xtensa/qmp-test",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:qtest",
+      "qemu:qtest-xtensa"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "qemu-img@exe",
+      "7134ae4@@qmp-test@exe",
+      "qemu-system-xtensa@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/qtest",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/qtest/qmp-cmd-test.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "QTEST_QEMU_IMG": "./qemu-img",
+      "G_TEST_DBUS_DAEMON": "C:/SourceCode/qemu_lasecSimul/tests/dbus-vmstate-daemon.sh",
+      "QTEST_QEMU_BINARY": "./qemu-system-xtensa"
+    },
+    "name": "qtest-xtensa/qmp-cmd-test",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:qtest",
+      "qemu:qtest-xtensa"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "qemu-img@exe",
+      "qemu-system-xtensa@exe",
+      "7134ae4@@qmp-cmd-test@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/qtest",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/qtest/readconfig-test.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "QTEST_QEMU_IMG": "./qemu-img",
+      "G_TEST_DBUS_DAEMON": "C:/SourceCode/qemu_lasecSimul/tests/dbus-vmstate-daemon.sh",
+      "QTEST_QEMU_BINARY": "./qemu-system-xtensa"
+    },
+    "name": "qtest-xtensa/readconfig-test",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:qtest",
+      "qemu:qtest-xtensa"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "qemu-img@exe",
+      "7134ae4@@readconfig-test@exe",
+      "qemu-system-xtensa@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/qtest",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/qtest/netdev-socket.exe",
+      "--tap",
+      "-k"
+    ],
+    "env": {
+      "QTEST_QEMU_IMG": "./qemu-img",
+      "G_TEST_DBUS_DAEMON": "C:/SourceCode/qemu_lasecSimul/tests/dbus-vmstate-daemon.sh",
+      "QTEST_QEMU_BINARY": "./qemu-system-xtensa"
+    },
+    "name": "qtest-xtensa/netdev-socket",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:qtest",
+      "qemu:qtest-xtensa"
+    ],
+    "is_parallel": true,
+    "priority": 30,
+    "protocol": "tap",
+    "depends": [
+      "qemu-img@exe",
+      "7134ae4@@netdev-socket@exe",
+      "qemu-system-xtensa@exe"
+    ],
+    "extra_paths": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/qtest",
+      "C:/SourceCode/tools/msys64/ucrt64/bin"
+    ]
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/pyvenv/bin/python.exe",
+      "C:/SourceCode/qemu_lasecSimul/scripts/xml-preprocess-test.py"
+    ],
+    "env": {},
+    "name": "xml-preprocess",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:unit"
+    ],
+    "is_parallel": true,
+    "priority": 0,
+    "protocol": "exitcode",
+    "depends": [],
+    "extra_paths": []
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/pyvenv/bin/python.exe",
+      "C:/SourceCode/qemu_lasecSimul/scripts/decodetree.py",
+      "--output-null",
+      "--test-for-error",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/decode/err_argset1.decode"
+    ],
+    "env": {},
+    "name": "err_argset1",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:decodetree"
+    ],
+    "is_parallel": true,
+    "priority": 0,
+    "protocol": "exitcode",
+    "depends": [],
+    "extra_paths": []
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/pyvenv/bin/python.exe",
+      "C:/SourceCode/qemu_lasecSimul/scripts/decodetree.py",
+      "--output-null",
+      "--test-for-error",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/decode/err_argset2.decode"
+    ],
+    "env": {},
+    "name": "err_argset2",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:decodetree"
+    ],
+    "is_parallel": true,
+    "priority": 0,
+    "protocol": "exitcode",
+    "depends": [],
+    "extra_paths": []
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/pyvenv/bin/python.exe",
+      "C:/SourceCode/qemu_lasecSimul/scripts/decodetree.py",
+      "--output-null",
+      "--test-for-error",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/decode/err_field1.decode"
+    ],
+    "env": {},
+    "name": "err_field1",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:decodetree"
+    ],
+    "is_parallel": true,
+    "priority": 0,
+    "protocol": "exitcode",
+    "depends": [],
+    "extra_paths": []
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/pyvenv/bin/python.exe",
+      "C:/SourceCode/qemu_lasecSimul/scripts/decodetree.py",
+      "--output-null",
+      "--test-for-error",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/decode/err_field2.decode"
+    ],
+    "env": {},
+    "name": "err_field2",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:decodetree"
+    ],
+    "is_parallel": true,
+    "priority": 0,
+    "protocol": "exitcode",
+    "depends": [],
+    "extra_paths": []
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/pyvenv/bin/python.exe",
+      "C:/SourceCode/qemu_lasecSimul/scripts/decodetree.py",
+      "--output-null",
+      "--test-for-error",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/decode/err_field3.decode"
+    ],
+    "env": {},
+    "name": "err_field3",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:decodetree"
+    ],
+    "is_parallel": true,
+    "priority": 0,
+    "protocol": "exitcode",
+    "depends": [],
+    "extra_paths": []
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/pyvenv/bin/python.exe",
+      "C:/SourceCode/qemu_lasecSimul/scripts/decodetree.py",
+      "--output-null",
+      "--test-for-error",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/decode/err_field4.decode"
+    ],
+    "env": {},
+    "name": "err_field4",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:decodetree"
+    ],
+    "is_parallel": true,
+    "priority": 0,
+    "protocol": "exitcode",
+    "depends": [],
+    "extra_paths": []
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/pyvenv/bin/python.exe",
+      "C:/SourceCode/qemu_lasecSimul/scripts/decodetree.py",
+      "--output-null",
+      "--test-for-error",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/decode/err_field5.decode"
+    ],
+    "env": {},
+    "name": "err_field5",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:decodetree"
+    ],
+    "is_parallel": true,
+    "priority": 0,
+    "protocol": "exitcode",
+    "depends": [],
+    "extra_paths": []
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/pyvenv/bin/python.exe",
+      "C:/SourceCode/qemu_lasecSimul/scripts/decodetree.py",
+      "--output-null",
+      "--test-for-error",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/decode/err_field6.decode"
+    ],
+    "env": {},
+    "name": "err_field6",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:decodetree"
+    ],
+    "is_parallel": true,
+    "priority": 0,
+    "protocol": "exitcode",
+    "depends": [],
+    "extra_paths": []
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/pyvenv/bin/python.exe",
+      "C:/SourceCode/qemu_lasecSimul/scripts/decodetree.py",
+      "--output-null",
+      "--test-for-error",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/decode/err_field7.decode"
+    ],
+    "env": {},
+    "name": "err_field7",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:decodetree"
+    ],
+    "is_parallel": true,
+    "priority": 0,
+    "protocol": "exitcode",
+    "depends": [],
+    "extra_paths": []
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/pyvenv/bin/python.exe",
+      "C:/SourceCode/qemu_lasecSimul/scripts/decodetree.py",
+      "--output-null",
+      "--test-for-error",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/decode/err_field8.decode"
+    ],
+    "env": {},
+    "name": "err_field8",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:decodetree"
+    ],
+    "is_parallel": true,
+    "priority": 0,
+    "protocol": "exitcode",
+    "depends": [],
+    "extra_paths": []
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/pyvenv/bin/python.exe",
+      "C:/SourceCode/qemu_lasecSimul/scripts/decodetree.py",
+      "--output-null",
+      "--test-for-error",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/decode/err_field9.decode"
+    ],
+    "env": {},
+    "name": "err_field9",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:decodetree"
+    ],
+    "is_parallel": true,
+    "priority": 0,
+    "protocol": "exitcode",
+    "depends": [],
+    "extra_paths": []
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/pyvenv/bin/python.exe",
+      "C:/SourceCode/qemu_lasecSimul/scripts/decodetree.py",
+      "--output-null",
+      "--test-for-error",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/decode/err_field10.decode"
+    ],
+    "env": {},
+    "name": "err_field10",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:decodetree"
+    ],
+    "is_parallel": true,
+    "priority": 0,
+    "protocol": "exitcode",
+    "depends": [],
+    "extra_paths": []
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/pyvenv/bin/python.exe",
+      "C:/SourceCode/qemu_lasecSimul/scripts/decodetree.py",
+      "--output-null",
+      "--test-for-error",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/decode/err_init1.decode"
+    ],
+    "env": {},
+    "name": "err_init1",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:decodetree"
+    ],
+    "is_parallel": true,
+    "priority": 0,
+    "protocol": "exitcode",
+    "depends": [],
+    "extra_paths": []
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/pyvenv/bin/python.exe",
+      "C:/SourceCode/qemu_lasecSimul/scripts/decodetree.py",
+      "--output-null",
+      "--test-for-error",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/decode/err_init2.decode"
+    ],
+    "env": {},
+    "name": "err_init2",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:decodetree"
+    ],
+    "is_parallel": true,
+    "priority": 0,
+    "protocol": "exitcode",
+    "depends": [],
+    "extra_paths": []
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/pyvenv/bin/python.exe",
+      "C:/SourceCode/qemu_lasecSimul/scripts/decodetree.py",
+      "--output-null",
+      "--test-for-error",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/decode/err_init3.decode"
+    ],
+    "env": {},
+    "name": "err_init3",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:decodetree"
+    ],
+    "is_parallel": true,
+    "priority": 0,
+    "protocol": "exitcode",
+    "depends": [],
+    "extra_paths": []
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/pyvenv/bin/python.exe",
+      "C:/SourceCode/qemu_lasecSimul/scripts/decodetree.py",
+      "--output-null",
+      "--test-for-error",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/decode/err_init4.decode"
+    ],
+    "env": {},
+    "name": "err_init4",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:decodetree"
+    ],
+    "is_parallel": true,
+    "priority": 0,
+    "protocol": "exitcode",
+    "depends": [],
+    "extra_paths": []
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/pyvenv/bin/python.exe",
+      "C:/SourceCode/qemu_lasecSimul/scripts/decodetree.py",
+      "--output-null",
+      "--test-for-error",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/decode/err_overlap1.decode"
+    ],
+    "env": {},
+    "name": "err_overlap1",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:decodetree"
+    ],
+    "is_parallel": true,
+    "priority": 0,
+    "protocol": "exitcode",
+    "depends": [],
+    "extra_paths": []
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/pyvenv/bin/python.exe",
+      "C:/SourceCode/qemu_lasecSimul/scripts/decodetree.py",
+      "--output-null",
+      "--test-for-error",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/decode/err_overlap2.decode"
+    ],
+    "env": {},
+    "name": "err_overlap2",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:decodetree"
+    ],
+    "is_parallel": true,
+    "priority": 0,
+    "protocol": "exitcode",
+    "depends": [],
+    "extra_paths": []
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/pyvenv/bin/python.exe",
+      "C:/SourceCode/qemu_lasecSimul/scripts/decodetree.py",
+      "--output-null",
+      "--test-for-error",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/decode/err_overlap3.decode"
+    ],
+    "env": {},
+    "name": "err_overlap3",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:decodetree"
+    ],
+    "is_parallel": true,
+    "priority": 0,
+    "protocol": "exitcode",
+    "depends": [],
+    "extra_paths": []
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/pyvenv/bin/python.exe",
+      "C:/SourceCode/qemu_lasecSimul/scripts/decodetree.py",
+      "--output-null",
+      "--test-for-error",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/decode/err_overlap4.decode"
+    ],
+    "env": {},
+    "name": "err_overlap4",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:decodetree"
+    ],
+    "is_parallel": true,
+    "priority": 0,
+    "protocol": "exitcode",
+    "depends": [],
+    "extra_paths": []
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/pyvenv/bin/python.exe",
+      "C:/SourceCode/qemu_lasecSimul/scripts/decodetree.py",
+      "--output-null",
+      "--test-for-error",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/decode/err_overlap5.decode"
+    ],
+    "env": {},
+    "name": "err_overlap5",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:decodetree"
+    ],
+    "is_parallel": true,
+    "priority": 0,
+    "protocol": "exitcode",
+    "depends": [],
+    "extra_paths": []
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/pyvenv/bin/python.exe",
+      "C:/SourceCode/qemu_lasecSimul/scripts/decodetree.py",
+      "--output-null",
+      "--test-for-error",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/decode/err_overlap6.decode"
+    ],
+    "env": {},
+    "name": "err_overlap6",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:decodetree"
+    ],
+    "is_parallel": true,
+    "priority": 0,
+    "protocol": "exitcode",
+    "depends": [],
+    "extra_paths": []
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/pyvenv/bin/python.exe",
+      "C:/SourceCode/qemu_lasecSimul/scripts/decodetree.py",
+      "--output-null",
+      "--test-for-error",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/decode/err_overlap7.decode"
+    ],
+    "env": {},
+    "name": "err_overlap7",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:decodetree"
+    ],
+    "is_parallel": true,
+    "priority": 0,
+    "protocol": "exitcode",
+    "depends": [],
+    "extra_paths": []
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/pyvenv/bin/python.exe",
+      "C:/SourceCode/qemu_lasecSimul/scripts/decodetree.py",
+      "--output-null",
+      "--test-for-error",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/decode/err_overlap8.decode"
+    ],
+    "env": {},
+    "name": "err_overlap8",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:decodetree"
+    ],
+    "is_parallel": true,
+    "priority": 0,
+    "protocol": "exitcode",
+    "depends": [],
+    "extra_paths": []
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/pyvenv/bin/python.exe",
+      "C:/SourceCode/qemu_lasecSimul/scripts/decodetree.py",
+      "--output-null",
+      "--test-for-error",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/decode/err_overlap9.decode"
+    ],
+    "env": {},
+    "name": "err_overlap9",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:decodetree"
+    ],
+    "is_parallel": true,
+    "priority": 0,
+    "protocol": "exitcode",
+    "depends": [],
+    "extra_paths": []
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/pyvenv/bin/python.exe",
+      "C:/SourceCode/qemu_lasecSimul/scripts/decodetree.py",
+      "--output-null",
+      "--test-for-error",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/decode/err_pattern_group_empty.decode"
+    ],
+    "env": {},
+    "name": "err_pattern_group_empty",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:decodetree"
+    ],
+    "is_parallel": true,
+    "priority": 0,
+    "protocol": "exitcode",
+    "depends": [],
+    "extra_paths": []
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/pyvenv/bin/python.exe",
+      "C:/SourceCode/qemu_lasecSimul/scripts/decodetree.py",
+      "--output-null",
+      "--test-for-error",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/decode/err_pattern_group_ident1.decode"
+    ],
+    "env": {},
+    "name": "err_pattern_group_ident1",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:decodetree"
+    ],
+    "is_parallel": true,
+    "priority": 0,
+    "protocol": "exitcode",
+    "depends": [],
+    "extra_paths": []
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/pyvenv/bin/python.exe",
+      "C:/SourceCode/qemu_lasecSimul/scripts/decodetree.py",
+      "--output-null",
+      "--test-for-error",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/decode/err_pattern_group_ident2.decode"
+    ],
+    "env": {},
+    "name": "err_pattern_group_ident2",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:decodetree"
+    ],
+    "is_parallel": true,
+    "priority": 0,
+    "protocol": "exitcode",
+    "depends": [],
+    "extra_paths": []
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/pyvenv/bin/python.exe",
+      "C:/SourceCode/qemu_lasecSimul/scripts/decodetree.py",
+      "--output-null",
+      "--test-for-error",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/decode/err_pattern_group_nest1.decode"
+    ],
+    "env": {},
+    "name": "err_pattern_group_nest1",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:decodetree"
+    ],
+    "is_parallel": true,
+    "priority": 0,
+    "protocol": "exitcode",
+    "depends": [],
+    "extra_paths": []
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/pyvenv/bin/python.exe",
+      "C:/SourceCode/qemu_lasecSimul/scripts/decodetree.py",
+      "--output-null",
+      "--test-for-error",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/decode/err_pattern_group_nest2.decode"
+    ],
+    "env": {},
+    "name": "err_pattern_group_nest2",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:decodetree"
+    ],
+    "is_parallel": true,
+    "priority": 0,
+    "protocol": "exitcode",
+    "depends": [],
+    "extra_paths": []
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/pyvenv/bin/python.exe",
+      "C:/SourceCode/qemu_lasecSimul/scripts/decodetree.py",
+      "--output-null",
+      "--test-for-error",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/decode/err_pattern_group_nest3.decode"
+    ],
+    "env": {},
+    "name": "err_pattern_group_nest3",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:decodetree"
+    ],
+    "is_parallel": true,
+    "priority": 0,
+    "protocol": "exitcode",
+    "depends": [],
+    "extra_paths": []
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/pyvenv/bin/python.exe",
+      "C:/SourceCode/qemu_lasecSimul/scripts/decodetree.py",
+      "--output-null",
+      "--test-for-error",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/decode/err_pattern_group_overlap1.decode"
+    ],
+    "env": {},
+    "name": "err_pattern_group_overlap1",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:decodetree"
+    ],
+    "is_parallel": true,
+    "priority": 0,
+    "protocol": "exitcode",
+    "depends": [],
+    "extra_paths": []
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/pyvenv/bin/python.exe",
+      "C:/SourceCode/qemu_lasecSimul/scripts/decodetree.py",
+      "--output-null",
+      "--test-for-error",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/decode/err_width1.decode"
+    ],
+    "env": {},
+    "name": "err_width1",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:decodetree"
+    ],
+    "is_parallel": true,
+    "priority": 0,
+    "protocol": "exitcode",
+    "depends": [],
+    "extra_paths": []
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/pyvenv/bin/python.exe",
+      "C:/SourceCode/qemu_lasecSimul/scripts/decodetree.py",
+      "--output-null",
+      "--test-for-error",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/decode/err_width2.decode"
+    ],
+    "env": {},
+    "name": "err_width2",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:decodetree"
+    ],
+    "is_parallel": true,
+    "priority": 0,
+    "protocol": "exitcode",
+    "depends": [],
+    "extra_paths": []
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/pyvenv/bin/python.exe",
+      "C:/SourceCode/qemu_lasecSimul/scripts/decodetree.py",
+      "--output-null",
+      "--test-for-error",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/decode/err_width3.decode"
+    ],
+    "env": {},
+    "name": "err_width3",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:decodetree"
+    ],
+    "is_parallel": true,
+    "priority": 0,
+    "protocol": "exitcode",
+    "depends": [],
+    "extra_paths": []
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/pyvenv/bin/python.exe",
+      "C:/SourceCode/qemu_lasecSimul/scripts/decodetree.py",
+      "--output-null",
+      "--test-for-error",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/decode/err_width4.decode"
+    ],
+    "env": {},
+    "name": "err_width4",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:decodetree"
+    ],
+    "is_parallel": true,
+    "priority": 0,
+    "protocol": "exitcode",
+    "depends": [],
+    "extra_paths": []
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/pyvenv/bin/python.exe",
+      "C:/SourceCode/qemu_lasecSimul/scripts/decodetree.py",
+      "--output-null",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/decode/succ_argset_type1.decode"
+    ],
+    "env": {},
+    "name": "succ_argset_type1",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:decodetree"
+    ],
+    "is_parallel": true,
+    "priority": 0,
+    "protocol": "exitcode",
+    "depends": [],
+    "extra_paths": []
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/pyvenv/bin/python.exe",
+      "C:/SourceCode/qemu_lasecSimul/scripts/decodetree.py",
+      "--output-null",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/decode/succ_function.decode"
+    ],
+    "env": {},
+    "name": "succ_function",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:decodetree"
+    ],
+    "is_parallel": true,
+    "priority": 0,
+    "protocol": "exitcode",
+    "depends": [],
+    "extra_paths": []
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/pyvenv/bin/python.exe",
+      "C:/SourceCode/qemu_lasecSimul/scripts/decodetree.py",
+      "--output-null",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/decode/succ_ident1.decode"
+    ],
+    "env": {},
+    "name": "succ_ident1",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:decodetree"
+    ],
+    "is_parallel": true,
+    "priority": 0,
+    "protocol": "exitcode",
+    "depends": [],
+    "extra_paths": []
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/pyvenv/bin/python.exe",
+      "C:/SourceCode/qemu_lasecSimul/scripts/decodetree.py",
+      "--output-null",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/decode/succ_named_field.decode"
+    ],
+    "env": {},
+    "name": "succ_named_field",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:decodetree"
+    ],
+    "is_parallel": true,
+    "priority": 0,
+    "protocol": "exitcode",
+    "depends": [],
+    "extra_paths": []
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/pyvenv/bin/python.exe",
+      "C:/SourceCode/qemu_lasecSimul/scripts/decodetree.py",
+      "--output-null",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/decode/succ_pattern_group_nest1.decode"
+    ],
+    "env": {},
+    "name": "succ_pattern_group_nest1",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:decodetree"
+    ],
+    "is_parallel": true,
+    "priority": 0,
+    "protocol": "exitcode",
+    "depends": [],
+    "extra_paths": []
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/pyvenv/bin/python.exe",
+      "C:/SourceCode/qemu_lasecSimul/scripts/decodetree.py",
+      "--output-null",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/decode/succ_pattern_group_nest2.decode"
+    ],
+    "env": {},
+    "name": "succ_pattern_group_nest2",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:decodetree"
+    ],
+    "is_parallel": true,
+    "priority": 0,
+    "protocol": "exitcode",
+    "depends": [],
+    "extra_paths": []
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/pyvenv/bin/python.exe",
+      "C:/SourceCode/qemu_lasecSimul/scripts/decodetree.py",
+      "--output-null",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/decode/succ_pattern_group_nest3.decode"
+    ],
+    "env": {},
+    "name": "succ_pattern_group_nest3",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:decodetree"
+    ],
+    "is_parallel": true,
+    "priority": 0,
+    "protocol": "exitcode",
+    "depends": [],
+    "extra_paths": []
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/pyvenv/bin/python.exe",
+      "C:/SourceCode/qemu_lasecSimul/scripts/decodetree.py",
+      "--output-null",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/decode/succ_pattern_group_nest4.decode"
+    ],
+    "env": {},
+    "name": "succ_pattern_group_nest4",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:decodetree"
+    ],
+    "is_parallel": true,
+    "priority": 0,
+    "protocol": "exitcode",
+    "depends": [],
+    "extra_paths": []
+  },
+  {
+    "cmd": [
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/pyvenv/bin/python.exe",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/test-qapi.py",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/alternate-any.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/alternate-array.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/alternate-base.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/alternate-branch-if-invalid.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/alternate-clash.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/alternate-conflict-dict.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/alternate-conflict-enum-bool.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/alternate-conflict-enum-int.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/alternate-conflict-lists.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/alternate-conflict-string.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/alternate-conflict-bool-string.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/alternate-conflict-num-string.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/alternate-data-invalid.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/alternate-empty.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/alternate-invalid-dict.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/alternate-nested.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/alternate-unknown.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/args-alternate.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/args-any.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/args-array-empty.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/args-array-unknown.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/args-bad-boxed.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/args-boxed-anon.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/args-boxed-string.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/args-if-implicit.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/args-if-unboxed.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/args-int.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/args-invalid.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/args-member-array-bad.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/args-member-case.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/args-member-unknown.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/args-union.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/args-unknown.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/bad-base.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/bad-data.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/bad-ident.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/bad-if.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/bad-if-all.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/bad-if-empty.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/bad-if-empty-list.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/bad-if-key.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/bad-if-keys.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/bad-if-list.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/bad-if-not.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/bad-type-bool.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/bad-type-dict.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/bad-type-int.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/base-cycle-direct.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/base-cycle-indirect.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/command-int.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/comments.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/doc-bad-alternate-member.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/doc-bad-boxed-command-arg.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/doc-bad-command-arg.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/doc-bad-enum-member.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/doc-bad-event-arg.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/doc-bad-feature.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/doc-bad-indent.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/doc-bad-section.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/doc-bad-symbol.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/doc-bad-union-member.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/doc-before-include.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/doc-before-pragma.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/doc-duplicated-arg.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/doc-duplicated-return.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/doc-duplicated-since.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/doc-empty-arg.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/doc-empty-section.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/doc-empty-symbol.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/doc-good.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/doc-interleaved-section.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/doc-invalid-end.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/doc-invalid-end2.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/doc-invalid-return.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/doc-invalid-section.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/doc-invalid-start.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/doc-missing-colon.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/doc-missing-expr.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/doc-missing-space.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/doc-missing.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/doc-no-symbol.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/doc-undoc-feature.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/double-type.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/duplicate-key.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/empty.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/enum-bad-member.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/enum-bad-name.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/enum-bad-prefix.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/enum-clash-member.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/enum-dict-member-unknown.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/enum-if-invalid.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/enum-int-member.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/enum-member-case.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/enum-missing-data.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/enum-wrong-data.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/event-boxed-empty.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/event-case.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/event-member-invalid-dict.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/event-nest-struct.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/features-bad-type.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/features-deprecated-type.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/features-duplicate-name.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/features-if-invalid.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/features-missing-name.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/features-name-bad-type.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/features-no-list.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/features-unknown-key.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/funny-char.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/funny-word.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/ident-with-escape.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/include-before-err.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/include-cycle.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/include-extra-junk.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/include-nested-err.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/include-no-file.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/include-non-file.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/include-repetition.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/include-self-cycle.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/include-simple.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/indented-expr.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/leading-comma-list.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/leading-comma-object.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/missing-array-rsqb.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/missing-colon.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/missing-comma-list.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/missing-comma-object.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/missing-object-member-element.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/missing-type.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/nested-struct-data.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/nested-struct-data-invalid-dict.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/non-objects.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/oob-coroutine.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/oob-test.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/allow-preconfig-test.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/pragma-extra-junk.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/pragma-non-dict.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/pragma-unknown.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/pragma-value-not-bool.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/pragma-value-not-list-of-str.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/pragma-value-not-list.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/qapi-schema-test.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/quoted-structural-chars.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/redefined-command.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/redefined-event.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/redefined-predefined.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/redefined-type.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/reserved-command-q.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/reserved-enum-q.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/reserved-member-has.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/reserved-member-q.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/reserved-member-u.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/reserved-member-underscore.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/reserved-type-list.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/returns-alternate.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/returns-array-bad.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/returns-bad-type.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/returns-dict.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/returns-unknown.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/string-code-point-31.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/string-code-point-127.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/struct-base-clash-deep.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/struct-base-clash.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/struct-data-invalid.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/struct-data-typename.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/struct-member-if-invalid.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/struct-member-invalid-dict.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/struct-member-invalid.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/struct-member-name-clash.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/trailing-comma-list.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/trailing-comma-object.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/type-bypass-bad-gen.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/type-case.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/unclosed-list.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/unclosed-object.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/unclosed-string.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/union-array-branch.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/union-bad-base.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/union-bad-discriminator.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/union-base-any.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/union-base-empty.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/union-base-no-discriminator.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/union-base-union.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/union-branch-if-invalid.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/union-branch-invalid-dict.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/union-clash-member.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/union-discriminator-bad-name.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/union-empty.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/union-inline-invalid-dict.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/union-int-branch.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/union-invalid-base.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/union-invalid-branch-key.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/union-invalid-data.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/union-invalid-discriminator.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/union-invalid-if-discriminator.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/union-invalid-union-subfield.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/union-invalid-union-subtype.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/union-no-base.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/union-optional-discriminator.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/union-string-discriminator.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/union-unknown.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/unknown-escape.json",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/../tests/qapi-schema/unknown-expr-key.json",
+      "C:/SourceCode/qemu_lasecSimul/tests/qapi-schema/missing-schema.json"
+    ],
+    "env": {
+      "PYTHONPATH": "C:/SourceCode/qemu_lasecSimul/scripts",
+      "PYTHONIOENCODING": "utf-8"
+    },
+    "name": "QAPI schema regression tests",
+    "workdir": null,
+    "timeout": 30,
+    "suite": [
+      "qemu:qapi-schema",
+      "qemu:qapi-frontend"
+    ],
+    "is_parallel": true,
+    "priority": 0,
+    "protocol": "exitcode",
+    "depends": [],
+    "extra_paths": []
+  }
+]

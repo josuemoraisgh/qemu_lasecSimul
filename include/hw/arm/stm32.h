@@ -1,0 +1,269 @@
+/*
+ * STM32 Microcontroller
+ *
+ * Copyright (C) 2010 Andre Beckus
+ * Copyright (C) 2014 Andrew Hankins
+ *
+ * Implementation based on ST Microelectronics "RM0008 Reference Manual Rev 10"
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation; either version 2 of
+ * the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, see <http://www.gnu.org/licenses/>.
+ */
+
+#ifndef STM32_H
+#define STM32_H
+
+#include <inttypes.h>
+#include <stdio.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <stdint.h>
+#include <stdbool.h>
+#include <stddef.h>
+#include "qemu/osdep.h"
+#include "hw/qdev-properties.h"
+//#include "chardev/char-fe.h"
+#include "hw/qdev-clock.h"
+
+//#include "qemu/timer.h"
+#include "hw/sysbus.h"
+#include "qemu/log.h"
+
+
+void stm32_hw_warn(const char *fmt, ...)
+    __attribute__ ((__format__ (__printf__, 1, 2)));
+
+#define ENUM_STRING(x) [x] = #x
+#define ARRAY_LENGTH(array) (sizeof((array))/sizeof((array)[0]))
+
+/* PERIPHERALS - COMMON */
+
+/* Used for uniquely identifying a peripheral */
+typedef int32_t stm32_periph_t;
+
+#define DEFINE_PROP_PERIPH_T DEFINE_PROP_INT32
+#define QDEV_PROP_SET_PERIPH_T qdev_prop_set_int32
+
+enum {
+    STM32_PERIPH_UNDEFINED = -1,
+    STM32_RCC_PERIPH = 0,
+    STM32_GPIOA,
+    STM32_GPIOB,
+    STM32_GPIOC,
+    STM32_GPIOD,
+    STM32_GPIOE,
+    STM32_GPIOF,
+    STM32_GPIOG,
+    STM32_GPIOH,
+    STM32_GPIOI,
+    STM32_GPIOJ,
+    STM32_GPIOK,
+    STM32_SYSCFG,
+    STM32_AFIO0,
+    STM32_UART1,
+    STM32_UART2,
+    STM32_UART3,
+    STM32_UART4,
+    STM32_UART5,
+    STM32_UART6,
+    STM32_UART7,
+    STM32_UART8,
+    STM32_ADC1,
+    STM32_ADC2,
+    STM32_ADC3,
+    STM32_DAC,
+    STM32_TIM1,
+    STM32_TIM2,
+    STM32_TIM3,
+    STM32_TIM4,
+    STM32_TIM5,
+    STM32_TIM6,
+    STM32_TIM7,
+    STM32_TIM8,
+    STM32_TIM9,
+    STM32_TIM10,
+    STM32_TIM11,
+    STM32_TIM12,
+    STM32_TIM13,
+    STM32_TIM14,
+    STM32_BKP,
+    STM32_PWR,
+    STM32_I2C1,
+    STM32_I2C2,
+    STM32_I2C3,
+    STM32_I2S2,
+    STM32_I2S3,
+    STM32_WWDG,
+    STM32_IWDG,
+    STM32_CAN1,
+    STM32_CAN2,
+    STM32_CAN,
+    STM32_USB,
+    STM32_SPI1,
+    STM32_SPI2,
+    STM32_SPI3,
+    STM32_EXTI_PERIPH,
+    STM32_SDIO,
+    STM32_FSMC,
+    STM32_RTC,
+    STM32_COMP,
+    STM_LCD,
+    STM32_CRC,
+    STM32_DMA1,
+    STM32_DMA2,
+    STM32_DCMI_PERIPH,
+    STM32_CRYP_PERIPH,
+    STM32_HASH_PERIPH,
+    STM32_RNG_PERIPH,
+    
+    STM32_FLASH,
+    STM32_FLASH_REGS,
+    STM32_PERIPH_COUNT,
+};
+
+/* Convert between a GPIO array index and stm32_periph_t, and vice-versa */
+#define STM32_GPIO_INDEX_FROM_PERIPH(gpio_periph) (gpio_periph - STM32_GPIOA)
+#define STM32_GPIO_PERIPH_FROM_INDEX(gpio_index) (STM32_GPIOA + gpio_index)
+
+
+/* REGISTER HELPERS */
+/* Error handlers */
+# define STM32_BAD_REG(offset, size)  qemu_log_mask(LOG_GUEST_ERROR, "%s: Bad register 0x%x - size %u\n", __FUNCTION__, (int)offset, size)
+# define STM32_RO_REG(offset)  qemu_log_mask(LOG_GUEST_ERROR, "%s: Read-only register 0x%x\n", __FUNCTION__, (int)offset)
+# define STM32_WO_REG(offset)  qemu_log_mask(LOG_GUEST_ERROR, "%s: Write-only register 0x%x\n", __FUNCTION__, (int)offset)
+# define STM32_NOT_IMPL_REG(offset, size)  qemu_log_mask(LOG_UNIMP, "%s: Not implemented 0x%x - size %u\n", __FUNCTION__, (int)offset, size)
+
+
+/* IRQs */
+#define STM32_PVD_IRQ           1
+
+#define STM32_RTC_IRQ           3     /* RTC global interrupt */
+#define STM32_RCC_IRQ           5
+
+#define STM32_EXTI0_IRQ         6
+#define STM32_EXTI1_IRQ         7
+#define STM32_EXTI2_IRQ         8
+#define STM32_EXTI3_IRQ         9
+#define STM32_EXTI4_IRQ         10
+
+#define STM32_DMA1_STREAM0_IRQ  11
+#define STM32_DMA1_STREAM1_IRQ  12
+#define STM32_DMA1_STREAM2_IRQ  13
+#define STM32_DMA1_STREAM3_IRQ  14
+#define STM32_DMA1_STREAM4_IRQ  15
+#define STM32_DMA1_STREAM5_IRQ  16
+#define STM32_DMA1_STREAM6_IRQ  17
+
+#define STM32_ADC1_2_IRQ        18
+
+#define STM32_EXTI9_5_IRQ       23
+
+#define TIM1_BRK_IRQn           24     /*!< TIM1 Break Interrupt                                 */
+#define TIM1_UP_IRQn            25     /*!< TIM1 Update Interrupt                                */
+#define TIM1_TRG_COM_IRQn       26     /*!< TIM1 Trigger and Commutation Interrupt               */
+#define TIM1_CC_IRQn            27     /*!< TIM1 Capture Compare Interrupt                       */
+#define TIM2_IRQn               28     /*!< TIM2 global Interrupt                                */
+#define TIM3_IRQn               29     /*!< TIM3 global Interrupt                                */
+#define TIM4_IRQn               30     /*!< TIM4 global Interrupt                                */
+
+#define STM32_I2C1_EV_IRQ       31
+#define STM32_I2C1_ER_IRQ       32
+#define STM32_I2C2_EV_IRQ       33
+#define STM32_I2C2_ER_IRQ       34
+
+#define STM32_SPI1_IRQ          35
+#define STM32_SPI2_IRQ          36
+
+#define STM32_UART1_IRQ         37
+#define STM32_UART2_IRQ         38
+#define STM32_UART3_IRQ         39
+
+#define STM32_EXTI15_10_IRQ     40
+
+#define STM32_RTCAlarm_IRQ      41
+#define STM32_OTG_FS_WKUP_IRQ   42
+
+#define TIM8_BRK_TIM12_IRQn     43     /*!< TIM8 Break Interrupt and TIM12 global Interrupt      */
+#define TIM8_UP_TIM13_IRQn      44     /*!< TIM8 Update Interrupt and TIM13 global Interrupt     */
+#define TIM8_TRG_COM_TIM14_IRQn 45     /*!< TIM8 Trigger and Commutation Interrupt and TIM14 global interrupt */
+#define TIM8_CC_IRQn            46     /*!< TIM8 Capture Compare Interrupt                       */
+
+#define STM32_DMA1_STREAM7_IRQ  47
+
+#define TIM5_IRQn               50     /*!< TIM5 global Interrupt                                */
+
+#define STM32_UART4_IRQ         52
+#define STM32_UART5_IRQ         53
+
+#define TIM6_DAC_IRQn           54     /*!< TIM6 and DAC underrun Interrupt                      */
+#define TIM7_IRQn               55     /*!< TIM7 Interrupt                                       */
+
+#define STM32_ETH_WKUP_IRQ      62
+
+
+
+/* RCC */
+typedef struct Stm32Rcc Stm32Rcc;
+
+#define TYPE_STM32_RCC "stm32-rcc"
+#define STM32_RCC(obj) OBJECT_CHECK(Stm32Rcc, (obj), TYPE_STM32_RCC)
+
+//void stm32_RCC_reboot( Stm32Rcc *s, uint32_t new_value, bool init);
+void stm32_rcc_set_sysclk(Stm32Rcc* rcc, Clock *sysclk);
+
+/* Checks if the specified peripheral clock is enabled. Generates a hardware error if not. */
+bool stm32_rcc_check_periph_clk(Stm32Rcc *s, stm32_periph_t periph);
+
+/* Sets the IRQ to be called when the specified peripheral clock changes frequency. */
+void stm32_rcc_set_periph_clk_irq( Stm32Rcc *s, stm32_periph_t periph, qemu_irq periph_irq);
+
+/* Gets the frequency of the specified peripheral clock. */
+uint32_t stm32_rcc_get_periph_freq( Stm32Rcc *s, stm32_periph_t periph);
+
+//uint32_t stm32_rcc_get_rtc_freq( Stm32Rcc *s );
+
+//void stm32_RCC_CSR_write( Stm32Rcc *s, uint32_t new_value, bool init);
+
+
+/* FLASH */
+typedef struct Stm32Flash Stm32Flash;
+
+#define STM32_FLASH_ADDR_START (0x08000000)
+#define TYPE_STM32_FLASH "stm32-flash"
+#define STM32_FLASH(obj) OBJECT_CHECK(Stm32Flash, (obj), TYPE_STM32_FLASH)
+
+Stm32Flash *stm32_flash_register(BlockBackend *blks, hwaddr base, hwaddr size);
+
+
+/* Flash Regs */
+typedef struct Stm32FlashRegs Stm32FlashRegs;
+
+#define TYPE_STM32_FLASH_REGS "stm32-flash-regs"
+#define STM32_FLASH_REGS(obj) OBJECT_CHECK(Stm32FlashRegs, (obj), TYPE_STM32_FLASH_REGS)
+
+
+#define TYPE_STM32F1XX_SOC "stm32f1xx-soc"
+OBJECT_DECLARE_SIMPLE_TYPE( Stm32F1xxState, STM32F1XX_SOC )
+
+/* Timer */
+typedef struct Stm32Timer Stm32Timer;
+
+#define TYPE_STM32_TIMER "stm32-timer"
+#define STM32_TIMER(obj) OBJECT_CHECK(Stm32Timer, (obj), TYPE_STM32_TIMER)
+
+void stm32_timer_set_rcc( Stm32Timer *tim, Stm32Rcc* rcc );
+void stm32_timer_set_number( Stm32Timer *tim, int tim_num );
+
+//Stm32Timer* stm32_get_timer( int number );
+
+#endif /* STM32_H */
