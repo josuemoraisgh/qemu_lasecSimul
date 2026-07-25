@@ -33,6 +33,7 @@
 #include "hw/core/cpu.h"
 #include "qemu/seqlock.h"
 #include "qemu/atomic.h"
+#include "qemu/thread.h"
 #include "timers-state.h"
 
 // ------------------------------------------------
@@ -49,12 +50,117 @@ uint64_t period_ns;
 uint64_t period_ps;
 
 QEMUTimer* qtimer;
+/*
+ * With icount QEMU runs both ESP32 vCPUs on one round-robin TCG thread.  MTTCG
+ * gives each vCPU its own host thread, so releasing the BQL while waiting for
+ * Core turns the arena into a multi-producer channel.  The ABI still has one
+ * write cursor and one synchronous read slot; serialize complete arena
+ * transactions here instead of changing that stable cross-process layout.
+ *
+ * Lock order is arena -> BQL.  Callers normally arrive holding the BQL, so
+ * arenaTransactionBegin() drops it before acquiring this mutex and restores it
+ * only after the mutex has been released.  This is essential: reacquiring the
+ * BQL while holding m_arenaOrderLock would deadlock against the other vCPU.
+ */
+static QemuMutex m_arenaOrderLock;
+static bool m_arenaOrderLockInitialized;
+static bool m_profileEnabled;
+static uint64_t m_profileStartWallNs;
+static uint64_t m_profileStartVirtualNs;
+static uint64_t m_profileLastReportWallNs;
+static uint64_t m_profilePublishedEvents;
+static uint64_t m_profileReadTransactions;
+static uint64_t m_profileQueueWaits;
+static uint64_t m_profileReadWaits;
+static uint64_t m_profileMaxQueueOccupancy;
+
+typedef struct ArenaTransaction {
+    bool restoreIothreadLock;
+} ArenaTransaction;
+
+static ArenaTransaction arenaTransactionBegin(void)
+{
+    ArenaTransaction transaction = {
+        .restoreIothreadLock = qemu_mutex_iothread_locked(),
+    };
+    if (transaction.restoreIothreadLock) {
+        qemu_mutex_unlock_iothread();
+    }
+    qemu_mutex_lock(&m_arenaOrderLock);
+    return transaction;
+}
+
+static void arenaTransactionEnd(ArenaTransaction transaction)
+{
+    qemu_mutex_unlock(&m_arenaOrderLock);
+    if (transaction.restoreIothreadLock) {
+        qemu_mutex_lock_iothread();
+    }
+}
+
+/*
+ * QEMU_CLOCK_VIRTUAL selects icount_get_ns() while -icount is active and the
+ * normal monotonic VM clock otherwise.  Calling icount_get_ns() directly in
+ * MTTCG leaves the bridge timestamp at zero because instruction counting is
+ * disabled, which makes GPIO/heartbeat publication appear permanently stuck.
+ */
+static uint64_t simuClockNs(void)
+{
+    const int64_t now = qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL);
+    return now > 0 ? (uint64_t)now : 0;
+}
+
+static void profileMaybeReport(uint64_t virtualNs)
+{
+    if (!m_profileEnabled) {
+        return;
+    }
+
+    const uint64_t wallNs = get_clock();
+    if (wallNs - m_profileLastReportWallNs < NANOSECONDS_PER_SECOND) {
+        return;
+    }
+
+    const uint64_t elapsedWallNs = wallNs - m_profileStartWallNs;
+    const uint64_t elapsedVirtualNs = virtualNs >= m_profileStartVirtualNs
+                                          ? virtualNs - m_profileStartVirtualNs
+                                          : 0;
+    const double realtimePercent = elapsedWallNs
+                                       ? 100.0 * (double)elapsedVirtualNs / (double)elapsedWallNs
+                                       : 0.0;
+    printf("[LasecSimul][PROFILE] mode=%s wall_ns=%llu virtual_ns=%llu "
+           "realtime_percent=%.2f events=%llu reads=%llu queue_waits=%llu "
+           "read_waits=%llu max_queue=%llu\n",
+           icount_enabled() ? "deterministic-icount" : "mttcg-realtime",
+           (unsigned long long)elapsedWallNs,
+           (unsigned long long)elapsedVirtualNs,
+           realtimePercent,
+           (unsigned long long)m_profilePublishedEvents,
+           (unsigned long long)m_profileReadTransactions,
+           (unsigned long long)m_profileQueueWaits,
+           (unsigned long long)m_profileReadWaits,
+           (unsigned long long)m_profileMaxQueueOccupancy);
+    fflush(stdout);
+    m_profileLastReportWallNs = wallNs;
+}
+
 static void pushQueueEntry( uint64_t addr, uint64_t data, uint64_t action, uint64_t simuTimePs );
 
-static void publishQueueEntry( uint64_t addr, uint64_t data, uint64_t action, uint64_t simuTimePs )
+static void publishQueueEntry( uint64_t addr, uint64_t data, uint64_t action )
 {
+    ArenaTransaction transaction = arenaTransactionBegin();
     waitForSynch();
-    pushQueueEntry(addr, data, action, simuTimePs);
+    /*
+     * Timestamp after acquiring the ordering mutex.  If each vCPU sampled time
+     * before serialization, thread B could publish its later timestamp first
+     * and thread A then append an older event behind it.
+     */
+    pushQueueEntry(addr, data, action, simuClockNs() * 1000);
+    arenaTransactionEnd(transaction);
+
+    if (m_arena->irqNumber) {
+        setInterrupt();
+    }
 }
 
 /* v3 (LasecSimul PERF-13): publica uma entrada na fila circular de escritas/heartbeat -- só
@@ -83,6 +189,14 @@ static void pushQueueEntry( uint64_t addr, uint64_t data, uint64_t action, uint6
     m_arena->queue[slot].simuTime   = simuTimePs;
     qatomic_store_release(&m_arena->queueWriteIndex, writeIndex + 1);
 
+    ++m_profilePublishedEvents;
+    const uint64_t occupancy =
+        writeIndex + 1 - qatomic_load_acquire(&m_arena->queueReadIndex);
+    if (occupancy > m_profileMaxQueueOccupancy) {
+        m_profileMaxQueueOccupancy = occupancy;
+    }
+    profileMaybeReport(simuTimePs / 1000);
+
     const char *trace = getenv("LASECSIMUL_TRACE_GPIO");
     if (trace && trace[0] && strcmp(trace, "0") != 0 &&
         (addr == 0x3ff44004 || addr == 0x3ff44020 || addr == 0x3ff49038)) {
@@ -110,20 +224,15 @@ static void waitForQueueDrain( void )
     if( qatomic_load_acquire(&m_arena->queueReadIndex) == m_arena->queueWriteIndex ) return;
 
     uint64_t timeout = 0;
-    const bool hadIothreadLock = qemu_mutex_iothread_locked();
-    if( hadIothreadLock ) qemu_mutex_unlock_iothread();
 
     while( qatomic_load_acquire(&m_arena->queueReadIndex) != m_arena->queueWriteIndex )
     {
         if( timeout++ > 5e9 ) // Terminate process if timed out
         {
             printf("Qemu: waitForQueueDrain TIMEOUT\n"); fflush( stdout );
-            if( hadIothreadLock ) qemu_mutex_lock_iothread();
             return;
         }
     }
-
-    if( hadIothreadLock ) qemu_mutex_lock_iothread();
 }
 
 uint64_t readReg( uint64_t addr )
@@ -140,46 +249,44 @@ uint64_t readReg( uint64_t addr )
      * então não precisa esperar uma leitura ANTERIOR terminar -- só precisa esperar toda
      * escrita/heartbeat pendente NA FILA já ter sido processada (mesmo papel que waitForSynch()
      * tinha em v2 pro slot único, agora dividido porque escritas não usam mais esse slot). */
-    uint64_t now = icount_get_ns();
+    ArenaTransaction transaction = arenaTransactionBegin();
+    uint64_t now = simuClockNs();
+    ++m_profileReadTransactions;
     m_lastQemuTime = now;
     if( now != 0 )
     {
         waitForQueueDrain();
-        if( m_arena->irqNumber ) setInterrupt();
     }
 
     m_arena->regAddr    = addr;
     //m_arena->regData    = 0;
-    m_arena->qemuAction = 0;
+    qatomic_store_release(&m_arena->qemuAction, 0);
     m_arena->simuAction = SIM_READ;
-    m_arena->simuTime = icount_get_ns()*1000;
+    qatomic_store_release(&m_arena->simuTime, simuClockNs()*1000);
 
     uint64_t timeout = 0;
-    if( !m_arena->qemuAction )  // Wait for SimulIDE to execute Read
+    bool timedOut = false;
+    if( !qatomic_load_acquire(&m_arena->qemuAction) )  // Wait for SimulIDE to execute Read
     {
-        /* This spins on a reply from Core, a separate OS process -- not on any QEMU-internal
-         * state. readReg() only ever runs as an MMIO device callback, invoked from cputlb.c under
-         * the BQL (qemu/main-loop.h: "should be unlocked as soon as possible... because it
-         * prevents the main loop from processing callbacks"). Release it for the wait so QEMU's
-         * own iothread isn't blocked out for however long Core takes to reply, same
-         * unlock/block/relock pattern QEMU's own blk_pread()/aio_poll() already use elsewhere in
-         * this same MMIO dispatch path (see esp32_cache_data_sync). */
-        const bool hadIothreadLock = qemu_mutex_iothread_locked();
-        if( hadIothreadLock ) qemu_mutex_unlock_iothread();
-
-        while( !m_arena->qemuAction )
+        ++m_profileReadWaits;
+        while( !qatomic_load_acquire(&m_arena->qemuAction) )
         {
             if( timeout++ > 5e9 ) // Terminate process if timed out
             {
                 printf("Qemu: readReg TIMEOUT %llu\n", (unsigned long long)addr); fflush( stdout );
-                if( hadIothreadLock ) qemu_mutex_lock_iothread();
-                return 0;
+                timedOut = true;
+                break;
             }
         }
-
-        if( hadIothreadLock ) qemu_mutex_lock_iothread();
     }
-    if( m_arena->qemuAction != SIM_READ )
+    const uint64_t qemuAction = qatomic_load_acquire(&m_arena->qemuAction);
+    const uint64_t regData = m_arena->regData;
+    arenaTransactionEnd(transaction);
+
+    if (timedOut) {
+        return 0;
+    }
+    if( qemuAction != SIM_READ )
     {
         printf("Qemu: readReg m_arena->qemuAction != SIM_READ\n"); fflush( stdout );
         return 0;
@@ -187,7 +294,7 @@ uint64_t readReg( uint64_t addr )
 
     if( m_arena->irqNumber ) setInterrupt();
 
-    return m_arena->regData;
+    return regData;
 }
 
 void writeReg( uint64_t addr, uint64_t value )
@@ -196,7 +303,7 @@ void writeReg( uint64_t addr, uint64_t value )
         return;
     }
     //printf("Qemu: esp32_gpio_write\n"); fflush( stdout );
-    publishQueueEntry( addr, value, SIM_WRITE, getQemu_ps() );
+    publishQueueEntry( addr, value, SIM_WRITE );
 }
 
 void writeSimEvent( uint64_t addr, uint64_t value, uint64_t action )
@@ -204,12 +311,12 @@ void writeSimEvent( uint64_t addr, uint64_t value, uint64_t action )
     if (!m_arena) {
         return;
     }
-    publishQueueEntry(addr, value, action, getQemu_ps());
+    publishQueueEntry(addr, value, action);
 }
 
 void updtCpuFreqHz( uint32_t clock_Hz )
 {
-    uint64_t now = icount_get_ns();
+    uint64_t now = simuClockNs();
 
     double clock_MHz = (double)clock_Hz/1000000;
     double ps_instr = 1000000/clock_MHz;
@@ -234,14 +341,12 @@ void updtCpuFreqHz( uint32_t clock_Hz )
 
 uint64_t getQemu_ps(void)
 {
-    uint64_t qemuTime = icount_get_ns()*1000; //qemu_clock_get_ns( QEMU_CLOCK_VIRTUAL ); // ns //icount_get_ps; //
-    //qemuTime *= 1000;
-    return qemuTime;
+    return simuClockNs()*1000;
 }
 
 uint64_t getQemu_ns(void)
 {
-    return icount_get_ns();
+    return simuClockNs();
 }
 
 void waitForSynch(void)
@@ -251,7 +356,7 @@ void waitForSynch(void)
     }
     //printf("Qemu: wait for Action at time %lu\n",  m_lastQemuTime ); fflush( stdout );
 
-    uint64_t now = icount_get_ns();
+    uint64_t now = simuClockNs();
     m_lastQemuTime = now;
     if( now == 0 ) return;
 
@@ -265,26 +370,16 @@ void waitForSynch(void)
      * uma leitura simples basta pro lado de cá. */
     if( m_arena->queueWriteIndex - qatomic_load_acquire(&m_arena->queueReadIndex) >= QEMU_ARENA_QUEUE_DEPTH )
     {
-        /* Same reasoning as the wait in readReg() above: this spins on Core (a separate process),
-         * not on QEMU state, and runs either as an MMIO callback or inline from simu_event()'s
-         * timer callback -- both BQL-held contexts. Release it for the spin. */
-        const bool hadIothreadLock = qemu_mutex_iothread_locked();
-        if( hadIothreadLock ) qemu_mutex_unlock_iothread();
-
+        ++m_profileQueueWaits;
         while( m_arena->queueWriteIndex - qatomic_load_acquire(&m_arena->queueReadIndex) >= QEMU_ARENA_QUEUE_DEPTH )
         {
             if( m_timeout++ > 2e9 ) // Terminate process if timed out
             {
                 printf("Qemu: waitForSynch TIMEOUT (fila cheia) at time %llu\n", (unsigned long long)(now*1000) ); fflush( stdout );
-                if( hadIothreadLock ) qemu_mutex_lock_iothread();
                 return;
             }
         }
-
-        if( hadIothreadLock ) qemu_mutex_lock_iothread();
     }
-
-    if( m_arena->irqNumber ) setInterrupt();
 }
 
 static void simu_event( void* opaque )
@@ -292,13 +387,13 @@ static void simu_event( void* opaque )
     if (!m_arena) return;
     if( !m_arena->running ) return;
 
-    uint64_t now_ns = icount_get_ns();
+    uint64_t now_ns = simuClockNs();
 
     //printf("Qemu: simu_event at %lu\n", now_ns ); fflush( stdout );
 
     if( now_ns > m_lastQemuTime )
     {
-        publishQueueEntry( 0, 0, SIM_EVENT, now_ns*1000 ); // heartbeat nao usa regAddr/regData
+        publishQueueEntry( 0, 0, SIM_EVENT ); // heartbeat nao usa regAddr/regData
 
         m_lastQemuTime = now_ns;
     }
@@ -380,6 +475,34 @@ int simuMain( int argc, char** argv )
     qemu_init( argc, argv );
     printf("Qemu: initialized\n" );fflush( stdout );
 
+    qemu_mutex_init(&m_arenaOrderLock);
+    m_arenaOrderLockInitialized = true;
+
+    {
+        CPUState *cpu;
+        unsigned vcpuCount = 0;
+        CPU_FOREACH(cpu) {
+            ++vcpuCount;
+        }
+        printf("Qemu: execution mode: %s (vcpus=%u, tcg_threads=%u)\n",
+               icount_enabled() ? "deterministic-icount" : "mttcg-realtime",
+               vcpuCount,
+               qemu_tcg_mttcg_enabled() ? vcpuCount : 1);
+        fflush(stdout);
+
+        const char *profile = getenv("LASECSIMUL_QEMU_PROFILE");
+        m_profileEnabled =
+            profile && profile[0] && strcmp(profile, "0") != 0;
+        m_profileStartWallNs = get_clock();
+        m_profileStartVirtualNs = simuClockNs();
+        m_profileLastReportWallNs = m_profileStartWallNs;
+        m_profilePublishedEvents = 0;
+        m_profileReadTransactions = 0;
+        m_profileQueueWaits = 0;
+        m_profileReadWaits = 0;
+        m_profileMaxQueueOccupancy = 0;
+    }
+
     /* period_ns precisa escalar com 2^shift, senao o heartbeat periodico (simu_event(), que faz
      * um round-trip completo com o host via waitForSynch()) passa a disparar mais vezes por
      * instrucao real conforme "shift" aumenta -- cancelando o ganho de velocidade que um shift
@@ -409,6 +532,11 @@ int simuMain( int argc, char** argv )
 
     printf("Qemu: starting main loop\n");fflush( stdout );
     int status = qemu_main_loop();
+
+    if (m_arenaOrderLockInitialized) {
+        qemu_mutex_destroy(&m_arenaOrderLock);
+        m_arenaOrderLockInitialized = false;
+    }
 
 #ifdef __linux__
     munmap( arena, shMemSize ); // Un-map shared memory

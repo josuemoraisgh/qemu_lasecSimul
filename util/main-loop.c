@@ -585,7 +585,15 @@ void main_loop_timeout( int64_t timeout_ns )
 
     notifier_list_notify( &main_loop_poll_notifiers, &mlpoll );
 
-    icount_start_warp_timer();
+    /*
+     * main_loop_timeout() is the SimulIDE/LasecSimul-specific polling path.
+     * Unlike upstream main_loop_wait() below, it used to invoke the icount
+     * warp unconditionally.  MTTCG necessarily disables icount, whose helper
+     * asserts that it is enabled, so the first loop iteration aborted.
+     */
+    if (icount_enabled()) {
+        icount_start_warp_timer();
+    }
     qemu_clock_run_all_timers();
 }
 
