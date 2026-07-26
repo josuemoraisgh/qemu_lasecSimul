@@ -797,5 +797,6 @@ static inline void cpu_get_tb_cpu_state(CPUXtensaState *env, vaddr *pc,
 
 XtensaCPU *xtensa_cpu_create_with_clock(const char *cpu_type,
                                         Clock *cpu_refclk);
+void xtensa_cpu_set_frequency(XtensaCPU *cpu, uint32_t hz);
 
 #endif

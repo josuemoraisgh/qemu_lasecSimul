@@ -49,6 +49,7 @@
 
 
 static Esp32SocState *esp32_soc;
+static uint64_t esp32_reset_count;
 
 
 enum {
@@ -122,6 +123,40 @@ static void remove_cpu_watchpoints(XtensaCPU* xcs)
     }
 }
 
+static void esp32_cpu_stall(void *opaque, int n, int level);
+
+static void esp32_log_reset(Esp32SocState *s, uint32_t reset_mask)
+{
+    ++esp32_reset_count;
+    const bool expected_app_cpu_boot_reset =
+        esp32_reset_count == 2 && reset_mask == ESP32_SOC_RESET_APPCPU &&
+        s->rtc_cntl.reset_cause[1] == ESP32_SW_CPU_RESET;
+    fprintf(stderr,
+            "[LasecSimul][ESP32 reset] count=%" PRIu64
+            " mask=0x%02x cause0=%u cause1=%u pc0=0x%08x pc1=0x%08x"
+            " wdt0_enabled=%u wdt1_enabled=%u network=%s expected=%s\n",
+            esp32_reset_count, reset_mask, s->rtc_cntl.reset_cause[0],
+            s->rtc_cntl.reset_cause[1], (uint32_t)s->cpu[0].env.pc,
+            (uint32_t)s->cpu[1].env.pc, s->timg[0].wdt.en, s->timg[1].wdt.en,
+            (s->eth || s->wifi_dev) ? "enabled" : "disabled",
+            expected_app_cpu_boot_reset ? "app-cpu-startup" : "no");
+    fflush(stderr);
+}
+
+static void esp32_app_cpu_reset_async(CPUState *cs, run_on_cpu_data data)
+{
+    Esp32SocState *s = data.host_ptr;
+
+    g_assert(cs == CPU(&s->cpu[1]));
+    esp32_log_reset(s, ESP32_SOC_RESET_APPCPU);
+    xtensa_select_static_vectors(&s->cpu[1].env,
+                                 s->rtc_cntl.stat_vector_sel[1]);
+    remove_cpu_watchpoints(&s->cpu[1]);
+    cpu_reset(cs);
+    s->dport.appcpu_reset_pending = false;
+    esp32_cpu_stall(s, 1, 0);
+}
+
 static void esp32_dig_reset(void *opaque, int n, int level)
 {
     if( !level ) return;
@@ -137,12 +172,25 @@ static void esp32_cpu_reset(void* opaque, int n, int level)
     if( !level ) return;
     Esp32SocState *s = ESP32_SOC(opaque);
 
+    s->rtc_cntl.reset_cause[n] = ESP32_SW_CPU_RESET;
+    if (n == 1) {
+        /*
+         * A per-CPU reset is not a machine reset.  Routing APP CPU startup
+         * through qemu_system_reset_request() happened to work with RR TCG,
+         * but under MTTCG the requesting PRO CPU could race the delayed global
+         * reset handler.  Reset the target in its own vCPU context, as other
+         * MTTCG-capable QEMU SMP machines do.
+         */
+        async_run_on_cpu(CPU(&s->cpu[1]), esp32_app_cpu_reset_async,
+                         RUN_ON_CPU_HOST_PTR(s));
+        return;
+    }
+
     s->requested_reset = (n == 0) ? ESP32_SOC_RESET_PROCPU : ESP32_SOC_RESET_APPCPU;
     /* Use different cause for APP CPU so that its reset doesn't cause QEMU to exit,
      * when -no-reboot option is given.
      */
     ShutdownCause cause = (n == 0) ? SHUTDOWN_CAUSE_GUEST_RESET : SHUTDOWN_CAUSE_SUBSYSTEM_RESET;
-    s->rtc_cntl.reset_cause[n] = ESP32_SW_CPU_RESET;
     qemu_system_reset_request(cause);
 }
 
@@ -151,12 +199,18 @@ static void esp32_timg_cpu_reset(void* opaque, int n, int level)
     if( !level ) return;
     Esp32SocState *s = ESP32_SOC(opaque);
 
+    s->rtc_cntl.reset_cause[n] = ESP32_TGWDT_CPU_RESET;
+    if (n == 1) {
+        async_run_on_cpu(CPU(&s->cpu[1]), esp32_app_cpu_reset_async,
+                         RUN_ON_CPU_HOST_PTR(s));
+        return;
+    }
+
     s->requested_reset = (n == 0) ? ESP32_SOC_RESET_PROCPU : ESP32_SOC_RESET_APPCPU;
     /* Use different cause for APP CPU so that its reset doesn't cause QEMU to exit,
      * when -no-reboot option is given.
      */
     ShutdownCause cause = (n == 0) ? SHUTDOWN_CAUSE_GUEST_RESET : SHUTDOWN_CAUSE_SUBSYSTEM_RESET;
-    s->rtc_cntl.reset_cause[n] = ESP32_TGWDT_CPU_RESET;
     qemu_system_reset_request(cause);
 }
 
@@ -175,7 +229,6 @@ static void esp32_timg_sys_reset(void* opaque, int n, int level)
 
 static void esp32_soc_reset(DeviceState *dev)
 {
-    static uint64_t reset_count;
     Esp32SocState *s = ESP32_SOC(dev);
 
     //printf("\nesp32_soc_reset %i \n\n", s->requested_reset );
@@ -187,20 +240,7 @@ static void esp32_soc_reset(DeviceState *dev)
 
     if( s->requested_reset == 0 ) s->requested_reset = ESP32_SOC_RESET_ALL;
 
-    ++reset_count;
-    const bool expected_app_cpu_boot_reset =
-        reset_count == 2 && s->requested_reset == ESP32_SOC_RESET_APPCPU &&
-        s->rtc_cntl.reset_cause[1] == ESP32_SW_CPU_RESET;
-    fprintf(stderr,
-            "[LasecSimul][ESP32 reset] count=%" PRIu64
-            " mask=0x%02x cause0=%u cause1=%u pc0=0x%08x pc1=0x%08x"
-            " wdt0_enabled=%u wdt1_enabled=%u network=%s expected=%s\n",
-            reset_count, s->requested_reset, s->rtc_cntl.reset_cause[0],
-            s->rtc_cntl.reset_cause[1], (uint32_t)s->cpu[0].env.pc,
-            (uint32_t)s->cpu[1].env.pc, s->timg[0].wdt.en, s->timg[1].wdt.en,
-            (s->eth || s->wifi_dev) ? "enabled" : "disabled",
-            expected_app_cpu_boot_reset ? "app-cpu-startup" : "no");
-    fflush(stderr);
+    esp32_log_reset(s, s->requested_reset);
 
     if( s->requested_reset & ESP32_SOC_RESET_RTC ) device_cold_reset( DEVICE(&s->rtc_cntl) );
 
@@ -255,7 +295,9 @@ static void esp32_cpu_stall(void* opaque, int n, int level)
     } else {
         stall =   s->rtc_cntl.cpu_stall_state[1]
               ||  s->dport.appcpu_stall_state
-              || !s->dport.appcpu_clkgate_state;
+              || !s->dport.appcpu_clkgate_state
+              ||  s->dport.appcpu_reset_state
+              ||  s->dport.appcpu_reset_pending;
     }
 
     if( stall != s->cpu[n].env.runstall)
@@ -278,24 +320,37 @@ static void esp32_clk_update( void* opaque, int n, int level )
     if( !level) return;
 
     Esp32SocState *s = ESP32_SOC(opaque);
+    uint32_t new_apb_clk_freq;
+    uint32_t new_cpu_clk_freq;
 
     /* APB clock */
-    //uint32_t apb_clk_freq, cpu_clk_freq;
     if( s->rtc_cntl.soc_clk == ESP32_SOC_CLK_PLL)
     {
         const uint32_t cpu_clk_mul[] = {1, 2, 3};
-        s->apb_clk_freq = s->rtc_cntl.pll_apb_freq;
-        s->cpu_clk_freq = cpu_clk_mul[s->dport.cpuperiod_sel] * s->apb_clk_freq;
+        if (s->dport.cpuperiod_sel >= ARRAY_SIZE(cpu_clk_mul)) {
+            fprintf(stderr,
+                    "[LasecSimul][ESP32 clock] invalid cpuperiod_sel=%u;"
+                    " retaining cpu_hz=%u apb_hz=%u\n",
+                    s->dport.cpuperiod_sel, s->cpu_clk_freq,
+                    s->apb_clk_freq);
+            fflush(stderr);
+            return;
+        }
+        new_apb_clk_freq = s->rtc_cntl.pll_apb_freq;
+        new_cpu_clk_freq =
+            cpu_clk_mul[s->dport.cpuperiod_sel] * new_apb_clk_freq;
     } else {
-        s->apb_clk_freq = s->rtc_cntl.xtal_apb_freq;
-        s->cpu_clk_freq = s->apb_clk_freq;
+        new_apb_clk_freq = s->rtc_cntl.xtal_apb_freq;
+        new_cpu_clk_freq = new_apb_clk_freq;
     }
+    s->apb_clk_freq = new_apb_clk_freq;
+    s->cpu_clk_freq = new_cpu_clk_freq;
     qdev_prop_set_int32( DEVICE(&s->frc_timer), "apb_freq", s->apb_clk_freq );
     qdev_prop_set_int32( DEVICE(&s->timg[0])  , "apb_freq", s->apb_clk_freq );
     qdev_prop_set_int32( DEVICE(&s->timg[1])  , "apb_freq", s->apb_clk_freq );
 
-    clock_update_hz( s->cpu[0].clock, s->cpu_clk_freq );
-    clock_update_hz( s->cpu[1].clock, s->cpu_clk_freq );
+    xtensa_cpu_set_frequency(&s->cpu[0], s->cpu_clk_freq);
+    xtensa_cpu_set_frequency(&s->cpu[1], s->cpu_clk_freq);
 
     updtCpuFreqHz( s->cpu_clk_freq );
 
@@ -772,7 +827,8 @@ static void esp32_machine_init_spi_flash( Esp32SocState *ss, BlockBackend* blk )
         case 16 * 1024 * 1024: flash_chip_model = "is25lp128"; break;
         default: error_report("Error: only 2, 4, 8, 16 MB flash images are supported"); return;
     }
-printf("Qemu: initializing SPI Flash '%s' %li MB\n", flash_chip_model, image_size/(1024*1024) );
+    printf("Qemu: initializing SPI Flash '%s' %" PRId64 " MB\n",
+           flash_chip_model, image_size / (1024 * 1024));
     DeviceState *flash_dev = qdev_new(flash_chip_model);
     qdev_prop_set_drive(flash_dev, "drive", blk);
     qdev_realize_and_unref(flash_dev, spi_bus, &error_fatal);

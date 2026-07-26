@@ -33,10 +33,89 @@
 #include "cpu.h"
 #include "fpu/softfloat.h"
 #include "qemu/module.h"
+#include "qemu/timer.h"
 #include "migration/vmstate.h"
 #include "hw/qdev-clock.h"
+#include "hw/irq.h"
 #ifndef CONFIG_USER_ONLY
 #include "exec/memory.h"
+#endif
+
+#ifndef CONFIG_USER_ONLY
+static void xtensa_cpu_clock_update(void *opaque, ClockEvent event)
+{
+    XtensaCPU *cpu = XTENSA_CPU(opaque);
+    CPUXtensaState *env = &cpu->env;
+    uint64_t now;
+
+    if (!xtensa_option_enabled(env->config,
+                               XTENSA_OPTION_TIMER_INTERRUPT)) {
+        return;
+    }
+
+    now = qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL);
+    if (event == ClockPreUpdate) {
+        /*
+         * CCOUNT must remain continuous across a dynamic frequency change.
+         * Applying the new frequency to the whole interval since time_base
+         * makes CCOUNT jump and can leave CCOMPARE behind for almost a full
+         * 32-bit wrap (observed as a lost FreeRTOS tick on ESP32/MTTCG).
+         */
+        env->sregs[CCOUNT] =
+            env->ccount_base +
+            (uint32_t)clock_ns_to_ticks(cpu->clock,
+                                        now - env->time_base);
+        env->ccount_base = env->sregs[CCOUNT];
+        env->time_base = now;
+        env->ccount_time = now;
+
+        /*
+         * A host may process the frequency-change MMIO just after a compare
+         * deadline but before the timer callback gets CPU time. Preserve that
+         * already-due interrupt instead of interpreting the now-past compare
+         * value as "after the next 32-bit CCOUNT wrap".
+         */
+        for (unsigned i = 0; i < env->config->nccompare; ++i) {
+            QEMUTimer *timer = env->ccompare[i].timer;
+
+            if (timer && timer_pending(timer) &&
+                timer_expire_time_ns(timer) <= now) {
+                qemu_set_irq(env->irq_inputs[env->config->timerint[i]], 1);
+                timer_del(timer);
+            }
+        }
+        return;
+    }
+
+    if (event == ClockUpdate) {
+        for (unsigned i = 0; i < env->config->nccompare; ++i) {
+            uint64_t dcc;
+
+            if (!env->ccompare[i].timer) {
+                continue;
+            }
+            if (qatomic_read(&env->sregs[INTSET]) &
+                (1u << env->config->timerint[i])) {
+                continue;
+            }
+            dcc = (uint64_t)(env->sregs[CCOMPARE + i] -
+                             env->sregs[CCOUNT] - 1) + 1;
+            timer_mod(env->ccompare[i].timer,
+                      now + clock_ticks_to_ns(cpu->clock, dcc));
+        }
+    }
+}
+
+void xtensa_cpu_set_frequency(XtensaCPU *cpu, uint32_t hz)
+{
+    /*
+     * A directly updated input clock is a clock-tree root, so clock_update_hz()
+     * does not invoke that clock's own callback. Run both phases explicitly.
+     */
+    xtensa_cpu_clock_update(cpu, ClockPreUpdate);
+    clock_update_hz(cpu->clock, hz);
+    xtensa_cpu_clock_update(cpu, ClockUpdate);
+}
 #endif
 
 
@@ -195,7 +274,9 @@ static void xtensa_cpu_initfn(Object *obj)
                           UINT64_C(0x100000000));
     address_space_init(env->address_space_er, env->system_er, "ER");
 
-    cpu->clock = qdev_init_clock_in(DEVICE(obj), "clk-in", NULL, cpu, 0);
+    cpu->clock = qdev_init_clock_in(DEVICE(obj), "clk-in",
+                                    xtensa_cpu_clock_update, cpu,
+                                    ClockPreUpdate | ClockUpdate);
     clock_set_hz(cpu->clock, env->config->clock_freq_khz * 1000);
 #endif
 }

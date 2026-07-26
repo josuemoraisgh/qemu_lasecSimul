@@ -68,6 +68,7 @@ typedef struct Esp32DportState {
     qemu_irq flash_dec_en_gpio;
 
     bool appcpu_reset_state;
+    bool appcpu_reset_pending;
     bool appcpu_stall_state;
     bool appcpu_clkgate_state;
     uint32_t appcpu_boot_addr;
@@ -175,4 +176,3 @@ REG32(DPORT_CACHE_IA_INT_EN, 0x5A0)
 #define ESP32_DPORT_PRO_INTMATRIX_BASE    A_DPORT_PRO_MAC_INTR_MAP
 #define ESP32_DPORT_APP_INTMATRIX_BASE    A_DPORT_APP_MAC_INTR_MAP
 #define ESP32_DPORT_CROSSCORE_INT_BASE    A_DPORT_CPU_INTR_FROM_CPU_0
-

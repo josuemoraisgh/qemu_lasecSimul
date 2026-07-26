@@ -138,16 +138,24 @@ static void esp32_dport_write(void *opaque, hwaddr addr,
         old_state = s->appcpu_reset_state;
         s->appcpu_reset_state = value & 1;
         if (old_state && !s->appcpu_reset_state) {
+            s->appcpu_reset_pending = true;
             qemu_irq_pulse(s->appcpu_reset_req);
         }
+        qemu_set_irq(s->appcpu_stall_req,
+                     s->appcpu_stall_state || !s->appcpu_clkgate_state ||
+                     s->appcpu_reset_state || s->appcpu_reset_pending);
         break;
     case A_DPORT_APPCPU_CLK:
         s->appcpu_clkgate_state = value & 1;
-        qemu_set_irq(s->appcpu_stall_req, s->appcpu_stall_state || !s->appcpu_clkgate_state);
+        qemu_set_irq(s->appcpu_stall_req,
+                     s->appcpu_stall_state || !s->appcpu_clkgate_state ||
+                     s->appcpu_reset_state || s->appcpu_reset_pending);
         break;
     case A_DPORT_APPCPU_RUNSTALL:
         s->appcpu_stall_state = value & 1;
-        qemu_set_irq(s->appcpu_stall_req, s->appcpu_stall_state || !s->appcpu_clkgate_state);
+        qemu_set_irq(s->appcpu_stall_req,
+                     s->appcpu_stall_state || !s->appcpu_clkgate_state ||
+                     s->appcpu_reset_state || s->appcpu_reset_pending);
         break;
     case A_DPORT_APPCPU_BOOT_ADDR:
         s->appcpu_boot_addr = value;
@@ -245,7 +253,6 @@ static void esp32_cache_data_sync(Esp32CacheRegionState* crs)
     bool decrypt = (flash_enc != NULL && esp32_flash_decryption_enabled(flash_enc));
 
     uint8_t* cache_data = (uint8_t*) memory_region_get_ram_ptr(&crs->mem);
-    int n = 0;
     for (int i = 0; i < ESP32_CACHE_PAGES_PER_REGION; ++i) {
         uint32_t* cache_page = (uint32_t*) (cache_data + i * ESP32_CACHE_PAGE_SIZE);
         uint32_t mmu_entry = crs->mmu_table[i];
@@ -266,7 +273,6 @@ static void esp32_cache_data_sync(Esp32CacheRegionState* crs)
             }
         }
         crs->mmu_table[i] &= ~ESP32_CACHE_MMU_ENTRY_CHANGED;
-        n++;
     }
     memory_region_flush_rom_device(&crs->mem, 0, ESP32_CACHE_REGION_SIZE);
 }
@@ -373,6 +379,7 @@ static void esp32_dport_reset(DeviceState *dev)
     s->appcpu_boot_addr = 0;
     s->appcpu_clkgate_state = false;
     s->appcpu_reset_state = true;
+    s->appcpu_reset_pending = false;
     s->appcpu_stall_state = false;
     s->cache_ill_trap_en_reg = 0;
     esp32_cache_reset(&s->cache_state[0]);

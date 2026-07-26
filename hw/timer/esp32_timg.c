@@ -21,7 +21,6 @@
 #include "hw/boards.h"
 #include "hw/timer/esp32_timg.h"
 
-
 #define TIMG_REGFILE_SIZE 0x100
 
 static uint64_t esp32_timg_timer_get_count(Esp32TimgTimerState *s, uint64_t ns_now);
@@ -552,11 +551,12 @@ static void esp32_timg_wdt_arm(Esp32TimgWdtState *ws, uint64_t ns_now)
         return;
     }
 
-    uint32_t stage_timeout = ws->timeout[ws->cur_stage];
-    uint32_t cur_count = esp32_timg_wdt_get_count(ws, ns_now);
-    uint32_t count_to_timeout = stage_timeout - cur_count;
+    uint64_t stage_timeout = (uint32_t)ws->timeout[ws->cur_stage];
+    uint64_t cur_count = esp32_timg_wdt_get_count(ws, ns_now);
+    uint64_t count_to_timeout =
+        stage_timeout > cur_count ? stage_timeout - cur_count : 0;
     uint64_t ns_to_timeout = muldiv64(count_to_timeout, 1000 * ws->prescale, ws->parent->apb_freq_hz / 1000000);
-    TIMG_DEBUG_LOG("%s: TG%d ns=0x%08llx stage %d count=0x%08x count_to_timeout=0x%08x ns_to_timeout=0x%08llx\n",
+    TIMG_DEBUG_LOG("%s: TG%d ns=0x%08llx stage %d count=0x%08llx count_to_timeout=0x%08llx ns_to_timeout=0x%08llx\n",
                    __func__, ws->parent->id, ns_now, ws->cur_stage, cur_count, count_to_timeout, ns_to_timeout);
     timer_mod_anticipate_ns(&ws->stage_timer, ns_now + ns_to_timeout);
 }
