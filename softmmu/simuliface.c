@@ -40,8 +40,68 @@
 // -------- ARENA ---------------------------------
 
 volatile qemuArena_t* m_arena = NULL;
+static volatile qemuArenaDescriptor_t *m_arenaDescriptor;
+static unsigned m_arenaAbiMajor;
 
 // ------------------------------------------------
+
+static int configuredArenaAbiMajor(void)
+{
+    const char *value = getenv("LASECSIMUL_QEMU_ARENA_VERSION");
+
+    if (!value || !value[0] || strcmp(value, "4") == 0) {
+        return QEMU_ARENA_ABI_MAJOR;
+    }
+    if (strcmp(value, "3") == 0) {
+        return 3;
+    }
+    fprintf(stderr,
+            "Qemu: invalid LASECSIMUL_QEMU_ARENA_VERSION='%s'; expected 3 or 4\n",
+            value);
+    return -1;
+}
+
+static bool validateArenaV4Descriptor(
+    volatile qemuArenaDescriptor_t *descriptor)
+{
+    const uint64_t coreReady = qatomic_load_acquire(&descriptor->coreReady);
+
+    if (!coreReady) {
+        fprintf(stderr, "Qemu: arena ABI v4 descriptor is not ready\n");
+        return false;
+    }
+    if (descriptor->magic != QEMU_ARENA_ABI_MAGIC ||
+        descriptor->abiMajor != QEMU_ARENA_ABI_MAJOR ||
+        descriptor->descriptorSize != sizeof(qemuArenaDescriptor_t) ||
+        descriptor->arenaSize != sizeof(qemuArenaV4Mapping_t) ||
+        descriptor->transportSize != sizeof(qemuArena_t) ||
+        descriptor->queueDepth != QEMU_ARENA_QUEUE_DEPTH) {
+        fprintf(stderr,
+                "Qemu: incompatible arena ABI v4 descriptor:"
+                " magic=0x%016" PRIx64 " version=%u.%u"
+                " descriptor=%" PRIu64 " arena=%" PRIu64
+                " transport=%" PRIu64 " queue=%" PRIu64 "\n",
+                descriptor->magic, descriptor->abiMajor,
+                descriptor->abiMinor, descriptor->descriptorSize,
+                descriptor->arenaSize, descriptor->transportSize,
+                descriptor->queueDepth);
+        return false;
+    }
+
+    const uint64_t required = QEMU_ARENA_REQUIRED_CAPABILITIES;
+    const uint64_t negotiated =
+        descriptor->coreCapabilities & QEMU_ARENA_CAPABILITIES;
+    if ((negotiated & required) != required) {
+        fprintf(stderr,
+                "Qemu: arena ABI v4 lacks required capabilities:"
+                " core=0x%016" PRIx64 " required=0x%016" PRIx64 "\n",
+                descriptor->coreCapabilities, required);
+        return false;
+    }
+    descriptor->qemuCapabilities = QEMU_ARENA_CAPABILITIES;
+    descriptor->negotiatedCapabilities = negotiated;
+    return true;
+}
 
 uint64_t m_timeout;
 uint64_t m_lastQemuTime;
@@ -407,7 +467,13 @@ static void simu_event( void* opaque )
 
 int simuMain( int argc, char** argv )
 {
-    const int   shMemSize = sizeof( qemuArena_t );
+    const int arenaAbiMajor = configuredArenaAbiMajor();
+    if (arenaAbiMajor < 0) {
+        return 1;
+    }
+    const int shMemSize = arenaAbiMajor == QEMU_ARENA_ABI_MAJOR
+                               ? sizeof(qemuArenaV4Mapping_t)
+                               : sizeof(qemuArena_t);
     const char* shMemKey;
 
     if( argc > 2 ) // Check if there are any arguments
@@ -450,7 +516,30 @@ int simuMain( int argc, char** argv )
 
     //------------------------------------------------------------------
 
-    m_arena = (qemuArena_t*)arena;
+    m_arenaAbiMajor = arenaAbiMajor;
+    m_arenaDescriptor = NULL;
+    if (arenaAbiMajor == QEMU_ARENA_ABI_MAJOR) {
+        volatile qemuArenaV4Mapping_t *mapping =
+            (volatile qemuArenaV4Mapping_t *)arena;
+        m_arenaDescriptor = &mapping->descriptor;
+        if (!validateArenaV4Descriptor(m_arenaDescriptor)) {
+#ifdef __linux__
+            munmap(arena, shMemSize);
+#elif defined(_WIN32)
+            UnmapViewOfFile(arena);
+            CloseHandle(hMapFile);
+#endif
+            return 1;
+        }
+        m_arena = &mapping->transport;
+    } else {
+        m_arena = (qemuArena_t *)arena;
+    }
+
+    printf("Qemu: arena ABI v%u mapped (%i bytes)%s\n",
+           m_arenaAbiMajor, shMemSize,
+           m_arenaDescriptor ? ", capabilities negotiated" : " (rollback)");
+    fflush(stdout);
 
     //------------------------------------------------------------------
 
@@ -477,6 +566,9 @@ int simuMain( int argc, char** argv )
 
     qemu_mutex_init(&m_arenaOrderLock);
     m_arenaOrderLockInitialized = true;
+    if (m_arenaDescriptor) {
+        qatomic_store_release(&m_arenaDescriptor->qemuReady, 1);
+    }
 
     {
         CPUState *cpu;
@@ -528,7 +620,7 @@ int simuMain( int argc, char** argv )
     timer_init_full( qtimer, NULL, QEMU_CLOCK_VIRTUAL, 1, 0, simu_event, NULL );
     timer_mod_ns( qtimer, period_ns );
 
-    m_arena->running = 1;
+    qatomic_store_release(&m_arena->running, 1);
 
     printf("Qemu: starting main loop\n");fflush( stdout );
     int status = qemu_main_loop();
@@ -536,6 +628,10 @@ int simuMain( int argc, char** argv )
     if (m_arenaOrderLockInitialized) {
         qemu_mutex_destroy(&m_arenaOrderLock);
         m_arenaOrderLockInitialized = false;
+    }
+    qatomic_store_release(&m_arena->running, 0);
+    if (m_arenaDescriptor) {
+        qatomic_store_release(&m_arenaDescriptor->qemuReady, 0);
     }
 
 #ifdef __linux__
