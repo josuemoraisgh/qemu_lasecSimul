@@ -368,6 +368,15 @@ static void esp32_uart_reset(DeviceState *dev)
         g_source_remove(s->tx_watch_handle);
         s->tx_watch_handle = 0;
     }
+    /* [FIX] achado 2026-07-27 -- causa raiz do crash pre-existente e nao relacionado
+     * "ERROR:../util/fifo8.c:62:fifo8_pop: assertion failed: (fifo->num > 0)" ja documentado desde
+     * .spec 32.5.8/32.5.12/32.5.16 como "bug generico do QEMU, nao deste fork" -- na verdade E deste
+     * fork: se um byte esta em transito (tx_timer armado) no momento de um reset, o timer
+     * permanecia agendado (nunca cancelado aqui, ao contrario de throttle_timer alguns bytes
+     * abaixo) e disparava DEPOIS do reset, chamando uart_tx_timer_cb() -> fifo8_pop(&s->tx_fifo) na
+     * fifo que fifo8_reset() acabou de esvaziar -- violando a invariante que fifo8_pop() assume.
+     * Corrigido cancelando tx_timer aqui tambem, mesmo padrao ja usado pra throttle_timer. */
+    timer_del(&s->tx_timer);
     timer_del(&s->throttle_timer);
     s->throttle_rx = false;
     s->rx_tout_ena = false;
