@@ -470,6 +470,7 @@ static void esp32_soc_realize( DeviceState *dev, Error **errp )
     qdev_realize( DEVICE(&s->intmatrix), &s->periph_bus, &error_fatal);
     DeviceState* intmatrix_dev = DEVICE(&s->intmatrix);
     memory_region_add_subregion_overlap(dport_mem, ESP32_DPORT_PRO_INTMATRIX_BASE, sysbus_mmio_get_region(SYS_BUS_DEVICE(&s->intmatrix), 0), -1);
+    s->dport.intmatrix_opaque = &s->intmatrix;
 
     bool init_cache_err = false;
     if (s->dport.flash_blk)

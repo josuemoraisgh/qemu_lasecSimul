@@ -76,9 +76,12 @@ typedef struct Esp32DportState {
     uint32_t cache_ill_trap_en_reg;
     uint32_t slave_spi_config_reg;
 
+    /* Sibling interrupt matrix used to expose DPORT raw interrupt status. */
+    void *intmatrix_opaque;
 } Esp32DportState;
 
 void esp32_dport_clear_ill_trap_state(Esp32DportState* s);
+uint32_t esp32_intmatrix_get_raw_status_bits(void *opaque, int start_bit, int count);
 
 #define ESP32_DPORT_APPCPU_STALL_GPIO   "appcpu-stall"
 #define ESP32_DPORT_APPCPU_RESET_GPIO   "appcpu-reset"
@@ -132,6 +135,9 @@ REG32(DPORT_CPU_INTR_FROM_CPU_0, 0xdc)
 REG32(DPORT_CPU_INTR_FROM_CPU_1, 0xe0)
 REG32(DPORT_CPU_INTR_FROM_CPU_2, 0xe4)
 REG32(DPORT_CPU_INTR_FROM_CPU_3, 0xe8)
+
+REG32(DPORT_PRO_INTR_STATUS_0, 0xec)
+REG32(DPORT_APP_INTR_STATUS_0, 0xf8)
 
 REG32(DPORT_PRO_MAC_INTR_MAP, 0x104)
 REG32(DPORT_APP_MAC_INTR_MAP, 0x218)

@@ -45,7 +45,16 @@ static void esp32_i2c_do_transaction( void* opaque )
         writeReg( s->iomem.addr+A_I2C_CMD, cmd );
         s->bytesTx = 0;
         s->sr_reg |= 1<<4;                // I2C_BUS_BUSY
-        time = 2*s->period_ns/2;
+        /*
+         * O motor eletrico do Core executa cinco meias-fases antes do primeiro bit:
+         * baixa SCL, sobe/libera SDA com SCL baixo, sobe SCL, derruba SDA (START) e baixa
+         * SCL novamente. Agendar o proximo opcode depois de apenas duas meias-fases fazia o
+         * QEMU terminar a transacao e publicar um novo TRANS_START enquanto o Core ainda
+         * estava no START anterior; o reset da fila truncava bytes e gerava START/STOP falsos.
+         * A sexta meia-fase deixa a amostragem do ACK depois do settle eletrico, em vez de
+         * disputar o mesmo timestamp da ultima fase do Core.
+         */
+        time = 6*s->period_ns/2;
 
         s->lastCMD++;
         cmd = s->cmd_reg[s->lastCMD];

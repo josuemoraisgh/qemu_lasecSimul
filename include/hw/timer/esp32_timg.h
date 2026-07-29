@@ -91,6 +91,8 @@ typedef struct Esp32TimgState {
     bool flash_boot_mode;
     bool wdt_en_at_reset;
     bool wdt_disable;
+    /* Timer Group 1 interrupt-WDT scale for realtime MTTCG execution. */
+    uint32_t wdt_time_scale;
 
     bool rtc_cal_start;
     bool rtc_cal_ready;

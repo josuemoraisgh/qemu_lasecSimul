@@ -9,6 +9,7 @@
  */
 
 #include "qemu/osdep.h"
+#include "qemu/cutils.h"
 #include "qemu/log.h"
 #include "qemu/error-report.h"
 #include "qapi/error.h"
@@ -22,6 +23,8 @@
 #include "hw/timer/esp32_timg.h"
 
 #define TIMG_REGFILE_SIZE 0x100
+#define TIMG_INTERRUPT_WDT_REALTIME_SCALE_DEFAULT 8
+#define TIMG_INTERRUPT_WDT_SCALE_MAX 100
 
 static uint64_t esp32_timg_timer_get_count(Esp32TimgTimerState *s, uint64_t ns_now);
 static uint64_t esp32_timg_timer_count_to_ns(Esp32TimgTimerState *s, uint64_t count);
@@ -556,6 +559,17 @@ static void esp32_timg_wdt_arm(Esp32TimgWdtState *ws, uint64_t ns_now)
     uint64_t count_to_timeout =
         stage_timeout > cur_count ? stage_timeout - cur_count : 0;
     uint64_t ns_to_timeout = muldiv64(count_to_timeout, 1000 * ws->prescale, ws->parent->apb_freq_hz / 1000000);
+    /*
+     * In mttcg-realtime QEMU_CLOCK_VIRTUAL follows wall time, while an
+     * emulated Xtensa CPU executes critical sections much more slowly than
+     * ESP32 silicon.  Scale only the Timer Group 1 interrupt watchdog so
+     * legitimate flash/cache operations do not become host-speed timeouts.
+     * Other timers and watchdogs retain their literal timing.
+     */
+    if (ws->parent->id == 1 && ws->parent->wdt_time_scale > 1) {
+        ns_to_timeout = ns_to_timeout > UINT64_MAX / ws->parent->wdt_time_scale
+            ? UINT64_MAX : ns_to_timeout * ws->parent->wdt_time_scale;
+    }
     TIMG_DEBUG_LOG("%s: TG%d ns=0x%08llx stage %d count=0x%08llx count_to_timeout=0x%08llx ns_to_timeout=0x%08llx\n",
                    __func__, ws->parent->id, ns_now, ws->cur_stage, cur_count, count_to_timeout, ns_to_timeout);
     timer_mod_anticipate_ns(&ws->stage_timer, ns_now + ns_to_timeout);
@@ -596,6 +610,33 @@ static void esp32_timg_wdt_cb(void *opaque)
 
 static void esp32_timg_realize(DeviceState *dev, Error **errp)
 {
+    Esp32TimgState *s = ESP32_TIMG(dev);
+    const char *execution_mode = getenv("LASECSIMUL_ESP32_EXECUTION_MODE");
+    const bool deterministic =
+        execution_mode && !strcmp(execution_mode, "deterministic");
+    const char *scale_env = getenv("LASECSIMUL_ESP32_WDT_SCALE");
+    unsigned scale = deterministic
+        ? 1 : TIMG_INTERRUPT_WDT_REALTIME_SCALE_DEFAULT;
+
+    if (scale_env && *scale_env) {
+        unsigned parsed = 0;
+        if (qemu_strtoui(scale_env, NULL, 10, &parsed) < 0 ||
+            parsed < 1 || parsed > TIMG_INTERRUPT_WDT_SCALE_MAX) {
+            warn_report("invalid LASECSIMUL_ESP32_WDT_SCALE='%s'; using %u (range 1..%u)",
+                        scale_env, scale, TIMG_INTERRUPT_WDT_SCALE_MAX);
+        } else {
+            scale = parsed;
+        }
+    }
+    s->wdt_time_scale = s->id == 1 ? scale : 1;
+    if (s->id == 1) {
+        fprintf(stderr,
+                "[LasecSimul] interrupt-wdt scale=%u (%s; rollback:"
+                " LASECSIMUL_ESP32_WDT_SCALE=1)\n",
+                s->wdt_time_scale,
+                deterministic ? "deterministic" : "mttcg-realtime");
+        fflush(stderr);
+    }
 }
 
 static void esp32_timg_timer_init(Esp32TimgState *s, Esp32TimgTimerState *ts, Esp32TimgInterruptType int_type) {
@@ -623,6 +664,7 @@ static void esp32_timg_init(Object *obj)
     s->rtc_slow_freq_hz = 150000;
     s->xtal_freq_hz = 40000000;
     s->apb_freq_hz = 40000000;
+    s->wdt_time_scale = 1;
 
     esp32_timg_timer_init(s, &s->t0, TIMG_T0_INT);
     esp32_timg_timer_init(s, &s->t1, TIMG_T1_INT);

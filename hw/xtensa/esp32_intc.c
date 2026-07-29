@@ -16,6 +16,7 @@
 #include "hw/sysbus.h"
 #include "hw/irq.h"
 #include "hw/qdev-properties.h"
+#include "hw/misc/esp32_dport.h"
 #include "hw/xtensa/esp32_intc.h"
 
 #define INTMATRIX_UNINT_VALUE   6
@@ -76,6 +77,21 @@ static void esp32_intmatrix_write(void* opaque, hwaddr addr, uint64_t value, uns
     if (value != INTMATRIX_UNINT_VALUE && s->irq_raw[source_index]) {
         esp32_intmatrix_irq_handler(s, source_index, 1);
     }
+}
+
+uint32_t esp32_intmatrix_get_raw_status_bits(void *opaque, int start_bit, int count)
+{
+    Esp32IntMatrixState *s = ESP32_INTMATRIX(opaque);
+    uint32_t result = 0;
+
+    assert(count > 0 && count <= 32);
+    for (int i = 0; i < count; ++i) {
+        int source = start_bit + i;
+        if (source >= 0 && source < ESP32_INT_MATRIX_INPUTS && s->irq_raw[source]) {
+            result |= (1u << i);
+        }
+    }
+    return result;
 }
 
 static const MemoryRegionOps esp_intmatrix_ops = {

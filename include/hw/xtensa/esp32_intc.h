@@ -38,4 +38,3 @@ typedef struct Esp32IntMatrixState {
     /* properties */
     XtensaCPU *cpu[ESP32_CPU_COUNT];
 } Esp32IntMatrixState;
-

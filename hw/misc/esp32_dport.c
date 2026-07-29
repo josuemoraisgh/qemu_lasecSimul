@@ -122,6 +122,12 @@ static uint64_t esp32_dport_read(void *opaque, hwaddr addr, unsigned int size)
     case A_DPORT_SLAVE_SPI_CONFIG:
         r = s->slave_spi_config_reg;
         break;
+    case A_DPORT_PRO_INTR_STATUS_0:
+    case A_DPORT_APP_INTR_STATUS_0:
+        r = s->intmatrix_opaque
+            ? esp32_intmatrix_get_raw_status_bits(s->intmatrix_opaque, 0, 32)
+            : 0;
+        break;
     }
 
     return r;
