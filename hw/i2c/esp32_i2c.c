@@ -44,6 +44,7 @@ static void esp32_i2c_do_transaction( void* opaque )
         // eletrico de verdade -- so' no proprio QEMU, que sempre "via" a transacao completar.
         writeReg( s->iomem.addr+A_I2C_CMD, cmd );
         s->bytesTx = 0;
+        s->ackSamplePending = true;
         s->sr_reg |= 1<<4;                // I2C_BUS_BUSY
         /*
          * O motor eletrico do Core executa cinco meias-fases antes do primeiro bit:
@@ -69,7 +70,13 @@ static void esp32_i2c_do_transaction( void* opaque )
         //printf("Qemu: esp32_i2c CMD write %i %i\n", s->bytesTx, data ); fflush( stdout );
         writeReg( s->iomem.addr+A_I2C_CMD, (cmd & ~0xFF) | data);
         s->int_raw_reg |= 1<<6;          // I2C_BYTE_TRANS
-        time += (19*s->period_ns)/2;
+        /*
+         * O motor eletrico termina as 19 meias-fases exatamente no mesmo timestamp em que este
+         * timer disparava. Dependendo da ordem em que Scheduler e arena processavam eventos com
+         * timestamp igual, o ACK ainda era o do byte anterior. Um periodo de guarda torna a
+         * leitura abaixo posterior ao settle eletrico, como ja fazemos em RSTART e STOP.
+         */
+        time += (20*s->period_ns)/2;
     }break;
 
     case I2C_OPCODE_READ:
@@ -82,7 +89,8 @@ static void esp32_i2c_do_transaction( void* opaque )
         // "no barramento" real dura o mesmo tempo em qualquer direcao).
         if( s->bytesTx == 0 ) s->bytesTx = cmd & 0xFF;
         writeReg( s->iomem.addr+A_I2C_CMD, cmd );
-        time += (19*s->period_ns)/2;
+        /* Mesmo periodo de guarda do WRITE: o byte/ACK precisa estar publicado antes da leitura. */
+        time += (20*s->period_ns)/2;
     }break;
 
     case I2C_OPCODE_STOP:
@@ -115,13 +123,6 @@ static void esp32_i2c_event( void* opaque ) // Timer event
 
     //printf("Qemu: esp32_i2c_event %i %lu\n", s->lastOpcode, getQemu_ps() ); fflush( stdout );
 
-    // Le' o ACK/NACK REAL que o Core observou no barramento eletrico (bit0 = 1 quando o outro lado
-    // NAO puxou SDA pra baixo -- ver Esp32Adapter.cpp::i2cReadRegister, mesmo canal privado
-    // Core<->QEMU deste arquivo, nunca visivel do firmware). Antes disto sempre 0 (fixo) -- o
-    // ACK_ERR abaixo nunca podia disparar de verdade, com ou sem escravo respondendo.
-    uint64_t status = readReg( s->iomem.addr+A_I2C_STATUS );
-    uint8_t ackT = (uint8_t)(status & 1u);
-
     switch( s->lastOpcode )
     {
     case I2C_OPCODE_RSTART:
@@ -130,6 +131,28 @@ static void esp32_i2c_event( void* opaque ) // Timer event
 
     case I2C_OPCODE_WRITE:
     {
+        /*
+         * O primeiro byte depois de RSTART e' o endereco: sincroniza com o Core para preservar a
+         * deteccao real de dispositivo ausente. Dados seguintes do mesmo burst usam ACK assumido.
+         * Fazer um round-trip bloqueante Core<->QEMU para CADA byte transformava o framebuffer
+         * SSD1306 de ~25 ms em ~18 s no MTTCG, porque QEMU_CLOCK_VIRTUAL acompanha o tempo de
+         * parede enquanto a vCPU espera o solver eletrico. O hardware tambem encerra o burst no
+         * primeiro NACK; portanto a verificacao do endereco preserva o erro que importa sem
+         * serializar os 1024 bytes do framebuffer pelo slot sincrono da arena.
+         */
+        uint8_t ackT = 0;
+        if( s->ackSamplePending )
+        {
+            uint64_t status = readReg( s->iomem.addr+A_I2C_STATUS );
+            /*
+             * BUS_BUSY significa que o Core ainda esta' terminando as bordas eletricas que o QEMU
+             * acabou de enfileirar. Nesse estado lastAck ainda pode ser o reset/byte anterior e um
+             * NACK seria falso. Aceite provisoriamente; quando o motor ja' terminou (BUS_BUSY=0),
+             * preserve a deteccao real de endereco ausente pelo bit ACK_REC.
+             */
+            ackT = (uint8_t)(((status & (1u << 4)) == 0) ? (status & 1u) : 0u);
+            s->ackSamplePending = false;
+        }
         fifo8_pop( &s->tx_fifo );
         s->bytesTx--;
 
@@ -389,6 +412,7 @@ static void esp32_i2c_reset(DeviceState * dev)
     fifo8_reset(&s->rx_fifo);
     fifo8_reset(&s->tx_fifo);
     s->period_ns = 0;
+    s->ackSamplePending = false;
     s->trans_ongoing = false;
     s->ctr_reg = 0;
     s->timeout_reg = 0;
