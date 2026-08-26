@@ -36,6 +36,206 @@ static void esp32_i2c_abort_empty_tx(Esp32I2CState *s)
     esp32_i2c_update_irq(s);
 }
 
+static void esp32_i2c_do_transaction(void *opaque);
+
+/* Plano de burst: varre cmd_reg a partir do comando logo apos o RSTART ja' consumido pelo
+ * chamador, juntando (a) uma corrida contigua de WRITE (o primeiro byte dela e' o endereco+RW,
+ * exatamente como o driver ESP-IDF gera: i2c_master_write_byte(endereco) + i2c_master_write(dados)
+ * viram DOIS opcodes WRITE separados na lista, nao um so') e (b) uma corrida contigua de READ logo
+ * em seguida (leitura de sensor apos repeated-start). So' e' seguro fast-pathear quando o proximo
+ * comando depois dessas corridas for STOP ou END -- outro RSTART encadeado (ex: mais um segmento
+ * de leitura com ACK_VAL diferente no meio) fica fora deste primeiro corte e cai no caminho
+ * eletrico de sempre. Funcao pura: nao mexe em tx_fifo/rx_fifo/cmd_reg. */
+typedef struct Esp32I2cBurstPlan {
+    uint32_t writeCmdCount;
+    uint32_t txBytes;
+    uint32_t readCmdCount;
+    uint32_t rxBytes;
+    bool stop;
+} Esp32I2cBurstPlan;
+
+static bool esp32_i2c_plan_burst(Esp32I2CState *s, Esp32I2cBurstPlan *plan)
+{
+    memset(plan, 0, sizeof(*plan));
+    uint32_t idx = s->lastCMD;
+
+    while (idx < ESP32_I2C_CMD_COUNT) {
+        uint32_t cmd = s->cmd_reg[idx];
+        if (FIELD_EX32(cmd, I2C_CMD, OPCODE) != I2C_OPCODE_WRITE) break;
+        uint32_t byteNum = cmd & 0xFF;
+        if (plan->txBytes + byteNum > ESP32_I2C_FIFO_LENGTH) return false;
+        /* O resultado do mailbox tem um primeiro NACK, não uma política ACK_EXP por comando.
+         * Restrinja o fast path à forma normal do ESP-IDF (verificar ACK e esperar ACK); listas
+         * especiais continuam no executor elétrico, que mantém semântica por opcode. */
+        if (!FIELD_EX32(cmd, I2C_CMD, ACK_CHECK_EN) || FIELD_EX32(cmd, I2C_CMD, ACK_EXP)) return false;
+        plan->txBytes += byteNum;
+        plan->writeCmdCount++;
+        idx++;
+    }
+    if (plan->writeCmdCount == 0 || plan->txBytes == 0) return false; /* precisa do endereco */
+
+    while (idx < ESP32_I2C_CMD_COUNT) {
+        uint32_t cmd = s->cmd_reg[idx];
+        if (FIELD_EX32(cmd, I2C_CMD, OPCODE) != I2C_OPCODE_READ) break;
+        uint32_t byteNum = cmd & 0xFF;
+        if (plan->rxBytes + byteNum > ESP32_I2C_FIFO_LENGTH) return false;
+        plan->rxBytes += byteNum;
+        plan->readCmdCount++;
+        idx++;
+    }
+
+    /* Precisa sobrar pelo menos um slot pro STOP/END que fecha a lista -- sem isto,
+     * esp32_i2c_do_transaction() leria cmd_reg fora dos limites na retomada abaixo. */
+    if (idx >= ESP32_I2C_CMD_COUNT) return false;
+    {
+        uint8_t opcode = FIELD_EX32(s->cmd_reg[idx], I2C_CMD, OPCODE);
+        if (opcode != I2C_OPCODE_STOP && opcode != I2C_OPCODE_END) return false;
+        plan->stop = (opcode == I2C_OPCODE_STOP);
+    }
+
+    if (fifo8_num_used(&s->tx_fifo) < plan->txBytes) return false;
+    if (plan->rxBytes > 0 && fifo8_num_free(&s->rx_fifo) < plan->rxBytes) return false;
+
+    return true;
+}
+
+/* Tenta despachar RSTART + a corrida de WRITE/READ planejada acima como UM pedido de burst pro
+ * Core (ver i2cBurstTransfer em simuliface.h) em vez de um timer/round-trip por byte. Retorna
+ * false sem tocar em nenhum estado (FIFO/cmd_reg intactos) quando o plano nao se aplica ou o Core
+ * recusa (`handled=false`, ex: nada conectado suporta o protocolo de burst) -- o chamador cai de
+ * volta pro caminho eletrico byte-a-byte existente exatamente como se esta funcao nao existisse. */
+static bool esp32_i2c_try_burst(Esp32I2CState *s)
+{
+    Esp32I2cBurstPlan plan;
+    if (!esp32_i2c_plan_burst(s, &plan)) return false;
+
+    uint8_t txbuf[ESP32_I2C_FIFO_LENGTH];
+    /* Espie sem consumir. Se o Core recusar, o FIFO deve permanecer bit-a-bit idêntico; retirar e
+     * recolocar no fim muda a ordem quando houver bytes residuais no ring. */
+    for (uint32_t i = 0; i < plan.txBytes; ++i) {
+        txbuf[i] = s->tx_fifo.data[(s->tx_fifo.head + i) % s->tx_fifo.capacity];
+    }
+    /* A direção codificada no byte de endereço precisa concordar com a lista de comandos.
+     * Listas artesanais/inconsistentes devem conservar exatamente o comportamento elétrico. */
+    if ((bool)(txbuf[0] & 1u) != (plan.rxBytes > 0)) return false;
+
+    I2cBurstRequest req = {0};
+    req.flags = 1u /* START */ | (plan.rxBytes ? 4u /* READ */ : 0u) | (plan.stop ? 2u /* STOP */ : 0u);
+    req.period_ns = s->period_ns;
+    req.tx = txbuf;
+    req.tx_len = plan.txBytes;
+    req.rx_len = plan.rxBytes;
+
+    I2cBurstResponse resp;
+    if (!i2cBurstTransfer(s->busIndex, &req, &resp, s->burstRxBuf)) {
+        return false;
+    }
+
+    s->burstAddressByte = txbuf[0];
+    s->burstAddressValid = true;
+
+    for (uint32_t i = 0; i < plan.txBytes; ++i) fifo8_pop(&s->tx_fifo);
+
+    s->burstActive = true;
+    s->burstAddressAck = resp.address_ack;
+    /* Simplificacao deliberada: ESP-IDF sempre gera ACK_CHECK_EN=1/ACK_EXP=0 pro byte de
+     * endereco e pros bytes de dado de escrita -- nao ha' granularidade por-byte de ACK_EXP no
+     * burst mesclado, entao usamos o ACK_CHECK_EN do PRIMEIRO comando WRITE (o do endereco) como
+     * intencao pra toda a corrida, igual ao que qualquer firmware real observado gera. */
+    s->burstFirstNack = resp.first_nack;
+    s->burstRxLen = resp.rx_len;
+    s->burstWriteCmdCount = plan.writeCmdCount;
+    s->burstReadCmdCount = plan.readCmdCount;
+
+    /* Reserva na linha do tempo virtual a mesma duracao que o caminho eletrico byte-a-byte teria
+     * gasto: 3 periodos pro START (ver "6*period_ns/2" abaixo) + 10 periodos por byte transmitido
+     * ou recebido (ver "20*period_ns/2" no WRITE/READ do caminho eletrico). Isso preserva o tempo
+     * virtual visto pelo firmware (millis()/esp_timer_get_time() durante a transacao) mesmo sem os
+     * round-trips por byte. */
+    uint64_t time = s->period_ns +
+                    (uint64_t)(plan.txBytes + plan.rxBytes) * (9 * s->period_ns) +
+                    (plan.stop ? s->period_ns : 0) + resp.stretch_ns;
+    time += getQemu_ns();
+    timer_mod(&s->event_timer, time);
+    return true;
+}
+
+/* O driver ESP-IDF pode encerrar uma fatia da command-list com END, reencher o FIFO e iniciar a
+ * próxima fatia com WRITE direto, sem novo RSTART. O endereço continua selecionado no barramento.
+ * Inclua-o apenas como metadado no mailbox (START fica desligado), permitindo ao Core localizar o
+ * mesmo alvo sem reiniciar a máquina de protocolo do dispositivo. */
+static bool esp32_i2c_try_continuation_burst(Esp32I2CState *s)
+{
+    Esp32I2cBurstPlan plan;
+    if (!s->burstAddressValid || !esp32_i2c_plan_burst(s, &plan) || plan.txBytes + 1 > 64) return false;
+
+    uint8_t txbuf[64];
+    txbuf[0] = s->burstAddressByte;
+    for (uint32_t i = 0; i < plan.txBytes; ++i) {
+        txbuf[i + 1] = s->tx_fifo.data[(s->tx_fifo.head + i) % s->tx_fifo.capacity];
+    }
+    I2cBurstRequest req = {0};
+    req.flags = (plan.rxBytes ? 4u : 0u) | (plan.stop ? 2u : 0u);
+    req.period_ns = s->period_ns;
+    req.tx = txbuf;
+    req.tx_len = plan.txBytes + 1;
+    req.rx_len = plan.rxBytes;
+
+    I2cBurstResponse resp;
+    if (!i2cBurstTransfer(s->busIndex, &req, &resp, s->burstRxBuf)) return false;
+    for (uint32_t i = 0; i < plan.txBytes; ++i) fifo8_pop(&s->tx_fifo);
+
+    s->burstActive = true;
+    s->burstAddressAck = resp.address_ack;
+    s->burstFirstNack = resp.first_nack;
+    s->burstRxLen = resp.rx_len;
+    s->burstWriteCmdCount = plan.writeCmdCount;
+    s->burstReadCmdCount = plan.readCmdCount;
+    uint64_t time = (uint64_t)(plan.txBytes + plan.rxBytes) * (9 * s->period_ns) +
+                    (plan.stop ? s->period_ns : 0) + resp.stretch_ns;
+    timer_mod(&s->event_timer, getQemu_ns() + time);
+    return true;
+}
+
+static void esp32_i2c_trace_rejected_plan(Esp32I2CState *s)
+{
+    static unsigned reports;
+    const char *enabled = getenv("LASECSIMUL_I2C_FASTPATH_TRACE");
+    if (!enabled || !enabled[0] || !strcmp(enabled, "0") || reports++ >= 20) return;
+    fprintf(stderr, "[LasecSimul][I2C fast-path] QEMU fallback fifo=%u lastCMD=%u cmds=",
+            fifo8_num_used(&s->tx_fifo), s->lastCMD);
+    for (uint32_t i = s->lastCMD; i < ESP32_I2C_CMD_COUNT; ++i) {
+        fprintf(stderr, "%s%08x", i == s->lastCMD ? "" : ",", s->cmd_reg[i]);
+    }
+    fputc('\n', stderr);
+}
+
+static void esp32_i2c_finish_burst(Esp32I2CState *s)
+{
+    s->burstActive = false;
+
+    const bool ackERR = !s->burstAddressAck || (s->burstFirstNack != UINT32_MAX);
+    s->sr_reg &= ~1;
+    s->sr_reg |= ackERR ? 1u : 0u; // I2C_ACK_REC: 0=ACK, 1=NACK do último resultado
+    if (ackERR) {
+        s->int_raw_reg |= 1 << 10;      // ACK_ERR
+        printf("Qemu: esp32_i2c_finish_burst ackERR\n"); fflush(stdout);
+    } else {
+        s->int_raw_reg &= ~(1 << 10);
+    }
+
+    if (s->burstRxLen) fifo8_push_all(&s->rx_fifo, s->burstRxBuf, s->burstRxLen);
+
+    const uint32_t consumed = s->burstWriteCmdCount + s->burstReadCmdCount;
+    uint32_t idx = s->lastCMD;
+    for (uint32_t i = 0; i < consumed && idx < ESP32_I2C_CMD_COUNT; ++i, ++idx) {
+        s->cmd_reg[idx] = FIELD_DP32(s->cmd_reg[idx], I2C_CMD, DONE, 1);
+    }
+    s->lastCMD = idx;
+
+    esp32_i2c_do_transaction(s);
+}
+
 static void esp32_i2c_do_transaction( void* opaque )
 {
     Esp32I2CState* s = Esp32_I2C(opaque);
@@ -51,23 +251,34 @@ static void esp32_i2c_do_transaction( void* opaque )
     {
     case I2C_OPCODE_RSTART:
     {
-        // Espelha o proprio comando RSTART (opcode ainda intacto em `cmd`) ANTES de avancar pro
-        // proximo -- e' o unico jeito do lado Core (que gera SCL/SDA reais) distinguir "comeca uma
-        // transacao nova/repeated-START agora" de "so' mais um byte do mesmo burst de escrita".
-        // Sem isto, RSTART era invisivel na arena e o START real (inclusive um REPEATED START no
-        // meio de uma transacao, ex: i2c_master_write_read_device()) nunca acontecia no barramento
-        // eletrico de verdade -- so' no proprio QEMU, que sempre "via" a transacao completar.
-        writeReg( s->iomem.addr+A_I2C_CMD, cmd );
         s->bytesTx = 0;
-        s->ackSamplePending = true;
         s->sr_reg |= 1<<4;                // I2C_BUS_BUSY
+        s->lastCMD++;
+
+        // Tenta despachar RSTART + a corrida de WRITE/READ que segue como UM pedido de burst pro
+        // Core (ver esp32_i2c_try_burst acima) em vez de um timer/round-trip por byte. So' cai
+        // aqui dentro quando ha' suporte no outro lado E o plano se aplica (ate' 32 bytes, sem
+        // RSTART encadeado no meio) -- qualquer outro caso segue o caminho eletrico de sempre,
+        // inclusive dispositivos sem suporte ao protocolo de burst.
+        if (esp32_i2c_try_burst(s)) {
+            return; // pedido em voo; esp32_i2c_finish_burst() retoma via timer
+        }
+        esp32_i2c_trace_rejected_plan(s);
+
+        // Espelha o proprio comando RSTART ANTES de avancar pro proximo -- e' o unico jeito do
+        // lado Core (que gera SCL/SDA reais) distinguir "comeca uma transacao nova/repeated-START
+        // agora" de "so' mais um byte do mesmo burst de escrita". Sem isto, RSTART era invisivel
+        // na arena e o START real (inclusive um REPEATED START no meio de uma transacao, ex:
+        // i2c_master_write_read_device()) nunca acontecia no barramento eletrico de verdade -- so'
+        // no proprio QEMU, que sempre "via" a transacao completar.
+        writeReg( s->iomem.addr+A_I2C_CMD, s->cmd_reg[s->lastCMD - 1] );
+        s->ackSamplePending = true;
         /*
          * O motor eletrico do Core executa cinco meias-fases antes do primeiro bit. A sexta
          * meia-fase impede o proximo opcode de disputar o mesmo timestamp do START eletrico.
          */
         time = 6*s->period_ns/2;
 
-        s->lastCMD++;
         cmd = s->cmd_reg[s->lastCMD];
         s->lastOpcode = FIELD_EX32( cmd, I2C_CMD, OPCODE );
         cmd |= 1<<16; // Mark as start
@@ -75,6 +286,7 @@ static void esp32_i2c_do_transaction( void* opaque )
 
     case I2C_OPCODE_WRITE:
     {
+        if (s->bytesTx == 0 && !(cmd & (1u << 16)) && esp32_i2c_try_continuation_burst(s)) return;
         if( s->bytesTx == 0 ) s->bytesTx = cmd & 0xFF; //FIELD_EX32( cmd, I2C_CMD, BYTE_NUM );
         if (fifo8_num_used(&s->tx_fifo) == 0) {
             error_report("esp32_i2c: timed write found an empty TX FIFO");
@@ -132,6 +344,12 @@ static void esp32_i2c_event( void* opaque ) // Timer event
     Esp32I2CState* s = Esp32_I2C(opaque);
 
     //printf("Qemu: esp32_i2c_event %i %lu\n", s->lastOpcode, getQemu_ps() ); fflush( stdout );
+
+    if( s->burstActive )
+    {
+        esp32_i2c_finish_burst(s);
+        return;
+    }
 
     switch( s->lastOpcode )
     {
@@ -317,6 +535,8 @@ static void esp32_i2c_write(void * opaque, hwaddr addr, uint64_t value, unsigned
             fifo8_reset(&s->tx_fifo);
             s->bytesTx = 0;
             s->ackSamplePending = false;
+            s->burstActive = false;
+            s->burstAddressValid = false;
             s->sr_reg &= ~(1 << 4);      /* I2C_BUS_BUSY */
             s->int_raw_reg &= ~(1 << 6); /* I2C_BYTE_TRANS */
         }
@@ -423,6 +643,8 @@ static void esp32_i2c_reset(DeviceState * dev)
     fifo8_reset(&s->tx_fifo);
     s->period_ns = 0;
     s->ackSamplePending = false;
+    s->burstActive = false;
+    s->burstAddressValid = false;
     s->trans_ongoing = false;
     s->ctr_reg = 0;
     s->timeout_reg = 0;

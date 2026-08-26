@@ -21,13 +21,13 @@
     "priority": 300,
     "protocol": "tap",
     "depends": [
-      "qemu-img@exe",
       "7134ae4@@qom-test@exe",
+      "qemu-img@exe",
       "qemu-system-xtensa@exe"
     ],
     "extra_paths": [
-      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/",
       "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/qtest",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/",
       "C:/SourceCode/tools/msys64/ucrt64/bin"
     ]
   },
@@ -58,8 +58,8 @@
       "qemu-system-xtensa@exe"
     ],
     "extra_paths": [
-      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/",
       "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/qtest",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/",
       "C:/SourceCode/tools/msys64/ucrt64/bin"
     ]
   },
@@ -85,13 +85,13 @@
     "priority": 60,
     "protocol": "tap",
     "depends": [
-      "qemu-img@exe",
       "7134ae4@@qos-test@exe",
+      "qemu-img@exe",
       "qemu-system-xtensa@exe"
     ],
     "extra_paths": [
-      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/",
       "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/qtest",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/",
       "C:/SourceCode/tools/msys64/ucrt64/bin"
     ]
   },
@@ -2574,13 +2574,13 @@
     "priority": 30,
     "protocol": "tap",
     "depends": [
-      "qemu-img@exe",
       "7134ae4@@cdrom-test@exe",
+      "qemu-img@exe",
       "qemu-system-xtensa@exe"
     ],
     "extra_paths": [
-      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/",
       "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/qtest",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/",
       "C:/SourceCode/tools/msys64/ucrt64/bin"
     ]
   },
@@ -2606,13 +2606,13 @@
     "priority": 30,
     "protocol": "tap",
     "depends": [
-      "qemu-img@exe",
       "7134ae4@@device-introspect-test@exe",
+      "qemu-img@exe",
       "qemu-system-xtensa@exe"
     ],
     "extra_paths": [
-      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/",
       "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/qtest",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/",
       "C:/SourceCode/tools/msys64/ucrt64/bin"
     ]
   },
@@ -2639,12 +2639,12 @@
     "protocol": "tap",
     "depends": [
       "qemu-img@exe",
-      "7134ae4@@machine-none-test@exe",
-      "qemu-system-xtensa@exe"
+      "qemu-system-xtensa@exe",
+      "7134ae4@@machine-none-test@exe"
     ],
     "extra_paths": [
-      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/",
       "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/qtest",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/",
       "C:/SourceCode/tools/msys64/ucrt64/bin"
     ]
   },
@@ -2670,13 +2670,13 @@
     "priority": 30,
     "protocol": "tap",
     "depends": [
-      "qemu-img@exe",
       "7134ae4@@qmp-test@exe",
+      "qemu-img@exe",
       "qemu-system-xtensa@exe"
     ],
     "extra_paths": [
-      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/",
       "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/qtest",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/",
       "C:/SourceCode/tools/msys64/ucrt64/bin"
     ]
   },
@@ -2702,13 +2702,13 @@
     "priority": 30,
     "protocol": "tap",
     "depends": [
+      "7134ae4@@qmp-cmd-test@exe",
       "qemu-img@exe",
-      "qemu-system-xtensa@exe",
-      "7134ae4@@qmp-cmd-test@exe"
+      "qemu-system-xtensa@exe"
     ],
     "extra_paths": [
-      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/",
       "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/qtest",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/",
       "C:/SourceCode/tools/msys64/ucrt64/bin"
     ]
   },
@@ -2734,13 +2734,13 @@
     "priority": 30,
     "protocol": "tap",
     "depends": [
-      "qemu-img@exe",
       "7134ae4@@readconfig-test@exe",
+      "qemu-img@exe",
       "qemu-system-xtensa@exe"
     ],
     "extra_paths": [
-      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/",
       "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/qtest",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/",
       "C:/SourceCode/tools/msys64/ucrt64/bin"
     ]
   },
@@ -2766,13 +2766,13 @@
     "priority": 30,
     "protocol": "tap",
     "depends": [
-      "qemu-img@exe",
       "7134ae4@@netdev-socket@exe",
+      "qemu-img@exe",
       "qemu-system-xtensa@exe"
     ],
     "extra_paths": [
-      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/",
       "C:/SourceCode/qemu_lasecSimul/build-ucrt64/tests/qtest",
+      "C:/SourceCode/qemu_lasecSimul/build-ucrt64/",
       "C:/SourceCode/tools/msys64/ucrt64/bin"
     ]
   },

@@ -55,14 +55,14 @@ static inline void _nocheck__trace_handle_hmp_command(void * mon, const char * c
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 4 "..\monitor\trace-events"
+#line 4 "../monitor/trace-events"
             qemu_log("%d@%zu.%06zu:handle_hmp_command " "mon %p cmdline: %s" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , mon, cmdline);
 #line 64 "trace/trace-monitor.h"
         } else {
-#line 4 "..\monitor\trace-events"
+#line 4 "../monitor/trace-events"
             qemu_log("handle_hmp_command " "mon %p cmdline: %s" "\n", mon, cmdline);
 #line 68 "trace/trace-monitor.h"
         }
@@ -86,14 +86,14 @@ static inline void _nocheck__trace_monitor_protocol_event_handler(uint32_t event
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 7 "..\monitor\trace-events"
+#line 7 "../monitor/trace-events"
             qemu_log("%d@%zu.%06zu:monitor_protocol_event_handler " "event=%d data=%p" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , event, qdict);
 #line 95 "trace/trace-monitor.h"
         } else {
-#line 7 "..\monitor\trace-events"
+#line 7 "../monitor/trace-events"
             qemu_log("monitor_protocol_event_handler " "event=%d data=%p" "\n", event, qdict);
 #line 99 "trace/trace-monitor.h"
         }
@@ -117,14 +117,14 @@ static inline void _nocheck__trace_monitor_protocol_event_emit(uint32_t event, v
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 8 "..\monitor\trace-events"
+#line 8 "../monitor/trace-events"
             qemu_log("%d@%zu.%06zu:monitor_protocol_event_emit " "event=%d data=%p" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , event, data);
 #line 126 "trace/trace-monitor.h"
         } else {
-#line 8 "..\monitor\trace-events"
+#line 8 "../monitor/trace-events"
             qemu_log("monitor_protocol_event_emit " "event=%d data=%p" "\n", event, data);
 #line 130 "trace/trace-monitor.h"
         }
@@ -148,14 +148,14 @@ static inline void _nocheck__trace_monitor_protocol_event_queue(uint32_t event, 
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 9 "..\monitor\trace-events"
+#line 9 "../monitor/trace-events"
             qemu_log("%d@%zu.%06zu:monitor_protocol_event_queue " "event=%d data=%p rate=%" PRId64 "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , event, qdict, rate);
 #line 157 "trace/trace-monitor.h"
         } else {
-#line 9 "..\monitor\trace-events"
+#line 9 "../monitor/trace-events"
             qemu_log("monitor_protocol_event_queue " "event=%d data=%p rate=%" PRId64 "\n", event, qdict, rate);
 #line 161 "trace/trace-monitor.h"
         }
@@ -179,14 +179,14 @@ static inline void _nocheck__trace_monitor_suspend(void * ptr, int cnt)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 10 "..\monitor\trace-events"
+#line 10 "../monitor/trace-events"
             qemu_log("%d@%zu.%06zu:monitor_suspend " "mon %p: %d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , ptr, cnt);
 #line 188 "trace/trace-monitor.h"
         } else {
-#line 10 "..\monitor\trace-events"
+#line 10 "../monitor/trace-events"
             qemu_log("monitor_suspend " "mon %p: %d" "\n", ptr, cnt);
 #line 192 "trace/trace-monitor.h"
         }
@@ -210,14 +210,14 @@ static inline void _nocheck__trace_monitor_qmp_in_band_enqueue(void * req, void 
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 13 "..\monitor\trace-events"
+#line 13 "../monitor/trace-events"
             qemu_log("%d@%zu.%06zu:monitor_qmp_in_band_enqueue " "%p mon %p len %u" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , req, mon, len);
 #line 219 "trace/trace-monitor.h"
         } else {
-#line 13 "..\monitor\trace-events"
+#line 13 "../monitor/trace-events"
             qemu_log("monitor_qmp_in_band_enqueue " "%p mon %p len %u" "\n", req, mon, len);
 #line 223 "trace/trace-monitor.h"
         }
@@ -241,14 +241,14 @@ static inline void _nocheck__trace_monitor_qmp_in_band_dequeue(void * req, unsig
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 14 "..\monitor\trace-events"
+#line 14 "../monitor/trace-events"
             qemu_log("%d@%zu.%06zu:monitor_qmp_in_band_dequeue " "%p len %u" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , req, len);
 #line 250 "trace/trace-monitor.h"
         } else {
-#line 14 "..\monitor\trace-events"
+#line 14 "../monitor/trace-events"
             qemu_log("monitor_qmp_in_band_dequeue " "%p len %u" "\n", req, len);
 #line 254 "trace/trace-monitor.h"
         }
@@ -272,14 +272,14 @@ static inline void _nocheck__trace_monitor_qmp_cmd_in_band(const char * id)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 15 "..\monitor\trace-events"
+#line 15 "../monitor/trace-events"
             qemu_log("%d@%zu.%06zu:monitor_qmp_cmd_in_band " "%s" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , id);
 #line 281 "trace/trace-monitor.h"
         } else {
-#line 15 "..\monitor\trace-events"
+#line 15 "../monitor/trace-events"
             qemu_log("monitor_qmp_cmd_in_band " "%s" "\n", id);
 #line 285 "trace/trace-monitor.h"
         }
@@ -303,14 +303,14 @@ static inline void _nocheck__trace_monitor_qmp_err_in_band(const char * desc)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 16 "..\monitor\trace-events"
+#line 16 "../monitor/trace-events"
             qemu_log("%d@%zu.%06zu:monitor_qmp_err_in_band " "%s" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , desc);
 #line 312 "trace/trace-monitor.h"
         } else {
-#line 16 "..\monitor\trace-events"
+#line 16 "../monitor/trace-events"
             qemu_log("monitor_qmp_err_in_band " "%s" "\n", desc);
 #line 316 "trace/trace-monitor.h"
         }
@@ -334,14 +334,14 @@ static inline void _nocheck__trace_monitor_qmp_cmd_out_of_band(const char * id)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 17 "..\monitor\trace-events"
+#line 17 "../monitor/trace-events"
             qemu_log("%d@%zu.%06zu:monitor_qmp_cmd_out_of_band " "%s" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , id);
 #line 343 "trace/trace-monitor.h"
         } else {
-#line 17 "..\monitor\trace-events"
+#line 17 "../monitor/trace-events"
             qemu_log("monitor_qmp_cmd_out_of_band " "%s" "\n", id);
 #line 347 "trace/trace-monitor.h"
         }
@@ -365,14 +365,14 @@ static inline void _nocheck__trace_monitor_qmp_respond(void * mon, const char * 
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 18 "..\monitor\trace-events"
+#line 18 "../monitor/trace-events"
             qemu_log("%d@%zu.%06zu:monitor_qmp_respond " "mon %p resp: %s" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , mon, json);
 #line 374 "trace/trace-monitor.h"
         } else {
-#line 18 "..\monitor\trace-events"
+#line 18 "../monitor/trace-events"
             qemu_log("monitor_qmp_respond " "mon %p resp: %s" "\n", mon, json);
 #line 378 "trace/trace-monitor.h"
         }
@@ -396,14 +396,14 @@ static inline void _nocheck__trace_handle_qmp_command(void * mon, const char * r
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 19 "..\monitor\trace-events"
+#line 19 "../monitor/trace-events"
             qemu_log("%d@%zu.%06zu:handle_qmp_command " "mon %p req: %s" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , mon, req);
 #line 405 "trace/trace-monitor.h"
         } else {
-#line 19 "..\monitor\trace-events"
+#line 19 "../monitor/trace-events"
             qemu_log("handle_qmp_command " "mon %p req: %s" "\n", mon, req);
 #line 409 "trace/trace-monitor.h"
         }

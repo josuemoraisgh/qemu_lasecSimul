@@ -34,6 +34,20 @@ typedef struct Esp32I2CState {
     uint8_t bytesTx;
     uint8_t bytesRx;
     bool ackSamplePending;
+    uint8_t busIndex;               /* 0=I2C0, 1=I2C1 -- setado por esp32_soc_realize() */
+
+    /* Estado do burst rapido em andamento (ver esp32_i2c_try_burst/esp32_i2c_finish_burst em
+     * esp32_i2c.c) -- so' um burst por vez, mesma premissa de exclusividade que event_timer ja' tem
+     * pra transacao byte-a-byte. */
+    bool burstActive;
+    bool burstAddressAck;
+    bool burstAddressValid;
+    uint8_t burstAddressByte;
+    uint32_t burstFirstNack;
+    uint32_t burstWriteCmdCount;
+    uint32_t burstReadCmdCount;
+    uint8_t burstRxBuf[32];
+    uint32_t burstRxLen;
 
     uint32_t sr_reg;
 

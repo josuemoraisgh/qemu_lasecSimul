@@ -25,14 +25,14 @@ static inline void _nocheck__trace_object_dynamic_cast_assert(const char * type,
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 4 "..\qom\trace-events"
+#line 4 "../qom/trace-events"
             qemu_log("%d@%zu.%06zu:object_dynamic_cast_assert " "%s->%s (%s:%d:%s)" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , type, target, file, line, func);
 #line 34 "trace/trace-qom.h"
         } else {
-#line 4 "..\qom\trace-events"
+#line 4 "../qom/trace-events"
             qemu_log("object_dynamic_cast_assert " "%s->%s (%s:%d:%s)" "\n", type, target, file, line, func);
 #line 38 "trace/trace-qom.h"
         }
@@ -56,14 +56,14 @@ static inline void _nocheck__trace_object_class_dynamic_cast_assert(const char *
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 5 "..\qom\trace-events"
+#line 5 "../qom/trace-events"
             qemu_log("%d@%zu.%06zu:object_class_dynamic_cast_assert " "%s->%s (%s:%d:%s)" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , type, target, file, line, func);
 #line 65 "trace/trace-qom.h"
         } else {
-#line 5 "..\qom\trace-events"
+#line 5 "../qom/trace-events"
             qemu_log("object_class_dynamic_cast_assert " "%s->%s (%s:%d:%s)" "\n", type, target, file, line, func);
 #line 69 "trace/trace-qom.h"
         }

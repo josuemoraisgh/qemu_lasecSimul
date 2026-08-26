@@ -64,14 +64,14 @@ static inline void _nocheck__trace_qcrypto_tls_creds_load_dh(void * creds, const
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 4 "..\crypto\trace-events"
+#line 4 "../crypto/trace-events"
             qemu_log("%d@%zu.%06zu:qcrypto_tls_creds_load_dh " "TLS creds load DH creds=%p filename=%s" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , creds, filename);
 #line 73 "trace/trace-crypto.h"
         } else {
-#line 4 "..\crypto\trace-events"
+#line 4 "../crypto/trace-events"
             qemu_log("qcrypto_tls_creds_load_dh " "TLS creds load DH creds=%p filename=%s" "\n", creds, filename);
 #line 77 "trace/trace-crypto.h"
         }
@@ -95,14 +95,14 @@ static inline void _nocheck__trace_qcrypto_tls_creds_get_path(void * creds, cons
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 5 "..\crypto\trace-events"
+#line 5 "../crypto/trace-events"
             qemu_log("%d@%zu.%06zu:qcrypto_tls_creds_get_path " "TLS creds path creds=%p filename=%s path=%s" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , creds, filename, path);
 #line 104 "trace/trace-crypto.h"
         } else {
-#line 5 "..\crypto\trace-events"
+#line 5 "../crypto/trace-events"
             qemu_log("qcrypto_tls_creds_get_path " "TLS creds path creds=%p filename=%s path=%s" "\n", creds, filename, path);
 #line 108 "trace/trace-crypto.h"
         }
@@ -126,14 +126,14 @@ static inline void _nocheck__trace_qcrypto_tls_creds_anon_load(void * creds, con
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 8 "..\crypto\trace-events"
+#line 8 "../crypto/trace-events"
             qemu_log("%d@%zu.%06zu:qcrypto_tls_creds_anon_load " "TLS creds anon load creds=%p dir=%s" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , creds, dir);
 #line 135 "trace/trace-crypto.h"
         } else {
-#line 8 "..\crypto\trace-events"
+#line 8 "../crypto/trace-events"
             qemu_log("qcrypto_tls_creds_anon_load " "TLS creds anon load creds=%p dir=%s" "\n", creds, dir);
 #line 139 "trace/trace-crypto.h"
         }
@@ -157,14 +157,14 @@ static inline void _nocheck__trace_qcrypto_tls_creds_psk_load(void * creds, cons
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 11 "..\crypto\trace-events"
+#line 11 "../crypto/trace-events"
             qemu_log("%d@%zu.%06zu:qcrypto_tls_creds_psk_load " "TLS creds psk load creds=%p dir=%s" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , creds, dir);
 #line 166 "trace/trace-crypto.h"
         } else {
-#line 11 "..\crypto\trace-events"
+#line 11 "../crypto/trace-events"
             qemu_log("qcrypto_tls_creds_psk_load " "TLS creds psk load creds=%p dir=%s" "\n", creds, dir);
 #line 170 "trace/trace-crypto.h"
         }
@@ -188,14 +188,14 @@ static inline void _nocheck__trace_qcrypto_tls_creds_x509_load(void * creds, con
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 14 "..\crypto\trace-events"
+#line 14 "../crypto/trace-events"
             qemu_log("%d@%zu.%06zu:qcrypto_tls_creds_x509_load " "TLS creds x509 load creds=%p dir=%s" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , creds, dir);
 #line 197 "trace/trace-crypto.h"
         } else {
-#line 14 "..\crypto\trace-events"
+#line 14 "../crypto/trace-events"
             qemu_log("qcrypto_tls_creds_x509_load " "TLS creds x509 load creds=%p dir=%s" "\n", creds, dir);
 #line 201 "trace/trace-crypto.h"
         }
@@ -219,14 +219,14 @@ static inline void _nocheck__trace_qcrypto_tls_creds_x509_check_basic_constraint
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 15 "..\crypto\trace-events"
+#line 15 "../crypto/trace-events"
             qemu_log("%d@%zu.%06zu:qcrypto_tls_creds_x509_check_basic_constraints " "TLS creds x509 check basic constraints creds=%p file=%s status=%d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , creds, file, status);
 #line 228 "trace/trace-crypto.h"
         } else {
-#line 15 "..\crypto\trace-events"
+#line 15 "../crypto/trace-events"
             qemu_log("qcrypto_tls_creds_x509_check_basic_constraints " "TLS creds x509 check basic constraints creds=%p file=%s status=%d" "\n", creds, file, status);
 #line 232 "trace/trace-crypto.h"
         }
@@ -250,14 +250,14 @@ static inline void _nocheck__trace_qcrypto_tls_creds_x509_check_key_usage(void *
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 16 "..\crypto\trace-events"
+#line 16 "../crypto/trace-events"
             qemu_log("%d@%zu.%06zu:qcrypto_tls_creds_x509_check_key_usage " "TLS creds x509 check key usage creds=%p file=%s status=%d usage=%d critical=%d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , creds, file, status, usage, critical);
 #line 259 "trace/trace-crypto.h"
         } else {
-#line 16 "..\crypto\trace-events"
+#line 16 "../crypto/trace-events"
             qemu_log("qcrypto_tls_creds_x509_check_key_usage " "TLS creds x509 check key usage creds=%p file=%s status=%d usage=%d critical=%d" "\n", creds, file, status, usage, critical);
 #line 263 "trace/trace-crypto.h"
         }
@@ -281,14 +281,14 @@ static inline void _nocheck__trace_qcrypto_tls_creds_x509_check_key_purpose(void
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 17 "..\crypto\trace-events"
+#line 17 "../crypto/trace-events"
             qemu_log("%d@%zu.%06zu:qcrypto_tls_creds_x509_check_key_purpose " "TLS creds x509 check key usage creds=%p file=%s status=%d usage=%s critical=%d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , creds, file, status, usage, critical);
 #line 290 "trace/trace-crypto.h"
         } else {
-#line 17 "..\crypto\trace-events"
+#line 17 "../crypto/trace-events"
             qemu_log("qcrypto_tls_creds_x509_check_key_purpose " "TLS creds x509 check key usage creds=%p file=%s status=%d usage=%s critical=%d" "\n", creds, file, status, usage, critical);
 #line 294 "trace/trace-crypto.h"
         }
@@ -312,14 +312,14 @@ static inline void _nocheck__trace_qcrypto_tls_creds_x509_load_cert(void * creds
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 18 "..\crypto\trace-events"
+#line 18 "../crypto/trace-events"
             qemu_log("%d@%zu.%06zu:qcrypto_tls_creds_x509_load_cert " "TLS creds x509 load cert creds=%p isServer=%d file=%s" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , creds, isServer, file);
 #line 321 "trace/trace-crypto.h"
         } else {
-#line 18 "..\crypto\trace-events"
+#line 18 "../crypto/trace-events"
             qemu_log("qcrypto_tls_creds_x509_load_cert " "TLS creds x509 load cert creds=%p isServer=%d file=%s" "\n", creds, isServer, file);
 #line 325 "trace/trace-crypto.h"
         }
@@ -343,14 +343,14 @@ static inline void _nocheck__trace_qcrypto_tls_creds_x509_load_cert_list(void * 
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 19 "..\crypto\trace-events"
+#line 19 "../crypto/trace-events"
             qemu_log("%d@%zu.%06zu:qcrypto_tls_creds_x509_load_cert_list " "TLS creds x509 load cert list creds=%p file=%s" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , creds, file);
 #line 352 "trace/trace-crypto.h"
         } else {
-#line 19 "..\crypto\trace-events"
+#line 19 "../crypto/trace-events"
             qemu_log("qcrypto_tls_creds_x509_load_cert_list " "TLS creds x509 load cert list creds=%p file=%s" "\n", creds, file);
 #line 356 "trace/trace-crypto.h"
         }
@@ -374,14 +374,14 @@ static inline void _nocheck__trace_qcrypto_tls_session_new(void * session, void 
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 22 "..\crypto\trace-events"
+#line 22 "../crypto/trace-events"
             qemu_log("%d@%zu.%06zu:qcrypto_tls_session_new " "TLS session new session=%p creds=%p hostname=%s authzid=%s endpoint=%d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , session, creds, hostname, authzid, endpoint);
 #line 383 "trace/trace-crypto.h"
         } else {
-#line 22 "..\crypto\trace-events"
+#line 22 "../crypto/trace-events"
             qemu_log("qcrypto_tls_session_new " "TLS session new session=%p creds=%p hostname=%s authzid=%s endpoint=%d" "\n", session, creds, hostname, authzid, endpoint);
 #line 387 "trace/trace-crypto.h"
         }
@@ -405,14 +405,14 @@ static inline void _nocheck__trace_qcrypto_tls_session_check_creds(void * sessio
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 23 "..\crypto\trace-events"
+#line 23 "../crypto/trace-events"
             qemu_log("%d@%zu.%06zu:qcrypto_tls_session_check_creds " "TLS session check creds session=%p status=%s" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , session, status);
 #line 414 "trace/trace-crypto.h"
         } else {
-#line 23 "..\crypto\trace-events"
+#line 23 "../crypto/trace-events"
             qemu_log("qcrypto_tls_session_check_creds " "TLS session check creds session=%p status=%s" "\n", session, status);
 #line 418 "trace/trace-crypto.h"
         }
@@ -436,14 +436,14 @@ static inline void _nocheck__trace_qcrypto_tls_cipher_suite_priority(const char 
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 26 "..\crypto\trace-events"
+#line 26 "../crypto/trace-events"
             qemu_log("%d@%zu.%06zu:qcrypto_tls_cipher_suite_priority " "priority: %s" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , name);
 #line 445 "trace/trace-crypto.h"
         } else {
-#line 26 "..\crypto\trace-events"
+#line 26 "../crypto/trace-events"
             qemu_log("qcrypto_tls_cipher_suite_priority " "priority: %s" "\n", name);
 #line 449 "trace/trace-crypto.h"
         }
@@ -467,14 +467,14 @@ static inline void _nocheck__trace_qcrypto_tls_cipher_suite_info(uint8_t data0, 
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 27 "..\crypto\trace-events"
+#line 27 "../crypto/trace-events"
             qemu_log("%d@%zu.%06zu:qcrypto_tls_cipher_suite_info " "data=[0x%02x,0x%02x] version=%s name=%s" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , data0, data1, version, name);
 #line 476 "trace/trace-crypto.h"
         } else {
-#line 27 "..\crypto\trace-events"
+#line 27 "../crypto/trace-events"
             qemu_log("qcrypto_tls_cipher_suite_info " "data=[0x%02x,0x%02x] version=%s name=%s" "\n", data0, data1, version, name);
 #line 480 "trace/trace-crypto.h"
         }
@@ -498,14 +498,14 @@ static inline void _nocheck__trace_qcrypto_tls_cipher_suite_count(unsigned count
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 28 "..\crypto\trace-events"
+#line 28 "../crypto/trace-events"
             qemu_log("%d@%zu.%06zu:qcrypto_tls_cipher_suite_count " "count: %u" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , count);
 #line 507 "trace/trace-crypto.h"
         } else {
-#line 28 "..\crypto\trace-events"
+#line 28 "../crypto/trace-events"
             qemu_log("qcrypto_tls_cipher_suite_count " "count: %u" "\n", count);
 #line 511 "trace/trace-crypto.h"
         }

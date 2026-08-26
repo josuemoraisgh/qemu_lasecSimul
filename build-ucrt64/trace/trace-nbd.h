@@ -226,14 +226,14 @@ static inline void _nocheck__trace_nbd_send_option_request(uint32_t opt, const c
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 4 "..\nbd\trace-events"
+#line 4 "../nbd/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_send_option_request " "Sending option request %" PRIu32" (%s), len %" PRIu32 "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , opt, name, len);
 #line 235 "trace/trace-nbd.h"
         } else {
-#line 4 "..\nbd\trace-events"
+#line 4 "../nbd/trace-events"
             qemu_log("nbd_send_option_request " "Sending option request %" PRIu32" (%s), len %" PRIu32 "\n", opt, name, len);
 #line 239 "trace/trace-nbd.h"
         }
@@ -257,14 +257,14 @@ static inline void _nocheck__trace_nbd_receive_option_reply(uint32_t option, con
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 5 "..\nbd\trace-events"
+#line 5 "../nbd/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_receive_option_reply " "Received option reply %" PRIu32" (%s), type %" PRIu32" (%s), len %" PRIu32 "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , option, optname, type, typename, length);
 #line 266 "trace/trace-nbd.h"
         } else {
-#line 5 "..\nbd\trace-events"
+#line 5 "../nbd/trace-events"
             qemu_log("nbd_receive_option_reply " "Received option reply %" PRIu32" (%s), type %" PRIu32" (%s), len %" PRIu32 "\n", option, optname, type, typename, length);
 #line 270 "trace/trace-nbd.h"
         }
@@ -288,14 +288,14 @@ static inline void _nocheck__trace_nbd_server_error_msg(uint32_t err, const char
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 6 "..\nbd\trace-events"
+#line 6 "../nbd/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_server_error_msg " "server reported error 0x%" PRIx32 " (%s) with additional message: %s" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , err, type, msg);
 #line 297 "trace/trace-nbd.h"
         } else {
-#line 6 "..\nbd\trace-events"
+#line 6 "../nbd/trace-events"
             qemu_log("nbd_server_error_msg " "server reported error 0x%" PRIx32 " (%s) with additional message: %s" "\n", err, type, msg);
 #line 301 "trace/trace-nbd.h"
         }
@@ -319,14 +319,14 @@ static inline void _nocheck__trace_nbd_reply_err_ignored(uint32_t option, const 
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 7 "..\nbd\trace-events"
+#line 7 "../nbd/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_reply_err_ignored " "server failed request %" PRIu32 " (%s) with error 0x%" PRIx32 " (%s), attempting fallback" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , option, name, reply, reply_name);
 #line 328 "trace/trace-nbd.h"
         } else {
-#line 7 "..\nbd\trace-events"
+#line 7 "../nbd/trace-events"
             qemu_log("nbd_reply_err_ignored " "server failed request %" PRIu32 " (%s) with error 0x%" PRIx32 " (%s), attempting fallback" "\n", option, name, reply, reply_name);
 #line 332 "trace/trace-nbd.h"
         }
@@ -350,14 +350,14 @@ static inline void _nocheck__trace_nbd_receive_list(const char * name, const cha
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 8 "..\nbd\trace-events"
+#line 8 "../nbd/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_receive_list " "export list includes '%s', description '%s'" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , name, desc);
 #line 359 "trace/trace-nbd.h"
         } else {
-#line 8 "..\nbd\trace-events"
+#line 8 "../nbd/trace-events"
             qemu_log("nbd_receive_list " "export list includes '%s', description '%s'" "\n", name, desc);
 #line 363 "trace/trace-nbd.h"
         }
@@ -381,14 +381,14 @@ static inline void _nocheck__trace_nbd_opt_info_go_start(const char * opt, const
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 9 "..\nbd\trace-events"
+#line 9 "../nbd/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_opt_info_go_start " "Attempting %s for export '%s'" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , opt, name);
 #line 390 "trace/trace-nbd.h"
         } else {
-#line 9 "..\nbd\trace-events"
+#line 9 "../nbd/trace-events"
             qemu_log("nbd_opt_info_go_start " "Attempting %s for export '%s'" "\n", opt, name);
 #line 394 "trace/trace-nbd.h"
         }
@@ -412,14 +412,14 @@ static inline void _nocheck__trace_nbd_opt_info_go_success(const char * opt)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 10 "..\nbd\trace-events"
+#line 10 "../nbd/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_opt_info_go_success " "Export is ready after %s request" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , opt);
 #line 421 "trace/trace-nbd.h"
         } else {
-#line 10 "..\nbd\trace-events"
+#line 10 "../nbd/trace-events"
             qemu_log("nbd_opt_info_go_success " "Export is ready after %s request" "\n", opt);
 #line 425 "trace/trace-nbd.h"
         }
@@ -443,14 +443,14 @@ static inline void _nocheck__trace_nbd_opt_info_unknown(int info, const char * n
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 11 "..\nbd\trace-events"
+#line 11 "../nbd/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_opt_info_unknown " "Ignoring unknown info %d (%s)" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , info, name);
 #line 452 "trace/trace-nbd.h"
         } else {
-#line 11 "..\nbd\trace-events"
+#line 11 "../nbd/trace-events"
             qemu_log("nbd_opt_info_unknown " "Ignoring unknown info %d (%s)" "\n", info, name);
 #line 456 "trace/trace-nbd.h"
         }
@@ -474,14 +474,14 @@ static inline void _nocheck__trace_nbd_opt_info_block_size(uint32_t minimum, uin
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 12 "..\nbd\trace-events"
+#line 12 "../nbd/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_opt_info_block_size " "Block sizes are 0x%" PRIx32 ", 0x%" PRIx32 ", 0x%" PRIx32 "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , minimum, preferred, maximum);
 #line 483 "trace/trace-nbd.h"
         } else {
-#line 12 "..\nbd\trace-events"
+#line 12 "../nbd/trace-events"
             qemu_log("nbd_opt_info_block_size " "Block sizes are 0x%" PRIx32 ", 0x%" PRIx32 ", 0x%" PRIx32 "\n", minimum, preferred, maximum);
 #line 487 "trace/trace-nbd.h"
         }
@@ -505,14 +505,14 @@ static inline void _nocheck__trace_nbd_receive_query_exports_start(const char * 
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 13 "..\nbd\trace-events"
+#line 13 "../nbd/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_receive_query_exports_start " "Querying export list for '%s'" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , wantname);
 #line 514 "trace/trace-nbd.h"
         } else {
-#line 13 "..\nbd\trace-events"
+#line 13 "../nbd/trace-events"
             qemu_log("nbd_receive_query_exports_start " "Querying export list for '%s'" "\n", wantname);
 #line 518 "trace/trace-nbd.h"
         }
@@ -536,14 +536,14 @@ static inline void _nocheck__trace_nbd_receive_query_exports_success(const char 
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 14 "..\nbd\trace-events"
+#line 14 "../nbd/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_receive_query_exports_success " "Found desired export name '%s'" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , wantname);
 #line 545 "trace/trace-nbd.h"
         } else {
-#line 14 "..\nbd\trace-events"
+#line 14 "../nbd/trace-events"
             qemu_log("nbd_receive_query_exports_success " "Found desired export name '%s'" "\n", wantname);
 #line 549 "trace/trace-nbd.h"
         }
@@ -567,14 +567,14 @@ static inline void _nocheck__trace_nbd_receive_starttls_new_client(void)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 15 "..\nbd\trace-events"
+#line 15 "../nbd/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_receive_starttls_new_client " "Setting up TLS" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      );
 #line 576 "trace/trace-nbd.h"
         } else {
-#line 15 "..\nbd\trace-events"
+#line 15 "../nbd/trace-events"
             qemu_log("nbd_receive_starttls_new_client " "Setting up TLS" "\n");
 #line 580 "trace/trace-nbd.h"
         }
@@ -598,14 +598,14 @@ static inline void _nocheck__trace_nbd_receive_starttls_tls_handshake(void)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 16 "..\nbd\trace-events"
+#line 16 "../nbd/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_receive_starttls_tls_handshake " "Starting TLS handshake" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      );
 #line 607 "trace/trace-nbd.h"
         } else {
-#line 16 "..\nbd\trace-events"
+#line 16 "../nbd/trace-events"
             qemu_log("nbd_receive_starttls_tls_handshake " "Starting TLS handshake" "\n");
 #line 611 "trace/trace-nbd.h"
         }
@@ -629,14 +629,14 @@ static inline void _nocheck__trace_nbd_opt_meta_request(const char * optname, co
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 17 "..\nbd\trace-events"
+#line 17 "../nbd/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_opt_meta_request " "Requesting %s %s for export %s" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , optname, context, export);
 #line 638 "trace/trace-nbd.h"
         } else {
-#line 17 "..\nbd\trace-events"
+#line 17 "../nbd/trace-events"
             qemu_log("nbd_opt_meta_request " "Requesting %s %s for export %s" "\n", optname, context, export);
 #line 642 "trace/trace-nbd.h"
         }
@@ -660,14 +660,14 @@ static inline void _nocheck__trace_nbd_opt_meta_reply(const char * optname, cons
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 18 "..\nbd\trace-events"
+#line 18 "../nbd/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_opt_meta_reply " "Received %s mapping of %s to id %" PRIu32 "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , optname, context, id);
 #line 669 "trace/trace-nbd.h"
         } else {
-#line 18 "..\nbd\trace-events"
+#line 18 "../nbd/trace-events"
             qemu_log("nbd_opt_meta_reply " "Received %s mapping of %s to id %" PRIu32 "\n", optname, context, id);
 #line 673 "trace/trace-nbd.h"
         }
@@ -691,14 +691,14 @@ static inline void _nocheck__trace_nbd_start_negotiate(void * tlscreds, const ch
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 19 "..\nbd\trace-events"
+#line 19 "../nbd/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_start_negotiate " "Receiving negotiation tlscreds=%p hostname=%s" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , tlscreds, hostname);
 #line 700 "trace/trace-nbd.h"
         } else {
-#line 19 "..\nbd\trace-events"
+#line 19 "../nbd/trace-events"
             qemu_log("nbd_start_negotiate " "Receiving negotiation tlscreds=%p hostname=%s" "\n", tlscreds, hostname);
 #line 704 "trace/trace-nbd.h"
         }
@@ -722,14 +722,14 @@ static inline void _nocheck__trace_nbd_receive_negotiate_magic(uint64_t magic)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 20 "..\nbd\trace-events"
+#line 20 "../nbd/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_receive_negotiate_magic " "Magic is 0x%" PRIx64 "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , magic);
 #line 731 "trace/trace-nbd.h"
         } else {
-#line 20 "..\nbd\trace-events"
+#line 20 "../nbd/trace-events"
             qemu_log("nbd_receive_negotiate_magic " "Magic is 0x%" PRIx64 "\n", magic);
 #line 735 "trace/trace-nbd.h"
         }
@@ -753,14 +753,14 @@ static inline void _nocheck__trace_nbd_receive_negotiate_server_flags(uint32_t g
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 21 "..\nbd\trace-events"
+#line 21 "../nbd/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_receive_negotiate_server_flags " "Global flags are 0x%" PRIx32 "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , globalflags);
 #line 762 "trace/trace-nbd.h"
         } else {
-#line 21 "..\nbd\trace-events"
+#line 21 "../nbd/trace-events"
             qemu_log("nbd_receive_negotiate_server_flags " "Global flags are 0x%" PRIx32 "\n", globalflags);
 #line 766 "trace/trace-nbd.h"
         }
@@ -784,14 +784,14 @@ static inline void _nocheck__trace_nbd_receive_negotiate_name(const char * name)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 22 "..\nbd\trace-events"
+#line 22 "../nbd/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_receive_negotiate_name " "Requesting NBD export name '%s'" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , name);
 #line 793 "trace/trace-nbd.h"
         } else {
-#line 22 "..\nbd\trace-events"
+#line 22 "../nbd/trace-events"
             qemu_log("nbd_receive_negotiate_name " "Requesting NBD export name '%s'" "\n", name);
 #line 797 "trace/trace-nbd.h"
         }
@@ -815,14 +815,14 @@ static inline void _nocheck__trace_nbd_receive_negotiate_size_flags(uint64_t siz
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 23 "..\nbd\trace-events"
+#line 23 "../nbd/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_receive_negotiate_size_flags " "Size is %" PRIu64 ", export flags 0x%" PRIx16 "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , size, flags);
 #line 824 "trace/trace-nbd.h"
         } else {
-#line 23 "..\nbd\trace-events"
+#line 23 "../nbd/trace-events"
             qemu_log("nbd_receive_negotiate_size_flags " "Size is %" PRIu64 ", export flags 0x%" PRIx16 "\n", size, flags);
 #line 828 "trace/trace-nbd.h"
         }
@@ -846,14 +846,14 @@ static inline void _nocheck__trace_nbd_init_set_socket(void)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 24 "..\nbd\trace-events"
+#line 24 "../nbd/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_init_set_socket " "Setting NBD socket" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      );
 #line 855 "trace/trace-nbd.h"
         } else {
-#line 24 "..\nbd\trace-events"
+#line 24 "../nbd/trace-events"
             qemu_log("nbd_init_set_socket " "Setting NBD socket" "\n");
 #line 859 "trace/trace-nbd.h"
         }
@@ -877,14 +877,14 @@ static inline void _nocheck__trace_nbd_init_set_block_size(unsigned long block_s
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 25 "..\nbd\trace-events"
+#line 25 "../nbd/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_init_set_block_size " "Setting block size to %lu" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , block_size);
 #line 886 "trace/trace-nbd.h"
         } else {
-#line 25 "..\nbd\trace-events"
+#line 25 "../nbd/trace-events"
             qemu_log("nbd_init_set_block_size " "Setting block size to %lu" "\n", block_size);
 #line 890 "trace/trace-nbd.h"
         }
@@ -908,14 +908,14 @@ static inline void _nocheck__trace_nbd_init_set_size(unsigned long sectors)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 26 "..\nbd\trace-events"
+#line 26 "../nbd/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_init_set_size " "Setting size to %lu block(s)" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , sectors);
 #line 917 "trace/trace-nbd.h"
         } else {
-#line 26 "..\nbd\trace-events"
+#line 26 "../nbd/trace-events"
             qemu_log("nbd_init_set_size " "Setting size to %lu block(s)" "\n", sectors);
 #line 921 "trace/trace-nbd.h"
         }
@@ -939,14 +939,14 @@ static inline void _nocheck__trace_nbd_init_trailing_bytes(int ignored_bytes)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 27 "..\nbd\trace-events"
+#line 27 "../nbd/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_init_trailing_bytes " "Ignoring trailing %d bytes of export" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , ignored_bytes);
 #line 948 "trace/trace-nbd.h"
         } else {
-#line 27 "..\nbd\trace-events"
+#line 27 "../nbd/trace-events"
             qemu_log("nbd_init_trailing_bytes " "Ignoring trailing %d bytes of export" "\n", ignored_bytes);
 #line 952 "trace/trace-nbd.h"
         }
@@ -970,14 +970,14 @@ static inline void _nocheck__trace_nbd_init_set_readonly(void)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 28 "..\nbd\trace-events"
+#line 28 "../nbd/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_init_set_readonly " "Setting readonly attribute" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      );
 #line 979 "trace/trace-nbd.h"
         } else {
-#line 28 "..\nbd\trace-events"
+#line 28 "../nbd/trace-events"
             qemu_log("nbd_init_set_readonly " "Setting readonly attribute" "\n");
 #line 983 "trace/trace-nbd.h"
         }
@@ -1001,14 +1001,14 @@ static inline void _nocheck__trace_nbd_init_finish(void)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 29 "..\nbd\trace-events"
+#line 29 "../nbd/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_init_finish " "Negotiation ended" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      );
 #line 1010 "trace/trace-nbd.h"
         } else {
-#line 29 "..\nbd\trace-events"
+#line 29 "../nbd/trace-events"
             qemu_log("nbd_init_finish " "Negotiation ended" "\n");
 #line 1014 "trace/trace-nbd.h"
         }
@@ -1032,14 +1032,14 @@ static inline void _nocheck__trace_nbd_client_loop(void)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 30 "..\nbd\trace-events"
+#line 30 "../nbd/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_client_loop " "Doing NBD loop" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      );
 #line 1041 "trace/trace-nbd.h"
         } else {
-#line 30 "..\nbd\trace-events"
+#line 30 "../nbd/trace-events"
             qemu_log("nbd_client_loop " "Doing NBD loop" "\n");
 #line 1045 "trace/trace-nbd.h"
         }
@@ -1063,14 +1063,14 @@ static inline void _nocheck__trace_nbd_client_loop_ret(int ret, const char * err
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 31 "..\nbd\trace-events"
+#line 31 "../nbd/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_client_loop_ret " "NBD loop returned %d: %s" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , ret, error);
 #line 1072 "trace/trace-nbd.h"
         } else {
-#line 31 "..\nbd\trace-events"
+#line 31 "../nbd/trace-events"
             qemu_log("nbd_client_loop_ret " "NBD loop returned %d: %s" "\n", ret, error);
 #line 1076 "trace/trace-nbd.h"
         }
@@ -1094,14 +1094,14 @@ static inline void _nocheck__trace_nbd_client_clear_queue(void)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 32 "..\nbd\trace-events"
+#line 32 "../nbd/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_client_clear_queue " "Clearing NBD queue" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      );
 #line 1103 "trace/trace-nbd.h"
         } else {
-#line 32 "..\nbd\trace-events"
+#line 32 "../nbd/trace-events"
             qemu_log("nbd_client_clear_queue " "Clearing NBD queue" "\n");
 #line 1107 "trace/trace-nbd.h"
         }
@@ -1125,14 +1125,14 @@ static inline void _nocheck__trace_nbd_client_clear_socket(void)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 33 "..\nbd\trace-events"
+#line 33 "../nbd/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_client_clear_socket " "Clearing NBD socket" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      );
 #line 1134 "trace/trace-nbd.h"
         } else {
-#line 33 "..\nbd\trace-events"
+#line 33 "../nbd/trace-events"
             qemu_log("nbd_client_clear_socket " "Clearing NBD socket" "\n");
 #line 1138 "trace/trace-nbd.h"
         }
@@ -1156,14 +1156,14 @@ static inline void _nocheck__trace_nbd_send_request(uint64_t from, uint32_t len,
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 34 "..\nbd\trace-events"
+#line 34 "../nbd/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_send_request " "Sending request to server: { .from = %" PRIu64", .len = %" PRIu32 ", .cookie = %" PRIu64 ", .flags = 0x%" PRIx16 ", .type = %" PRIu16 " (%s) }" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , from, len, cookie, flags, type, name);
 #line 1165 "trace/trace-nbd.h"
         } else {
-#line 34 "..\nbd\trace-events"
+#line 34 "../nbd/trace-events"
             qemu_log("nbd_send_request " "Sending request to server: { .from = %" PRIu64", .len = %" PRIu32 ", .cookie = %" PRIu64 ", .flags = 0x%" PRIx16 ", .type = %" PRIu16 " (%s) }" "\n", from, len, cookie, flags, type, name);
 #line 1169 "trace/trace-nbd.h"
         }
@@ -1187,14 +1187,14 @@ static inline void _nocheck__trace_nbd_receive_simple_reply(int32_t error, const
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 35 "..\nbd\trace-events"
+#line 35 "../nbd/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_receive_simple_reply " "Got simple reply: { .error = %" PRId32 " (%s), cookie = %" PRIu64" }" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , error, errname, cookie);
 #line 1196 "trace/trace-nbd.h"
         } else {
-#line 35 "..\nbd\trace-events"
+#line 35 "../nbd/trace-events"
             qemu_log("nbd_receive_simple_reply " "Got simple reply: { .error = %" PRId32 " (%s), cookie = %" PRIu64" }" "\n", error, errname, cookie);
 #line 1200 "trace/trace-nbd.h"
         }
@@ -1218,14 +1218,14 @@ static inline void _nocheck__trace_nbd_receive_structured_reply_chunk(uint16_t f
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 36 "..\nbd\trace-events"
+#line 36 "../nbd/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_receive_structured_reply_chunk " "Got structured reply chunk: { flags = 0x%" PRIx16 ", type = %d (%s), cookie = %" PRIu64 ", length = %" PRIu32 " }" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , flags, type, name, cookie, length);
 #line 1227 "trace/trace-nbd.h"
         } else {
-#line 36 "..\nbd\trace-events"
+#line 36 "../nbd/trace-events"
             qemu_log("nbd_receive_structured_reply_chunk " "Got structured reply chunk: { flags = 0x%" PRIx16 ", type = %d (%s), cookie = %" PRIu64 ", length = %" PRIu32 " }" "\n", flags, type, name, cookie, length);
 #line 1231 "trace/trace-nbd.h"
         }
@@ -1249,14 +1249,14 @@ static inline void _nocheck__trace_nbd_unknown_error(int err)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 39 "..\nbd\trace-events"
+#line 39 "../nbd/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_unknown_error " "Squashing unexpected error %d to EINVAL" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , err);
 #line 1258 "trace/trace-nbd.h"
         } else {
-#line 39 "..\nbd\trace-events"
+#line 39 "../nbd/trace-events"
             qemu_log("nbd_unknown_error " "Squashing unexpected error %d to EINVAL" "\n", err);
 #line 1262 "trace/trace-nbd.h"
         }
@@ -1280,14 +1280,14 @@ static inline void _nocheck__trace_nbd_negotiate_send_rep_len(uint32_t opt, cons
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 42 "..\nbd\trace-events"
+#line 42 "../nbd/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_negotiate_send_rep_len " "Reply opt=%" PRIu32 " (%s), type=%" PRIu32 " (%s), len=%" PRIu32 "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , opt, optname, type, typename, len);
 #line 1289 "trace/trace-nbd.h"
         } else {
-#line 42 "..\nbd\trace-events"
+#line 42 "../nbd/trace-events"
             qemu_log("nbd_negotiate_send_rep_len " "Reply opt=%" PRIu32 " (%s), type=%" PRIu32 " (%s), len=%" PRIu32 "\n", opt, optname, type, typename, len);
 #line 1293 "trace/trace-nbd.h"
         }
@@ -1311,14 +1311,14 @@ static inline void _nocheck__trace_nbd_negotiate_send_rep_err(const char * msg)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 43 "..\nbd\trace-events"
+#line 43 "../nbd/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_negotiate_send_rep_err " "sending error message \"%s\"" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , msg);
 #line 1320 "trace/trace-nbd.h"
         } else {
-#line 43 "..\nbd\trace-events"
+#line 43 "../nbd/trace-events"
             qemu_log("nbd_negotiate_send_rep_err " "sending error message \"%s\"" "\n", msg);
 #line 1324 "trace/trace-nbd.h"
         }
@@ -1342,14 +1342,14 @@ static inline void _nocheck__trace_nbd_negotiate_send_rep_list(const char * name
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 44 "..\nbd\trace-events"
+#line 44 "../nbd/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_negotiate_send_rep_list " "Advertising export name '%s' description '%s'" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , name, desc);
 #line 1351 "trace/trace-nbd.h"
         } else {
-#line 44 "..\nbd\trace-events"
+#line 44 "../nbd/trace-events"
             qemu_log("nbd_negotiate_send_rep_list " "Advertising export name '%s' description '%s'" "\n", name, desc);
 #line 1355 "trace/trace-nbd.h"
         }
@@ -1373,14 +1373,14 @@ static inline void _nocheck__trace_nbd_negotiate_handle_export_name(void)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 45 "..\nbd\trace-events"
+#line 45 "../nbd/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_negotiate_handle_export_name " "Checking length" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      );
 #line 1382 "trace/trace-nbd.h"
         } else {
-#line 45 "..\nbd\trace-events"
+#line 45 "../nbd/trace-events"
             qemu_log("nbd_negotiate_handle_export_name " "Checking length" "\n");
 #line 1386 "trace/trace-nbd.h"
         }
@@ -1404,14 +1404,14 @@ static inline void _nocheck__trace_nbd_negotiate_handle_export_name_request(cons
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 46 "..\nbd\trace-events"
+#line 46 "../nbd/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_negotiate_handle_export_name_request " "Client requested export '%s'" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , name);
 #line 1413 "trace/trace-nbd.h"
         } else {
-#line 46 "..\nbd\trace-events"
+#line 46 "../nbd/trace-events"
             qemu_log("nbd_negotiate_handle_export_name_request " "Client requested export '%s'" "\n", name);
 #line 1417 "trace/trace-nbd.h"
         }
@@ -1435,14 +1435,14 @@ static inline void _nocheck__trace_nbd_negotiate_send_info(int info, const char 
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 47 "..\nbd\trace-events"
+#line 47 "../nbd/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_negotiate_send_info " "Sending NBD_REP_INFO type %d (%s) with remaining length %" PRIu32 "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , info, name, length);
 #line 1444 "trace/trace-nbd.h"
         } else {
-#line 47 "..\nbd\trace-events"
+#line 47 "../nbd/trace-events"
             qemu_log("nbd_negotiate_send_info " "Sending NBD_REP_INFO type %d (%s) with remaining length %" PRIu32 "\n", info, name, length);
 #line 1448 "trace/trace-nbd.h"
         }
@@ -1466,14 +1466,14 @@ static inline void _nocheck__trace_nbd_negotiate_handle_info_requests(int reques
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 48 "..\nbd\trace-events"
+#line 48 "../nbd/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_negotiate_handle_info_requests " "Client requested %d items of info" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , requests);
 #line 1475 "trace/trace-nbd.h"
         } else {
-#line 48 "..\nbd\trace-events"
+#line 48 "../nbd/trace-events"
             qemu_log("nbd_negotiate_handle_info_requests " "Client requested %d items of info" "\n", requests);
 #line 1479 "trace/trace-nbd.h"
         }
@@ -1497,14 +1497,14 @@ static inline void _nocheck__trace_nbd_negotiate_handle_info_request(int request
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 49 "..\nbd\trace-events"
+#line 49 "../nbd/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_negotiate_handle_info_request " "Client requested info %d (%s)" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , request, name);
 #line 1506 "trace/trace-nbd.h"
         } else {
-#line 49 "..\nbd\trace-events"
+#line 49 "../nbd/trace-events"
             qemu_log("nbd_negotiate_handle_info_request " "Client requested info %d (%s)" "\n", request, name);
 #line 1510 "trace/trace-nbd.h"
         }
@@ -1528,14 +1528,14 @@ static inline void _nocheck__trace_nbd_negotiate_handle_info_block_size(uint32_t
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 50 "..\nbd\trace-events"
+#line 50 "../nbd/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_negotiate_handle_info_block_size " "advertising minimum 0x%" PRIx32 ", preferred 0x%" PRIx32 ", maximum 0x%" PRIx32 "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , minimum, preferred, maximum);
 #line 1537 "trace/trace-nbd.h"
         } else {
-#line 50 "..\nbd\trace-events"
+#line 50 "../nbd/trace-events"
             qemu_log("nbd_negotiate_handle_info_block_size " "advertising minimum 0x%" PRIx32 ", preferred 0x%" PRIx32 ", maximum 0x%" PRIx32 "\n", minimum, preferred, maximum);
 #line 1541 "trace/trace-nbd.h"
         }
@@ -1559,14 +1559,14 @@ static inline void _nocheck__trace_nbd_negotiate_handle_starttls(void)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 51 "..\nbd\trace-events"
+#line 51 "../nbd/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_negotiate_handle_starttls " "Setting up TLS" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      );
 #line 1568 "trace/trace-nbd.h"
         } else {
-#line 51 "..\nbd\trace-events"
+#line 51 "../nbd/trace-events"
             qemu_log("nbd_negotiate_handle_starttls " "Setting up TLS" "\n");
 #line 1572 "trace/trace-nbd.h"
         }
@@ -1590,14 +1590,14 @@ static inline void _nocheck__trace_nbd_negotiate_handle_starttls_handshake(void)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 52 "..\nbd\trace-events"
+#line 52 "../nbd/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_negotiate_handle_starttls_handshake " "Starting TLS handshake" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      );
 #line 1599 "trace/trace-nbd.h"
         } else {
-#line 52 "..\nbd\trace-events"
+#line 52 "../nbd/trace-events"
             qemu_log("nbd_negotiate_handle_starttls_handshake " "Starting TLS handshake" "\n");
 #line 1603 "trace/trace-nbd.h"
         }
@@ -1621,14 +1621,14 @@ static inline void _nocheck__trace_nbd_negotiate_meta_context(const char * optna
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 53 "..\nbd\trace-events"
+#line 53 "../nbd/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_negotiate_meta_context " "Client requested %s for export %s, with %" PRIu32 " queries" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , optname, export, queries);
 #line 1630 "trace/trace-nbd.h"
         } else {
-#line 53 "..\nbd\trace-events"
+#line 53 "../nbd/trace-events"
             qemu_log("nbd_negotiate_meta_context " "Client requested %s for export %s, with %" PRIu32 " queries" "\n", optname, export, queries);
 #line 1634 "trace/trace-nbd.h"
         }
@@ -1652,14 +1652,14 @@ static inline void _nocheck__trace_nbd_negotiate_meta_query_skip(const char * re
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 54 "..\nbd\trace-events"
+#line 54 "../nbd/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_negotiate_meta_query_skip " "Skipping meta query: %s" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , reason);
 #line 1661 "trace/trace-nbd.h"
         } else {
-#line 54 "..\nbd\trace-events"
+#line 54 "../nbd/trace-events"
             qemu_log("nbd_negotiate_meta_query_skip " "Skipping meta query: %s" "\n", reason);
 #line 1665 "trace/trace-nbd.h"
         }
@@ -1683,14 +1683,14 @@ static inline void _nocheck__trace_nbd_negotiate_meta_query_parse(const char * q
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 55 "..\nbd\trace-events"
+#line 55 "../nbd/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_negotiate_meta_query_parse " "Parsed meta query '%s'" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , query);
 #line 1692 "trace/trace-nbd.h"
         } else {
-#line 55 "..\nbd\trace-events"
+#line 55 "../nbd/trace-events"
             qemu_log("nbd_negotiate_meta_query_parse " "Parsed meta query '%s'" "\n", query);
 #line 1696 "trace/trace-nbd.h"
         }
@@ -1714,14 +1714,14 @@ static inline void _nocheck__trace_nbd_negotiate_meta_query_reply(const char * c
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 56 "..\nbd\trace-events"
+#line 56 "../nbd/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_negotiate_meta_query_reply " "Replying with meta context '%s' id %" PRIu32 "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , context, id);
 #line 1723 "trace/trace-nbd.h"
         } else {
-#line 56 "..\nbd\trace-events"
+#line 56 "../nbd/trace-events"
             qemu_log("nbd_negotiate_meta_query_reply " "Replying with meta context '%s' id %" PRIu32 "\n", context, id);
 #line 1727 "trace/trace-nbd.h"
         }
@@ -1745,14 +1745,14 @@ static inline void _nocheck__trace_nbd_negotiate_options_flags(uint32_t flags)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 57 "..\nbd\trace-events"
+#line 57 "../nbd/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_negotiate_options_flags " "Received client flags 0x%" PRIx32 "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , flags);
 #line 1754 "trace/trace-nbd.h"
         } else {
-#line 57 "..\nbd\trace-events"
+#line 57 "../nbd/trace-events"
             qemu_log("nbd_negotiate_options_flags " "Received client flags 0x%" PRIx32 "\n", flags);
 #line 1758 "trace/trace-nbd.h"
         }
@@ -1776,14 +1776,14 @@ static inline void _nocheck__trace_nbd_negotiate_options_check_magic(uint64_t ma
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 58 "..\nbd\trace-events"
+#line 58 "../nbd/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_negotiate_options_check_magic " "Checking opts magic 0x%" PRIx64 "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , magic);
 #line 1785 "trace/trace-nbd.h"
         } else {
-#line 58 "..\nbd\trace-events"
+#line 58 "../nbd/trace-events"
             qemu_log("nbd_negotiate_options_check_magic " "Checking opts magic 0x%" PRIx64 "\n", magic);
 #line 1789 "trace/trace-nbd.h"
         }
@@ -1807,14 +1807,14 @@ static inline void _nocheck__trace_nbd_negotiate_options_check_option(uint32_t o
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 59 "..\nbd\trace-events"
+#line 59 "../nbd/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_negotiate_options_check_option " "Checking option %" PRIu32 " (%s)" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , option, name);
 #line 1816 "trace/trace-nbd.h"
         } else {
-#line 59 "..\nbd\trace-events"
+#line 59 "../nbd/trace-events"
             qemu_log("nbd_negotiate_options_check_option " "Checking option %" PRIu32 " (%s)" "\n", option, name);
 #line 1820 "trace/trace-nbd.h"
         }
@@ -1838,14 +1838,14 @@ static inline void _nocheck__trace_nbd_negotiate_begin(void)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 60 "..\nbd\trace-events"
+#line 60 "../nbd/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_negotiate_begin " "Beginning negotiation" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      );
 #line 1847 "trace/trace-nbd.h"
         } else {
-#line 60 "..\nbd\trace-events"
+#line 60 "../nbd/trace-events"
             qemu_log("nbd_negotiate_begin " "Beginning negotiation" "\n");
 #line 1851 "trace/trace-nbd.h"
         }
@@ -1869,14 +1869,14 @@ static inline void _nocheck__trace_nbd_negotiate_new_style_size_flags(uint64_t s
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 61 "..\nbd\trace-events"
+#line 61 "../nbd/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_negotiate_new_style_size_flags " "advertising size %" PRIu64 " and flags 0x%x" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , size, flags);
 #line 1878 "trace/trace-nbd.h"
         } else {
-#line 61 "..\nbd\trace-events"
+#line 61 "../nbd/trace-events"
             qemu_log("nbd_negotiate_new_style_size_flags " "advertising size %" PRIu64 " and flags 0x%x" "\n", size, flags);
 #line 1882 "trace/trace-nbd.h"
         }
@@ -1900,14 +1900,14 @@ static inline void _nocheck__trace_nbd_negotiate_success(void)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 62 "..\nbd\trace-events"
+#line 62 "../nbd/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_negotiate_success " "Negotiation succeeded" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      );
 #line 1909 "trace/trace-nbd.h"
         } else {
-#line 62 "..\nbd\trace-events"
+#line 62 "../nbd/trace-events"
             qemu_log("nbd_negotiate_success " "Negotiation succeeded" "\n");
 #line 1913 "trace/trace-nbd.h"
         }
@@ -1931,14 +1931,14 @@ static inline void _nocheck__trace_nbd_receive_request(uint32_t magic, uint16_t 
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 63 "..\nbd\trace-events"
+#line 63 "../nbd/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_receive_request " "Got request: { magic = 0x%" PRIx32 ", .flags = 0x%" PRIx16 ", .type = 0x%" PRIx16 ", from = %" PRIu64 ", len = %" PRIu32 " }" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , magic, flags, type, from, len);
 #line 1940 "trace/trace-nbd.h"
         } else {
-#line 63 "..\nbd\trace-events"
+#line 63 "../nbd/trace-events"
             qemu_log("nbd_receive_request " "Got request: { magic = 0x%" PRIx32 ", .flags = 0x%" PRIx16 ", .type = 0x%" PRIx16 ", from = %" PRIu64 ", len = %" PRIu32 " }" "\n", magic, flags, type, from, len);
 #line 1944 "trace/trace-nbd.h"
         }
@@ -1962,14 +1962,14 @@ static inline void _nocheck__trace_nbd_blk_aio_attached(const char * name, void 
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 64 "..\nbd\trace-events"
+#line 64 "../nbd/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_blk_aio_attached " "Export %s: Attaching clients to AIO context %p" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , name, ctx);
 #line 1971 "trace/trace-nbd.h"
         } else {
-#line 64 "..\nbd\trace-events"
+#line 64 "../nbd/trace-events"
             qemu_log("nbd_blk_aio_attached " "Export %s: Attaching clients to AIO context %p" "\n", name, ctx);
 #line 1975 "trace/trace-nbd.h"
         }
@@ -1993,14 +1993,14 @@ static inline void _nocheck__trace_nbd_blk_aio_detach(const char * name, void * 
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 65 "..\nbd\trace-events"
+#line 65 "../nbd/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_blk_aio_detach " "Export %s: Detaching clients from AIO context %p" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , name, ctx);
 #line 2002 "trace/trace-nbd.h"
         } else {
-#line 65 "..\nbd\trace-events"
+#line 65 "../nbd/trace-events"
             qemu_log("nbd_blk_aio_detach " "Export %s: Detaching clients from AIO context %p" "\n", name, ctx);
 #line 2006 "trace/trace-nbd.h"
         }
@@ -2024,14 +2024,14 @@ static inline void _nocheck__trace_nbd_co_send_simple_reply(uint64_t cookie, uin
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 66 "..\nbd\trace-events"
+#line 66 "../nbd/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_co_send_simple_reply " "Send simple reply: cookie = %" PRIu64 ", error = %" PRIu32 " (%s), len = %d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , cookie, error, errname, len);
 #line 2033 "trace/trace-nbd.h"
         } else {
-#line 66 "..\nbd\trace-events"
+#line 66 "../nbd/trace-events"
             qemu_log("nbd_co_send_simple_reply " "Send simple reply: cookie = %" PRIu64 ", error = %" PRIu32 " (%s), len = %d" "\n", cookie, error, errname, len);
 #line 2037 "trace/trace-nbd.h"
         }
@@ -2055,14 +2055,14 @@ static inline void _nocheck__trace_nbd_co_send_chunk_done(uint64_t cookie)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 67 "..\nbd\trace-events"
+#line 67 "../nbd/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_co_send_chunk_done " "Send structured reply done: cookie = %" PRIu64 "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , cookie);
 #line 2064 "trace/trace-nbd.h"
         } else {
-#line 67 "..\nbd\trace-events"
+#line 67 "../nbd/trace-events"
             qemu_log("nbd_co_send_chunk_done " "Send structured reply done: cookie = %" PRIu64 "\n", cookie);
 #line 2068 "trace/trace-nbd.h"
         }
@@ -2086,14 +2086,14 @@ static inline void _nocheck__trace_nbd_co_send_chunk_read(uint64_t cookie, uint6
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 68 "..\nbd\trace-events"
+#line 68 "../nbd/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_co_send_chunk_read " "Send structured read data reply: cookie = %" PRIu64 ", offset = %" PRIu64 ", data = %p, len = %zu" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , cookie, offset, data, size);
 #line 2095 "trace/trace-nbd.h"
         } else {
-#line 68 "..\nbd\trace-events"
+#line 68 "../nbd/trace-events"
             qemu_log("nbd_co_send_chunk_read " "Send structured read data reply: cookie = %" PRIu64 ", offset = %" PRIu64 ", data = %p, len = %zu" "\n", cookie, offset, data, size);
 #line 2099 "trace/trace-nbd.h"
         }
@@ -2117,14 +2117,14 @@ static inline void _nocheck__trace_nbd_co_send_chunk_read_hole(uint64_t cookie, 
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 69 "..\nbd\trace-events"
+#line 69 "../nbd/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_co_send_chunk_read_hole " "Send structured read hole reply: cookie = %" PRIu64 ", offset = %" PRIu64 ", len = %zu" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , cookie, offset, size);
 #line 2126 "trace/trace-nbd.h"
         } else {
-#line 69 "..\nbd\trace-events"
+#line 69 "../nbd/trace-events"
             qemu_log("nbd_co_send_chunk_read_hole " "Send structured read hole reply: cookie = %" PRIu64 ", offset = %" PRIu64 ", len = %zu" "\n", cookie, offset, size);
 #line 2130 "trace/trace-nbd.h"
         }
@@ -2148,14 +2148,14 @@ static inline void _nocheck__trace_nbd_co_send_extents(uint64_t cookie, unsigned
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 70 "..\nbd\trace-events"
+#line 70 "../nbd/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_co_send_extents " "Send block status reply: cookie = %" PRIu64 ", extents = %u, context = %d (extents cover %" PRIu64 " bytes, last chunk = %d)" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , cookie, extents, id, length, last);
 #line 2157 "trace/trace-nbd.h"
         } else {
-#line 70 "..\nbd\trace-events"
+#line 70 "../nbd/trace-events"
             qemu_log("nbd_co_send_extents " "Send block status reply: cookie = %" PRIu64 ", extents = %u, context = %d (extents cover %" PRIu64 " bytes, last chunk = %d)" "\n", cookie, extents, id, length, last);
 #line 2161 "trace/trace-nbd.h"
         }
@@ -2179,14 +2179,14 @@ static inline void _nocheck__trace_nbd_co_send_chunk_error(uint64_t cookie, int 
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 71 "..\nbd\trace-events"
+#line 71 "../nbd/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_co_send_chunk_error " "Send structured error reply: cookie = %" PRIu64 ", error = %d (%s), msg = '%s'" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , cookie, err, errname, msg);
 #line 2188 "trace/trace-nbd.h"
         } else {
-#line 71 "..\nbd\trace-events"
+#line 71 "../nbd/trace-events"
             qemu_log("nbd_co_send_chunk_error " "Send structured error reply: cookie = %" PRIu64 ", error = %d (%s), msg = '%s'" "\n", cookie, err, errname, msg);
 #line 2192 "trace/trace-nbd.h"
         }
@@ -2210,14 +2210,14 @@ static inline void _nocheck__trace_nbd_co_receive_request_decode_type(uint64_t c
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 72 "..\nbd\trace-events"
+#line 72 "../nbd/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_co_receive_request_decode_type " "Decoding type: cookie = %" PRIu64 ", type = %" PRIu16 " (%s)" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , cookie, type, name);
 #line 2219 "trace/trace-nbd.h"
         } else {
-#line 72 "..\nbd\trace-events"
+#line 72 "../nbd/trace-events"
             qemu_log("nbd_co_receive_request_decode_type " "Decoding type: cookie = %" PRIu64 ", type = %" PRIu16 " (%s)" "\n", cookie, type, name);
 #line 2223 "trace/trace-nbd.h"
         }
@@ -2241,14 +2241,14 @@ static inline void _nocheck__trace_nbd_co_receive_request_payload_received(uint6
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 73 "..\nbd\trace-events"
+#line 73 "../nbd/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_co_receive_request_payload_received " "Payload received: cookie = %" PRIu64 ", len = %" PRIu32 "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , cookie, len);
 #line 2250 "trace/trace-nbd.h"
         } else {
-#line 73 "..\nbd\trace-events"
+#line 73 "../nbd/trace-events"
             qemu_log("nbd_co_receive_request_payload_received " "Payload received: cookie = %" PRIu64 ", len = %" PRIu32 "\n", cookie, len);
 #line 2254 "trace/trace-nbd.h"
         }
@@ -2272,14 +2272,14 @@ static inline void _nocheck__trace_nbd_co_receive_align_compliance(const char * 
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 74 "..\nbd\trace-events"
+#line 74 "../nbd/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_co_receive_align_compliance " "client sent non-compliant unaligned %s request: from=0x%" PRIx64 ", len=0x%" PRIx32 ", align=0x%" PRIx32 "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , op, from, len, align);
 #line 2281 "trace/trace-nbd.h"
         } else {
-#line 74 "..\nbd\trace-events"
+#line 74 "../nbd/trace-events"
             qemu_log("nbd_co_receive_align_compliance " "client sent non-compliant unaligned %s request: from=0x%" PRIx64 ", len=0x%" PRIx32 ", align=0x%" PRIx32 "\n", op, from, len, align);
 #line 2285 "trace/trace-nbd.h"
         }
@@ -2303,14 +2303,14 @@ static inline void _nocheck__trace_nbd_trip(void)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 75 "..\nbd\trace-events"
+#line 75 "../nbd/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_trip " "Reading request" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      );
 #line 2312 "trace/trace-nbd.h"
         } else {
-#line 75 "..\nbd\trace-events"
+#line 75 "../nbd/trace-events"
             qemu_log("nbd_trip " "Reading request" "\n");
 #line 2316 "trace/trace-nbd.h"
         }
@@ -2334,14 +2334,14 @@ static inline void _nocheck__trace_nbd_connect_thread_sleep(uint64_t timeout)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 78 "..\nbd\trace-events"
+#line 78 "../nbd/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_connect_thread_sleep " "timeout %" PRIu64 "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , timeout);
 #line 2343 "trace/trace-nbd.h"
         } else {
-#line 78 "..\nbd\trace-events"
+#line 78 "../nbd/trace-events"
             qemu_log("nbd_connect_thread_sleep " "timeout %" PRIu64 "\n", timeout);
 #line 2347 "trace/trace-nbd.h"
         }

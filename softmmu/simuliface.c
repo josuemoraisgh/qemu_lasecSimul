@@ -49,35 +49,35 @@ static int configuredArenaAbiMajor(void)
 {
     const char *value = getenv("LASECSIMUL_QEMU_ARENA_VERSION");
 
-    if (!value || !value[0] || strcmp(value, "4") == 0) {
+    if (!value || !value[0] || strcmp(value, "5") == 0) {
         return QEMU_ARENA_ABI_MAJOR;
     }
     if (strcmp(value, "3") == 0) {
         return 3;
     }
     fprintf(stderr,
-            "Qemu: invalid LASECSIMUL_QEMU_ARENA_VERSION='%s'; expected 3 or 4\n",
+            "Qemu: invalid LASECSIMUL_QEMU_ARENA_VERSION='%s'; expected 3 or 5\n",
             value);
     return -1;
 }
 
-static bool validateArenaV4Descriptor(
+static bool validateArenaV5Descriptor(
     volatile qemuArenaDescriptor_t *descriptor)
 {
     const uint64_t coreReady = qatomic_load_acquire(&descriptor->coreReady);
 
     if (!coreReady) {
-        fprintf(stderr, "Qemu: arena ABI v4 descriptor is not ready\n");
+        fprintf(stderr, "Qemu: arena ABI v5 descriptor is not ready\n");
         return false;
     }
     if (descriptor->magic != QEMU_ARENA_ABI_MAGIC ||
         descriptor->abiMajor != QEMU_ARENA_ABI_MAJOR ||
         descriptor->descriptorSize != sizeof(qemuArenaDescriptor_t) ||
-        descriptor->arenaSize != sizeof(qemuArenaV4Mapping_t) ||
+        descriptor->arenaSize != sizeof(qemuArenaV5Mapping_t) ||
         descriptor->transportSize != sizeof(qemuArena_t) ||
         descriptor->queueDepth != QEMU_ARENA_QUEUE_DEPTH) {
         fprintf(stderr,
-                "Qemu: incompatible arena ABI v4 descriptor:"
+                "Qemu: incompatible arena ABI v5 descriptor:"
                 " magic=0x%016" PRIx64 " version=%u.%u"
                 " descriptor=%" PRIu64 " arena=%" PRIu64
                 " transport=%" PRIu64 " queue=%" PRIu64 "\n",
@@ -93,7 +93,7 @@ static bool validateArenaV4Descriptor(
         descriptor->coreCapabilities & QEMU_ARENA_CAPABILITIES;
     if ((negotiated & required) != required) {
         fprintf(stderr,
-                "Qemu: arena ABI v4 lacks required capabilities:"
+                "Qemu: arena ABI v5 lacks required capabilities:"
                 " core=0x%016" PRIx64 " required=0x%016" PRIx64 "\n",
                 descriptor->coreCapabilities, required);
         return false;
@@ -374,6 +374,88 @@ void writeSimEvent( uint64_t addr, uint64_t value, uint64_t action )
     publishQueueEntry(addr, value, action);
 }
 
+static uint64_t m_i2cRequestCounter;
+
+/* Mailbox de burst I2C (ABI 5, ver simuliface.h/qemu_arena_abi.h). Diferente de writeReg()/readReg()
+ * (que espelham registradores individuais do periferico), aqui o pedido inteiro (endereco+dados,
+ * ate 32 bytes) atravessa a arena numa unica viagem de ida-e-volta -- e' o Core quem decide, pela
+ * topologia do circuito, se ha' um dispositivo conectado que suporta o protocolo (`handled=true`)
+ * ou se o chamador deve cair de volta pro caminho eletrico byte-a-byte existente. Mesmo esquema de
+ * sequencia monotona nao-zero usado por queueWriteIndex/queueReadIndex: o QEMU publica todos os
+ * campos e por ultimo i2cRequestSeq; o Core responde e por ultimo publica i2cResponseSeq. */
+bool i2cBurstTransfer( uint32_t bus, const I2cBurstRequest* req, I2cBurstResponse* resp, uint8_t* rxOut )
+{
+    memset( resp, 0, sizeof(*resp) );
+    resp->first_nack = UINT32_MAX;
+
+    if( !m_arena || m_arenaAbiMajor != QEMU_ARENA_ABI_MAJOR ||
+        !m_arenaDescriptor ||
+        !(m_arenaDescriptor->negotiatedCapabilities & QEMU_ARENA_CAP_I2C_BURST) ) return false;
+    if( req->tx_len > 64 || req->rx_len > 32 ) return false;
+
+    ArenaTransaction transaction = arenaTransactionBegin();
+
+    /* Mantém ordem total com GPIO-matrix/IOMUX e demais writes já publicados. Sem esta barreira o
+     * Core poderia resolver o burst antes de aplicar o roteamento de SDA/SCL que o precedeu. */
+    waitForQueueDrain();
+
+    m_arena->i2cTimePs   = simuClockNs() * 1000;
+    m_arena->i2cBus      = bus;
+    m_arena->i2cFlags    = req->flags;
+    m_arena->i2cPeriodNs = req->period_ns;
+    m_arena->i2cTxLen    = req->tx_len;
+    m_arena->i2cRxLen    = req->rx_len;
+    if( req->tx_len ) memcpy( (void*)m_arena->i2cTx, req->tx, req->tx_len );
+
+    const uint64_t seq = ++m_i2cRequestCounter;
+    const uint64_t waitStartWallNs = get_clock();
+    qatomic_store_release( &m_arena->i2cRequestSeq, seq );
+
+    uint64_t timeout = 0;
+    bool timedOut = false;
+    while( qatomic_load_acquire(&m_arena->i2cResponseSeq) != seq )
+    {
+        if( timeout++ > 5e9 ) // Terminate process if timed out
+        {
+            printf("Qemu: i2cBurstTransfer TIMEOUT\n"); fflush( stdout );
+            timedOut = true;
+            break;
+        }
+    }
+
+    static const char* s_i2cBurstTrace = NULL;
+    static bool s_i2cBurstTraceRead = false;
+    if( !s_i2cBurstTraceRead )
+    {
+        s_i2cBurstTrace = getenv("LASECSIMUL_I2C_BURST_TRACE");
+        s_i2cBurstTraceRead = true;
+    }
+    if( s_i2cBurstTrace && s_i2cBurstTrace[0] && strcmp(s_i2cBurstTrace, "0") != 0 )
+    {
+        const uint64_t waitNs = get_clock() - waitStartWallNs;
+        printf("[LasecSimul][I2C burst] seq=%llu waitWallNs=%llu spins=%llu tx=%u rx=%u timedOut=%d\n",
+               (unsigned long long)seq, (unsigned long long)waitNs, (unsigned long long)timeout,
+               req->tx_len, req->rx_len, timedOut ? 1 : 0);
+        fflush(stdout);
+    }
+
+    if( !timedOut )
+    {
+        resp->handled     = (m_arena->i2cStatus & 1u) != 0;
+        resp->address_ack = (m_arena->i2cStatus & 2u) != 0;
+        resp->first_nack  = m_arena->i2cFirstNack;
+        resp->rx_len      = m_arena->i2cRxLen > 32 ? 32 : m_arena->i2cRxLen;
+        resp->stretch_ns  = m_arena->i2cStretchNs;
+        if( resp->handled && resp->rx_len && rxOut )
+            memcpy( rxOut, (const void*)m_arena->i2cRx, resp->rx_len );
+    }
+    arenaTransactionEnd(transaction);
+
+    if( m_arena->irqNumber ) setInterrupt();
+
+    return !timedOut && resp->handled;
+}
+
 void updtCpuFreqHz( uint32_t clock_Hz )
 {
     uint64_t now = simuClockNs();
@@ -472,7 +554,7 @@ int simuMain( int argc, char** argv )
         return 1;
     }
     const int shMemSize = arenaAbiMajor == QEMU_ARENA_ABI_MAJOR
-                               ? sizeof(qemuArenaV4Mapping_t)
+                               ? sizeof(qemuArenaV5Mapping_t)
                                : sizeof(qemuArena_t);
     const char* shMemKey;
 
@@ -519,10 +601,10 @@ int simuMain( int argc, char** argv )
     m_arenaAbiMajor = arenaAbiMajor;
     m_arenaDescriptor = NULL;
     if (arenaAbiMajor == QEMU_ARENA_ABI_MAJOR) {
-        volatile qemuArenaV4Mapping_t *mapping =
-            (volatile qemuArenaV4Mapping_t *)arena;
+        volatile qemuArenaV5Mapping_t *mapping =
+            (volatile qemuArenaV5Mapping_t *)arena;
         m_arenaDescriptor = &mapping->descriptor;
-        if (!validateArenaV4Descriptor(m_arenaDescriptor)) {
+        if (!validateArenaV5Descriptor(m_arenaDescriptor)) {
 #ifdef __linux__
             munmap(arena, shMemSize);
 #elif defined(_WIN32)

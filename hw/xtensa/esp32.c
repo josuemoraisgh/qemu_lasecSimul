@@ -702,6 +702,7 @@ static void esp32_soc_realize( DeviceState *dev, Error **errp )
         qdev_realize( DEVICE(&s->i2c[i]), &s->periph_bus, &error_fatal);
         esp32_soc_add_periph_device( sys_mem, &s->i2c[i], i2c_base[i]);
         sysbus_connect_irq( SYS_BUS_DEVICE(&s->i2c[i]), 0, qdev_get_gpio_in(intmatrix_dev, ETS_I2C_EXT0_INTR_SOURCE + i));
+        s->i2c[i].busIndex = (uint8_t)i;
     }
 
     qdev_realize( DEVICE(&s->rng), &s->periph_bus, &error_fatal);

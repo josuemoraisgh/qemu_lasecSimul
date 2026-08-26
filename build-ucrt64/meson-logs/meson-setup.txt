@@ -15,72 +15,72 @@ C++ compiler for the host machine: c++ -m64 -mcx16 (gcc 16.1.0 "c++ (Rev5, Built
 C++ linker for the host machine: c++ -m64 -mcx16 ld.bfd 2.46.1
 Program python3 found: YES (C:/SourceCode/qemu_lasecSimul/build-ucrt64/pyvenv/bin/python.exe)
 Program iasl found: NO
-Compiler for C supports arguments -fno-pie: YES 
-Compiler for C supports arguments -no-pie: YES 
-Compiler for C supports link arguments -Wl,-z,relro: NO 
-Compiler for C supports link arguments -Wl,-z,now: NO 
-Compiler for C supports link arguments -Wl,--no-seh: YES 
-Compiler for C supports link arguments -Wl,--nxcompat: YES 
-Compiler for C supports link arguments -Wl,--dynamicbase: YES 
-Compiler for C supports link arguments -Wl,--high-entropy-va: YES 
-Compiler for C supports link arguments -Wl,--warn-common: YES 
-Compiler for C supports arguments -Wundef: YES 
-Compiler for C supports arguments -Wwrite-strings: YES 
-Compiler for C supports arguments -Wmissing-prototypes: YES 
-Compiler for C supports arguments -Wstrict-prototypes: YES 
-Compiler for C supports arguments -Wredundant-decls: YES 
-Compiler for C supports arguments -Wold-style-declaration: YES 
-Compiler for C supports arguments -Wold-style-definition: YES 
-Compiler for C supports arguments -Wtype-limits: YES 
-Compiler for C supports arguments -Wformat-security: YES 
-Compiler for C supports arguments -Wformat-y2k: YES 
-Compiler for C supports arguments -Winit-self: YES 
-Compiler for C supports arguments -Wignored-qualifiers: YES 
-Compiler for C supports arguments -Wempty-body: YES 
-Compiler for C supports arguments -Wnested-externs: YES 
-Compiler for C supports arguments -Wendif-labels: YES 
-Compiler for C supports arguments -Wexpansion-to-defined: YES 
-Compiler for C supports arguments -Wimplicit-fallthrough=2: YES 
-Compiler for C supports arguments -Wmissing-format-attribute: YES 
-Compiler for C supports arguments -Wno-initializer-overrides: NO 
-Compiler for C supports arguments -Wno-missing-include-dirs: YES 
-Compiler for C supports arguments -Wno-shift-negative-value: YES 
-Compiler for C supports arguments -Wno-string-plus-int: NO 
-Compiler for C supports arguments -Wno-typedef-redefinition: NO 
-Compiler for C supports arguments -Wno-tautological-type-limit-compare: NO 
-Compiler for C supports arguments -Wno-psabi: YES 
-Compiler for C supports arguments -Wno-gnu-variable-sized-type-not-at-end: NO 
-Compiler for C supports arguments -Wthread-safety: NO 
-Compiler for C++ supports arguments -Wundef: YES 
-Compiler for C++ supports arguments -Wwrite-strings: YES 
-Compiler for C++ supports arguments -Wmissing-prototypes: NO 
-Compiler for C++ supports arguments -Wstrict-prototypes: NO 
-Compiler for C++ supports arguments -Wredundant-decls: YES 
-Compiler for C++ supports arguments -Wold-style-declaration: NO 
-Compiler for C++ supports arguments -Wold-style-definition: NO 
-Compiler for C++ supports arguments -Wtype-limits: YES 
-Compiler for C++ supports arguments -Wformat-security: YES 
-Compiler for C++ supports arguments -Wformat-y2k: YES 
-Compiler for C++ supports arguments -Winit-self: YES 
-Compiler for C++ supports arguments -Wignored-qualifiers: YES 
-Compiler for C++ supports arguments -Wempty-body: YES 
-Compiler for C++ supports arguments -Wnested-externs: NO 
-Compiler for C++ supports arguments -Wendif-labels: YES 
-Compiler for C++ supports arguments -Wexpansion-to-defined: YES 
-Compiler for C++ supports arguments -Wimplicit-fallthrough=2: YES 
-Compiler for C++ supports arguments -Wmissing-format-attribute: YES 
-Compiler for C++ supports arguments -Wno-initializer-overrides: NO 
-Compiler for C++ supports arguments -Wno-missing-include-dirs: YES 
-Compiler for C++ supports arguments -Wno-shift-negative-value: YES 
-Compiler for C++ supports arguments -Wno-string-plus-int: NO 
-Compiler for C++ supports arguments -Wno-typedef-redefinition: NO 
-Compiler for C++ supports arguments -Wno-tautological-type-limit-compare: NO 
-Compiler for C++ supports arguments -Wno-psabi: YES 
-Compiler for C++ supports arguments -Wno-gnu-variable-sized-type-not-at-end: NO 
-Compiler for C++ supports arguments -Wthread-safety: NO 
+Compiler for C supports arguments -fno-pie: YES (cached)
+Compiler for C supports arguments -no-pie: YES (cached)
+Compiler for C supports link arguments -Wl,-z,relro: NO (cached)
+Compiler for C supports link arguments -Wl,-z,now: NO (cached)
+Compiler for C supports link arguments -Wl,--no-seh: YES (cached)
+Compiler for C supports link arguments -Wl,--nxcompat: YES (cached)
+Compiler for C supports link arguments -Wl,--dynamicbase: YES (cached)
+Compiler for C supports link arguments -Wl,--high-entropy-va: YES (cached)
+Compiler for C supports link arguments -Wl,--warn-common: YES (cached)
+Compiler for C supports arguments -Wundef: YES (cached)
+Compiler for C supports arguments -Wwrite-strings: YES (cached)
+Compiler for C supports arguments -Wmissing-prototypes: YES (cached)
+Compiler for C supports arguments -Wstrict-prototypes: YES (cached)
+Compiler for C supports arguments -Wredundant-decls: YES (cached)
+Compiler for C supports arguments -Wold-style-declaration: YES (cached)
+Compiler for C supports arguments -Wold-style-definition: YES (cached)
+Compiler for C supports arguments -Wtype-limits: YES (cached)
+Compiler for C supports arguments -Wformat-security: YES (cached)
+Compiler for C supports arguments -Wformat-y2k: YES (cached)
+Compiler for C supports arguments -Winit-self: YES (cached)
+Compiler for C supports arguments -Wignored-qualifiers: YES (cached)
+Compiler for C supports arguments -Wempty-body: YES (cached)
+Compiler for C supports arguments -Wnested-externs: YES (cached)
+Compiler for C supports arguments -Wendif-labels: YES (cached)
+Compiler for C supports arguments -Wexpansion-to-defined: YES (cached)
+Compiler for C supports arguments -Wimplicit-fallthrough=2: YES (cached)
+Compiler for C supports arguments -Wmissing-format-attribute: YES (cached)
+Compiler for C supports arguments -Wno-initializer-overrides: NO (cached)
+Compiler for C supports arguments -Wno-missing-include-dirs: YES (cached)
+Compiler for C supports arguments -Wno-shift-negative-value: YES (cached)
+Compiler for C supports arguments -Wno-string-plus-int: NO (cached)
+Compiler for C supports arguments -Wno-typedef-redefinition: NO (cached)
+Compiler for C supports arguments -Wno-tautological-type-limit-compare: NO (cached)
+Compiler for C supports arguments -Wno-psabi: YES (cached)
+Compiler for C supports arguments -Wno-gnu-variable-sized-type-not-at-end: NO (cached)
+Compiler for C supports arguments -Wthread-safety: NO (cached)
+Compiler for C++ supports arguments -Wundef: YES (cached)
+Compiler for C++ supports arguments -Wwrite-strings: YES (cached)
+Compiler for C++ supports arguments -Wmissing-prototypes: NO (cached)
+Compiler for C++ supports arguments -Wstrict-prototypes: NO (cached)
+Compiler for C++ supports arguments -Wredundant-decls: YES (cached)
+Compiler for C++ supports arguments -Wold-style-declaration: NO (cached)
+Compiler for C++ supports arguments -Wold-style-definition: NO (cached)
+Compiler for C++ supports arguments -Wtype-limits: YES (cached)
+Compiler for C++ supports arguments -Wformat-security: YES (cached)
+Compiler for C++ supports arguments -Wformat-y2k: YES (cached)
+Compiler for C++ supports arguments -Winit-self: YES (cached)
+Compiler for C++ supports arguments -Wignored-qualifiers: YES (cached)
+Compiler for C++ supports arguments -Wempty-body: YES (cached)
+Compiler for C++ supports arguments -Wnested-externs: NO (cached)
+Compiler for C++ supports arguments -Wendif-labels: YES (cached)
+Compiler for C++ supports arguments -Wexpansion-to-defined: YES (cached)
+Compiler for C++ supports arguments -Wimplicit-fallthrough=2: YES (cached)
+Compiler for C++ supports arguments -Wmissing-format-attribute: YES (cached)
+Compiler for C++ supports arguments -Wno-initializer-overrides: NO (cached)
+Compiler for C++ supports arguments -Wno-missing-include-dirs: YES (cached)
+Compiler for C++ supports arguments -Wno-shift-negative-value: YES (cached)
+Compiler for C++ supports arguments -Wno-string-plus-int: NO (cached)
+Compiler for C++ supports arguments -Wno-typedef-redefinition: NO (cached)
+Compiler for C++ supports arguments -Wno-tautological-type-limit-compare: NO (cached)
+Compiler for C++ supports arguments -Wno-psabi: YES (cached)
+Compiler for C++ supports arguments -Wno-gnu-variable-sized-type-not-at-end: NO (cached)
+Compiler for C++ supports arguments -Wthread-safety: NO (cached)
 Program cgcc found: NO
 Library m found: YES
-Run-time dependency threads found: YES
+Dependency threads for host machine found: YES unknown (cached)
 Library util found: NO
 Program midl found: NO
 Program widl found: YES
@@ -88,28 +88,28 @@ Library pathcch found: YES
 Library ws2_32 found: YES
 Library winmm found: YES
 Windows resource compiler: GNU windres (GNU Binutils) 2.46.1
-Has header "winhvplatform.h" : YES 
-Has header "winhvemulation.h" : YES 
+Has header "winhvplatform.h" : YES (cached)
+Has header "winhvemulation.h" : YES (cached)
 Run-time dependency appleframeworks found: NO  (tried framework)
-Found pkg-config: YES (C:\SourceCode\tools\msys64\ucrt64\bin/pkg-config.EXE) 2.5.1
-Run-time dependency glib-2.0 found: YES 2.88.2
-Run-time dependency gio-2.0 found: YES 2.88.2
+Dependency glib-2.0 for host machine found: YES 2.88.2 (cached)
+Dependency gio-2.0 for host machine found: YES 2.88.2 (cached)
 Program C:/SourceCode/tools/msys64/ucrt64/bin/gdbus-codegen.exe found: YES (C:/SourceCode/tools/msys64/ucrt64/bin/gdbus-codegen.exe)
+Found pkg-config: YES (C:\SourceCode\tools\msys64\ucrt64\bin/pkg-config.EXE) 2.5.1
 Run-time dependency gio-unix-2.0 found: NO  (tried pkg-config)
 Program scripts/xml-preprocess.py found: YES (C:/SourceCode/qemu_lasecSimul/build-ucrt64/pyvenv/bin/python.exe C:/SourceCode/qemu_lasecSimul/scripts/xml-preprocess.py)
-Run-time dependency pixman-1 found: YES 0.46.4
-Run-time dependency zlib found: YES 1.3.2
-Has header "libaio.h" : NO 
+Dependency pixman-1 for host machine found: YES 0.46.4 (cached)
+Dependency zlib for host machine found: YES 1.3.2 (cached)
+Has header "libaio.h" : NO (cached)
 Run-time dependency liburing found: NO  (tried pkg-config)
 Run-time dependency libnfs found: NO  (tried pkg-config)
-Has header "attr/xattr.h" : NO 
+Has header "attr/xattr.h" : NO (cached)
 Run-time dependency appleframeworks found: NO  (tried framework)
 Run-time dependency appleframeworks found: NO  (tried framework)
 Run-time dependency libseccomp found: NO  (tried pkg-config)
-Has header "cap-ng.h" : NO 
+Has header "cap-ng.h" : NO (cached)
 Run-time dependency xkbcommon found: NO  (tried pkg-config)
-Run-time dependency slirp found: YES 4.9.3
-Has header "libvdeplug.h" : NO 
+Dependency slirp for host machine found: YES 4.9.3 (cached)
+Has header "libvdeplug.h" : NO (cached)
 Dependency libpulse for host machine skipped: feature pa disabled
 Dependency alsa for host machine skipped: feature alsa disabled
 Run-time dependency jack found: NO  (tried pkg-config)
@@ -118,37 +118,36 @@ Run-time dependency spice-protocol found: NO  (tried pkg-config)
 Run-time dependency spice-server found: NO  (tried pkg-config)
 Library rt found: NO
 Run-time dependency libiscsi found: NO  (tried pkg-config)
-Run-time dependency libzstd found: YES 1.5.7
+Dependency libzstd for host machine found: YES 1.5.7 (cached)
 Run-time dependency virglrenderer found: NO  (tried pkg-config)
 Run-time dependency blkio found: NO  (tried pkg-config)
 Run-time dependency libcurl found: NO  (tried pkg-config)
-Has header "brlapi.h" : NO 
+Has header "brlapi.h" : NO (cached)
 Dependency sdl2 for host machine skipped: feature sdl disabled
 Library rados found: NO
-Has header "rbd/librbd.h" : NO 
+Has header "rbd/librbd.h" : NO (cached)
 Run-time dependency glusterfs-api found: NO  (tried pkg-config)
 Run-time dependency libssh found: NO  (tried pkg-config)
-Has header "bzlib.h" : YES 
+Has header "bzlib.h" : YES (cached)
 Library bz2 found: YES
-Has header "lzfse.h" : NO 
-Has header "sys/soundcard.h" : NO 
-Has header "dsound.h" : YES 
+Has header "lzfse.h" : NO (cached)
+Has header "sys/soundcard.h" : NO (cached)
+Has header "dsound.h" : YES (cached)
 Dependency appleframeworks(modules: CoreAudio) for host machine skipped: feature coreaudio disabled
 Dependency epoxy for host machine skipped: feature opengl disabled
-Has header "epoxy/egl.h" with dependency epoxy: NO 
+Has header "epoxy/egl.h" with dependency epoxy: NO (cached)
 Run-time dependency gnutls found: NO  (tried pkg-config)
 Run-time dependency gnutls found: NO  (tried pkg-config)
-libgcrypt-config found: YES (sh C:\SourceCode\tools\msys64\ucrt64\bin/libgcrypt-config) 1.12.2
-Run-time dependency libgcrypt found: YES 1.12.2-unknown
-Run-time dependency gmp found: YES 6.3.0
+Dependency libgcrypt for host machine found: YES 1.12.2-unknown (cached)
+Dependency gmp for host machine found: YES 6.3.0 (cached)
 Dependency gtk+-3.0 for host machine skipped: feature gtk disabled
 Run-time dependency libpng found: NO  (tried pkg-config)
-Has header "security/pam_appl.h" : NO 
-Has header "snappy-c.h" : NO 
-Has header "lzo/lzo1x.h" : NO 
-Has header "numa.h" : NO 
+Has header "security/pam_appl.h" : NO (cached)
+Has header "snappy-c.h" : NO (cached)
+Has header "lzo/lzo1x.h" : NO (cached)
+Has header "numa.h" : NO (cached)
 Library ibumad found: NO
-Has header "rdma/rdma_cma.h" : NO 
+Has header "rdma/rdma_cma.h" : NO (cached)
 Library ibverbs found: NO
 Run-time dependency xencontrol found: NO  (tried pkg-config)
 Library xenstore found: NO
@@ -166,73 +165,73 @@ Run-time dependency libusb-1.0 found: NO  (tried pkg-config)
 Run-time dependency libpmem found: NO  (tried pkg-config)
 Run-time dependency libdaxctl found: NO  (tried pkg-config)
 Run-time dependency libkeyutils found: NO  (tried pkg-config)
-Checking for function "gettid" : NO 
+Checking for function "gettid" : NO (cached)
 Run-time dependency libselinux found: NO  (tried pkg-config)
-Checking for function "malloc_trim" : NO 
-Header "sys/stat.h" has symbol "STATX_BASIC_STATS" : NO 
-Header "sys/stat.h" has symbol "STATX_MNT_ID" : NO 
+Checking for function "malloc_trim" : NO (cached)
+Header "sys/stat.h" has symbol "STATX_BASIC_STATS" : NO (cached)
+Header "sys/stat.h" has symbol "STATX_MNT_ID" : NO (cached)
 Run-time dependency fuse3 found: NO  (tried pkg-config)
 Dependency libbpf for host machine skipped: feature bpf disabled
 Run-time dependency libdw found: NO  (tried pkg-config)
-Checking for function "pthread_fchdir_np" : NO 
-Has header "sys/epoll.h" : NO 
-Has header "linux/magic.h" : NO 
-Has header "valgrind/valgrind.h" : NO 
-Has header "linux/btrfs.h" : NO 
-Has header "libdrm/drm.h" : NO 
-Has header "pty.h" : NO 
-Has header "sys/disk.h" : NO 
-Has header "sys/ioccom.h" : NO 
-Has header "sys/kcov.h" : NO 
-Has header "afunix.h" : YES 
-Checking for function "close_range" : NO 
-Checking for function "accept4" : NO 
-Checking for function "clock_adjtime" : NO 
-Checking for function "dup3" : NO 
-Checking for function "fallocate" : NO 
-Checking for function "posix_fallocate" : NO 
-Checking for function "getcpu" : NO 
-Checking for function "sched_getcpu" : NO 
-Checking for function "posix_memalign" : NO 
-Checking for function "_aligned_malloc" : YES 
-Checking for function "valloc" : NO 
-Checking for function "memalign" : NO 
-Checking for function "ppoll" : NO 
-Checking for function "preadv" : NO 
 Checking for function "pthread_fchdir_np" : NO (cached)
-Checking for function "sendfile" : NO 
-Checking for function "setns" : NO 
-Checking for function "syncfs" : NO 
-Checking for function "sync_file_range" : NO 
-Checking for function "timerfd_create" : NO 
-Checking for function "copy_file_range" : NO 
-Checking for function "getifaddrs" : NO 
-Checking for function "openpty" with dependency -lutil: NO 
-Checking for function "strchrnul" : NO 
-Checking for function "system" : YES 
-Header "linux/blkzoned.h" has symbol "BLKOPENZONE" : NO 
-Header "sys/epoll.h" has symbol "epoll_create1" : NO 
-Header "linux/falloc.h" has symbol "FALLOC_FL_PUNCH_HOLE" : NO 
-Header "linux/falloc.h" has symbol "FALLOC_FL_ZERO_RANGE" : NO 
-Has header "linux/fiemap.h" : NO 
-Checking for function "getrandom" : NO 
-Header "sys/inotify.h" has symbol "inotify_init" : NO 
-Header "sys/inotify.h" has symbol "inotify_init1" : NO 
-Header "sys/prctl.h" has symbol "PR_SET_TIMERSLACK" : NO 
-Header "linux/rtnetlink.h" has symbol "IFLA_PROTO_DOWN" : NO 
-Header "sys/sysmacros.h" has symbol "makedev" : NO 
-Header "getopt.h" has symbol "optreset" : NO 
-Header "netinet/in.h" has symbol "IPPROTO_MPTCP" : NO 
-Checking whether type "struct sigevent" has member "sigev_notify_thread_id" : NO 
-Checking whether type "struct stat" has member "st_atim" : NO 
-Checking whether type "struct blk_zone" has member "capacity" : NO 
-Checking for type "struct iovec" : NO 
-Checking for type "struct utmpx" : NO 
-Checking for type "struct mmsghdr" : NO 
-Header "linux/vm_sockets.h" has symbol "AF_VSOCK" : NO 
-Has header "vscoordint.h" : NO 
-Checking if "_lock_file and _unlock_file" links: YES 
-Checking if "mingw setjmp and longjmp" links: NO 
+Has header "sys/epoll.h" : NO (cached)
+Has header "linux/magic.h" : NO (cached)
+Has header "valgrind/valgrind.h" : NO (cached)
+Has header "linux/btrfs.h" : NO (cached)
+Has header "libdrm/drm.h" : NO (cached)
+Has header "pty.h" : NO (cached)
+Has header "sys/disk.h" : NO (cached)
+Has header "sys/ioccom.h" : NO (cached)
+Has header "sys/kcov.h" : NO (cached)
+Has header "afunix.h" : YES (cached)
+Checking for function "close_range" : NO (cached)
+Checking for function "accept4" : NO (cached)
+Checking for function "clock_adjtime" : NO (cached)
+Checking for function "dup3" : NO (cached)
+Checking for function "fallocate" : NO (cached)
+Checking for function "posix_fallocate" : NO (cached)
+Checking for function "getcpu" : NO (cached)
+Checking for function "sched_getcpu" : NO (cached)
+Checking for function "posix_memalign" : NO (cached)
+Checking for function "_aligned_malloc" : YES (cached)
+Checking for function "valloc" : NO (cached)
+Checking for function "memalign" : NO (cached)
+Checking for function "ppoll" : NO (cached)
+Checking for function "preadv" : NO (cached)
+Checking for function "pthread_fchdir_np" : NO (cached)
+Checking for function "sendfile" : NO (cached)
+Checking for function "setns" : NO (cached)
+Checking for function "syncfs" : NO (cached)
+Checking for function "sync_file_range" : NO (cached)
+Checking for function "timerfd_create" : NO (cached)
+Checking for function "copy_file_range" : NO (cached)
+Checking for function "getifaddrs" : NO (cached)
+Checking for function "openpty" with dependency -lutil: NO (cached)
+Checking for function "strchrnul" : NO (cached)
+Checking for function "system" : YES (cached)
+Header "linux/blkzoned.h" has symbol "BLKOPENZONE" : NO (cached)
+Header "sys/epoll.h" has symbol "epoll_create1" : NO (cached)
+Header "linux/falloc.h" has symbol "FALLOC_FL_PUNCH_HOLE" : NO (cached)
+Header "linux/falloc.h" has symbol "FALLOC_FL_ZERO_RANGE" : NO (cached)
+Has header "linux/fiemap.h" : NO (cached)
+Checking for function "getrandom" : NO (cached)
+Header "sys/inotify.h" has symbol "inotify_init" : NO (cached)
+Header "sys/inotify.h" has symbol "inotify_init1" : NO (cached)
+Header "sys/prctl.h" has symbol "PR_SET_TIMERSLACK" : NO (cached)
+Header "linux/rtnetlink.h" has symbol "IFLA_PROTO_DOWN" : NO (cached)
+Header "sys/sysmacros.h" has symbol "makedev" : NO (cached)
+Header "getopt.h" has symbol "optreset" : NO (cached)
+Header "netinet/in.h" has symbol "IPPROTO_MPTCP" : NO (cached)
+Checking whether type "struct sigevent" has member "sigev_notify_thread_id" : NO (cached)
+Checking whether type "struct stat" has member "st_atim" : NO (cached)
+Checking whether type "struct blk_zone" has member "capacity" : NO (cached)
+Checking for type "struct iovec" : NO (cached)
+Checking for type "struct utmpx" : NO (cached)
+Checking for type "struct mmsghdr" : NO (cached)
+Header "linux/vm_sockets.h" has symbol "AF_VSOCK" : NO (cached)
+Has header "vscoordint.h" : NO (cached)
+Checking if "_lock_file and _unlock_file" links: YES (cached)
+Checking if "mingw setjmp and longjmp" links: NO (cached)
 Program scripts/minikconf.py found: YES (C:/SourceCode/qemu_lasecSimul/build-ucrt64/pyvenv/bin/python.exe C:/SourceCode/qemu_lasecSimul/scripts/minikconf.py)
 Configuring xtensa-softmmu-config-target.h using configuration
 Configuring xtensa-softmmu-config-devices.mak with command
@@ -262,10 +261,10 @@ Program scripts/modinfo-generate.py found: YES (C:/SourceCode/qemu_lasecSimul/bu
 Program nm found: YES
 Program scripts/undefsym.py found: YES (C:/SourceCode/qemu_lasecSimul/build-ucrt64/pyvenv/bin/python.exe C:/SourceCode/qemu_lasecSimul/scripts/undefsym.py)
 Program scripts/feature_to_c.sh found: YES (sh C:/SourceCode/qemu_lasecSimul/scripts/feature_to_c.sh)
-Compiler for C supports link arguments -fstack-protector-all: YES 
-Compiler for C supports link arguments -fstack-protector-strong: YES 
-Compiler for C supports link arguments -Wl,--add-stdcall-alias: YES 
-Compiler for C supports link arguments -Wl,--enable-stdcall-fixup: YES 
+Compiler for C supports link arguments -fstack-protector-all: YES (cached)
+Compiler for C supports link arguments -fstack-protector-strong: YES (cached)
+Compiler for C supports link arguments -Wl,--add-stdcall-alias: YES (cached)
+Compiler for C supports link arguments -Wl,--enable-stdcall-fixup: YES (cached)
 Library ole32 found: YES
 Library oleaut32 found: YES
 Library shlwapi found: YES
@@ -282,7 +281,7 @@ Program dbus-daemon found: NO
 Did not find CMake 'cmake'
 Found CMake: NO
 Run-time dependency sysprof-capture-4 found: NO  (tried pkg-config and cmake)
-Run-time dependency glib-2.0 found: YES 2.88.2
+Dependency glib-2.0 for host machine found: YES 2.88.2 (cached)
 Program initrd-stress.sh found: YES (sh C:/SourceCode/qemu_lasecSimul/tests/migration/initrd-stress.sh)
 Program scripts/nsis.py found: YES (C:/SourceCode/qemu_lasecSimul/build-ucrt64/pyvenv/bin/python.exe C:/SourceCode/qemu_lasecSimul/scripts/nsis.py)
 Build targets in project: 455
@@ -492,7 +491,7 @@ qemu 8.1.3
     keycodemapdb                                 : YES
 
   User defined options
-    Native files                                 : config-meson.cross
+    Native files                                 : C:/SourceCode/qemu_lasecSimul/build-ucrt64/config-meson.cross
     alsa                                         : disabled
     b_pie                                        : false
     bindir                                       : 
@@ -514,5 +513,5 @@ qemu 8.1.3
     virtfs                                       : disabled
     vnc                                          : disabled
 
-Found ninja-1.13.2 at C:/SourceCode/tools/msys64/ucrt64/bin/ninja.EXE
+Found ninja-1.13.2 at C:\SourceCode\tools\msys64\ucrt64\bin/ninja.EXE
 Running postconf script 'C:/SourceCode/qemu_lasecSimul/build-ucrt64/pyvenv/bin/python.exe C:/SourceCode/qemu_lasecSimul/scripts/symlink-install-tree.py'

@@ -100,14 +100,14 @@ static inline void _nocheck__trace_gdbstub_op_start(const char * device)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 4 "..\gdbstub\trace-events"
+#line 4 "../gdbstub/trace-events"
             qemu_log("%d@%zu.%06zu:gdbstub_op_start " "Starting gdbstub using device %s" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , device);
 #line 109 "trace/trace-gdbstub.h"
         } else {
-#line 4 "..\gdbstub\trace-events"
+#line 4 "../gdbstub/trace-events"
             qemu_log("gdbstub_op_start " "Starting gdbstub using device %s" "\n", device);
 #line 113 "trace/trace-gdbstub.h"
         }
@@ -131,14 +131,14 @@ static inline void _nocheck__trace_gdbstub_op_exiting(uint8_t code)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 5 "..\gdbstub\trace-events"
+#line 5 "../gdbstub/trace-events"
             qemu_log("%d@%zu.%06zu:gdbstub_op_exiting " "notifying exit with code=0x%02x" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , code);
 #line 140 "trace/trace-gdbstub.h"
         } else {
-#line 5 "..\gdbstub\trace-events"
+#line 5 "../gdbstub/trace-events"
             qemu_log("gdbstub_op_exiting " "notifying exit with code=0x%02x" "\n", code);
 #line 144 "trace/trace-gdbstub.h"
         }
@@ -162,14 +162,14 @@ static inline void _nocheck__trace_gdbstub_op_continue(void)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 6 "..\gdbstub\trace-events"
+#line 6 "../gdbstub/trace-events"
             qemu_log("%d@%zu.%06zu:gdbstub_op_continue " "Continuing all CPUs" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      );
 #line 171 "trace/trace-gdbstub.h"
         } else {
-#line 6 "..\gdbstub\trace-events"
+#line 6 "../gdbstub/trace-events"
             qemu_log("gdbstub_op_continue " "Continuing all CPUs" "\n");
 #line 175 "trace/trace-gdbstub.h"
         }
@@ -193,14 +193,14 @@ static inline void _nocheck__trace_gdbstub_op_continue_cpu(int cpu_index)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 7 "..\gdbstub\trace-events"
+#line 7 "../gdbstub/trace-events"
             qemu_log("%d@%zu.%06zu:gdbstub_op_continue_cpu " "Continuing CPU %d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , cpu_index);
 #line 202 "trace/trace-gdbstub.h"
         } else {
-#line 7 "..\gdbstub\trace-events"
+#line 7 "../gdbstub/trace-events"
             qemu_log("gdbstub_op_continue_cpu " "Continuing CPU %d" "\n", cpu_index);
 #line 206 "trace/trace-gdbstub.h"
         }
@@ -224,14 +224,14 @@ static inline void _nocheck__trace_gdbstub_op_stepping(int cpu_index)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 8 "..\gdbstub\trace-events"
+#line 8 "../gdbstub/trace-events"
             qemu_log("%d@%zu.%06zu:gdbstub_op_stepping " "Stepping CPU %d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , cpu_index);
 #line 233 "trace/trace-gdbstub.h"
         } else {
-#line 8 "..\gdbstub\trace-events"
+#line 8 "../gdbstub/trace-events"
             qemu_log("gdbstub_op_stepping " "Stepping CPU %d" "\n", cpu_index);
 #line 237 "trace/trace-gdbstub.h"
         }
@@ -255,14 +255,14 @@ static inline void _nocheck__trace_gdbstub_op_extra_info(const char * info)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 9 "..\gdbstub\trace-events"
+#line 9 "../gdbstub/trace-events"
             qemu_log("%d@%zu.%06zu:gdbstub_op_extra_info " "Thread extra info: %s" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , info);
 #line 264 "trace/trace-gdbstub.h"
         } else {
-#line 9 "..\gdbstub\trace-events"
+#line 9 "../gdbstub/trace-events"
             qemu_log("gdbstub_op_extra_info " "Thread extra info: %s" "\n", info);
 #line 268 "trace/trace-gdbstub.h"
         }
@@ -286,14 +286,14 @@ static inline void _nocheck__trace_gdbstub_hit_internal_error(void)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 10 "..\gdbstub\trace-events"
+#line 10 "../gdbstub/trace-events"
             qemu_log("%d@%zu.%06zu:gdbstub_hit_internal_error " "RUN_STATE_INTERNAL_ERROR" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      );
 #line 295 "trace/trace-gdbstub.h"
         } else {
-#line 10 "..\gdbstub\trace-events"
+#line 10 "../gdbstub/trace-events"
             qemu_log("gdbstub_hit_internal_error " "RUN_STATE_INTERNAL_ERROR" "\n");
 #line 299 "trace/trace-gdbstub.h"
         }
@@ -317,14 +317,14 @@ static inline void _nocheck__trace_gdbstub_hit_break(void)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 11 "..\gdbstub\trace-events"
+#line 11 "../gdbstub/trace-events"
             qemu_log("%d@%zu.%06zu:gdbstub_hit_break " "RUN_STATE_DEBUG" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      );
 #line 326 "trace/trace-gdbstub.h"
         } else {
-#line 11 "..\gdbstub\trace-events"
+#line 11 "../gdbstub/trace-events"
             qemu_log("gdbstub_hit_break " "RUN_STATE_DEBUG" "\n");
 #line 330 "trace/trace-gdbstub.h"
         }
@@ -348,14 +348,14 @@ static inline void _nocheck__trace_gdbstub_hit_paused(void)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 12 "..\gdbstub\trace-events"
+#line 12 "../gdbstub/trace-events"
             qemu_log("%d@%zu.%06zu:gdbstub_hit_paused " "RUN_STATE_PAUSED" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      );
 #line 357 "trace/trace-gdbstub.h"
         } else {
-#line 12 "..\gdbstub\trace-events"
+#line 12 "../gdbstub/trace-events"
             qemu_log("gdbstub_hit_paused " "RUN_STATE_PAUSED" "\n");
 #line 361 "trace/trace-gdbstub.h"
         }
@@ -379,14 +379,14 @@ static inline void _nocheck__trace_gdbstub_hit_shutdown(void)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 13 "..\gdbstub\trace-events"
+#line 13 "../gdbstub/trace-events"
             qemu_log("%d@%zu.%06zu:gdbstub_hit_shutdown " "RUN_STATE_SHUTDOWN" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      );
 #line 388 "trace/trace-gdbstub.h"
         } else {
-#line 13 "..\gdbstub\trace-events"
+#line 13 "../gdbstub/trace-events"
             qemu_log("gdbstub_hit_shutdown " "RUN_STATE_SHUTDOWN" "\n");
 #line 392 "trace/trace-gdbstub.h"
         }
@@ -410,14 +410,14 @@ static inline void _nocheck__trace_gdbstub_hit_io_error(void)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 14 "..\gdbstub\trace-events"
+#line 14 "../gdbstub/trace-events"
             qemu_log("%d@%zu.%06zu:gdbstub_hit_io_error " "RUN_STATE_IO_ERROR" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      );
 #line 419 "trace/trace-gdbstub.h"
         } else {
-#line 14 "..\gdbstub\trace-events"
+#line 14 "../gdbstub/trace-events"
             qemu_log("gdbstub_hit_io_error " "RUN_STATE_IO_ERROR" "\n");
 #line 423 "trace/trace-gdbstub.h"
         }
@@ -441,14 +441,14 @@ static inline void _nocheck__trace_gdbstub_hit_watchdog(void)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 15 "..\gdbstub\trace-events"
+#line 15 "../gdbstub/trace-events"
             qemu_log("%d@%zu.%06zu:gdbstub_hit_watchdog " "RUN_STATE_WATCHDOG" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      );
 #line 450 "trace/trace-gdbstub.h"
         } else {
-#line 15 "..\gdbstub\trace-events"
+#line 15 "../gdbstub/trace-events"
             qemu_log("gdbstub_hit_watchdog " "RUN_STATE_WATCHDOG" "\n");
 #line 454 "trace/trace-gdbstub.h"
         }
@@ -472,14 +472,14 @@ static inline void _nocheck__trace_gdbstub_hit_unknown(int state)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 16 "..\gdbstub\trace-events"
+#line 16 "../gdbstub/trace-events"
             qemu_log("%d@%zu.%06zu:gdbstub_hit_unknown " "Unknown run state=0x%x" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , state);
 #line 481 "trace/trace-gdbstub.h"
         } else {
-#line 16 "..\gdbstub\trace-events"
+#line 16 "../gdbstub/trace-events"
             qemu_log("gdbstub_hit_unknown " "Unknown run state=0x%x" "\n", state);
 #line 485 "trace/trace-gdbstub.h"
         }
@@ -503,14 +503,14 @@ static inline void _nocheck__trace_gdbstub_io_reply(const char * message)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 17 "..\gdbstub\trace-events"
+#line 17 "../gdbstub/trace-events"
             qemu_log("%d@%zu.%06zu:gdbstub_io_reply " "Sent: %s" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , message);
 #line 512 "trace/trace-gdbstub.h"
         } else {
-#line 17 "..\gdbstub\trace-events"
+#line 17 "../gdbstub/trace-events"
             qemu_log("gdbstub_io_reply " "Sent: %s" "\n", message);
 #line 516 "trace/trace-gdbstub.h"
         }
@@ -534,14 +534,14 @@ static inline void _nocheck__trace_gdbstub_io_binaryreply(size_t ofs, const char
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 18 "..\gdbstub\trace-events"
+#line 18 "../gdbstub/trace-events"
             qemu_log("%d@%zu.%06zu:gdbstub_io_binaryreply " "0x%04zx: %s" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , ofs, line);
 #line 543 "trace/trace-gdbstub.h"
         } else {
-#line 18 "..\gdbstub\trace-events"
+#line 18 "../gdbstub/trace-events"
             qemu_log("gdbstub_io_binaryreply " "0x%04zx: %s" "\n", ofs, line);
 #line 547 "trace/trace-gdbstub.h"
         }
@@ -565,14 +565,14 @@ static inline void _nocheck__trace_gdbstub_io_command(const char * command)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 19 "..\gdbstub\trace-events"
+#line 19 "../gdbstub/trace-events"
             qemu_log("%d@%zu.%06zu:gdbstub_io_command " "Received: %s" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , command);
 #line 574 "trace/trace-gdbstub.h"
         } else {
-#line 19 "..\gdbstub\trace-events"
+#line 19 "../gdbstub/trace-events"
             qemu_log("gdbstub_io_command " "Received: %s" "\n", command);
 #line 578 "trace/trace-gdbstub.h"
         }
@@ -596,14 +596,14 @@ static inline void _nocheck__trace_gdbstub_io_got_ack(void)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 20 "..\gdbstub\trace-events"
+#line 20 "../gdbstub/trace-events"
             qemu_log("%d@%zu.%06zu:gdbstub_io_got_ack " "Got ACK" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      );
 #line 605 "trace/trace-gdbstub.h"
         } else {
-#line 20 "..\gdbstub\trace-events"
+#line 20 "../gdbstub/trace-events"
             qemu_log("gdbstub_io_got_ack " "Got ACK" "\n");
 #line 609 "trace/trace-gdbstub.h"
         }
@@ -627,14 +627,14 @@ static inline void _nocheck__trace_gdbstub_io_got_unexpected(uint8_t ch)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 21 "..\gdbstub\trace-events"
+#line 21 "../gdbstub/trace-events"
             qemu_log("%d@%zu.%06zu:gdbstub_io_got_unexpected " "Got 0x%02x when expecting ACK/NACK" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , ch);
 #line 636 "trace/trace-gdbstub.h"
         } else {
-#line 21 "..\gdbstub\trace-events"
+#line 21 "../gdbstub/trace-events"
             qemu_log("gdbstub_io_got_unexpected " "Got 0x%02x when expecting ACK/NACK" "\n", ch);
 #line 640 "trace/trace-gdbstub.h"
         }
@@ -658,14 +658,14 @@ static inline void _nocheck__trace_gdbstub_err_got_nack(void)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 22 "..\gdbstub\trace-events"
+#line 22 "../gdbstub/trace-events"
             qemu_log("%d@%zu.%06zu:gdbstub_err_got_nack " "Got NACK, retransmitting" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      );
 #line 667 "trace/trace-gdbstub.h"
         } else {
-#line 22 "..\gdbstub\trace-events"
+#line 22 "../gdbstub/trace-events"
             qemu_log("gdbstub_err_got_nack " "Got NACK, retransmitting" "\n");
 #line 671 "trace/trace-gdbstub.h"
         }
@@ -689,14 +689,14 @@ static inline void _nocheck__trace_gdbstub_err_garbage(uint8_t ch)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 23 "..\gdbstub\trace-events"
+#line 23 "../gdbstub/trace-events"
             qemu_log("%d@%zu.%06zu:gdbstub_err_garbage " "received garbage between packets: 0x%02x" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , ch);
 #line 698 "trace/trace-gdbstub.h"
         } else {
-#line 23 "..\gdbstub\trace-events"
+#line 23 "../gdbstub/trace-events"
             qemu_log("gdbstub_err_garbage " "received garbage between packets: 0x%02x" "\n", ch);
 #line 702 "trace/trace-gdbstub.h"
         }
@@ -720,14 +720,14 @@ static inline void _nocheck__trace_gdbstub_err_overrun(void)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 24 "..\gdbstub\trace-events"
+#line 24 "../gdbstub/trace-events"
             qemu_log("%d@%zu.%06zu:gdbstub_err_overrun " "command buffer overrun, dropping command" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      );
 #line 729 "trace/trace-gdbstub.h"
         } else {
-#line 24 "..\gdbstub\trace-events"
+#line 24 "../gdbstub/trace-events"
             qemu_log("gdbstub_err_overrun " "command buffer overrun, dropping command" "\n");
 #line 733 "trace/trace-gdbstub.h"
         }
@@ -751,14 +751,14 @@ static inline void _nocheck__trace_gdbstub_err_invalid_repeat(uint8_t ch)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 25 "..\gdbstub\trace-events"
+#line 25 "../gdbstub/trace-events"
             qemu_log("%d@%zu.%06zu:gdbstub_err_invalid_repeat " "got invalid RLE count: 0x%02x" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , ch);
 #line 760 "trace/trace-gdbstub.h"
         } else {
-#line 25 "..\gdbstub\trace-events"
+#line 25 "../gdbstub/trace-events"
             qemu_log("gdbstub_err_invalid_repeat " "got invalid RLE count: 0x%02x" "\n", ch);
 #line 764 "trace/trace-gdbstub.h"
         }
@@ -782,14 +782,14 @@ static inline void _nocheck__trace_gdbstub_err_invalid_rle(void)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 26 "..\gdbstub\trace-events"
+#line 26 "../gdbstub/trace-events"
             qemu_log("%d@%zu.%06zu:gdbstub_err_invalid_rle " "got invalid RLE sequence" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      );
 #line 791 "trace/trace-gdbstub.h"
         } else {
-#line 26 "..\gdbstub\trace-events"
+#line 26 "../gdbstub/trace-events"
             qemu_log("gdbstub_err_invalid_rle " "got invalid RLE sequence" "\n");
 #line 795 "trace/trace-gdbstub.h"
         }
@@ -813,14 +813,14 @@ static inline void _nocheck__trace_gdbstub_err_checksum_invalid(uint8_t ch)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 27 "..\gdbstub\trace-events"
+#line 27 "../gdbstub/trace-events"
             qemu_log("%d@%zu.%06zu:gdbstub_err_checksum_invalid " "got invalid command checksum digit: 0x%02x" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , ch);
 #line 822 "trace/trace-gdbstub.h"
         } else {
-#line 27 "..\gdbstub\trace-events"
+#line 27 "../gdbstub/trace-events"
             qemu_log("gdbstub_err_checksum_invalid " "got invalid command checksum digit: 0x%02x" "\n", ch);
 #line 826 "trace/trace-gdbstub.h"
         }
@@ -844,14 +844,14 @@ static inline void _nocheck__trace_gdbstub_err_checksum_incorrect(uint8_t expect
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 28 "..\gdbstub\trace-events"
+#line 28 "../gdbstub/trace-events"
             qemu_log("%d@%zu.%06zu:gdbstub_err_checksum_incorrect " "got command packet with incorrect checksum, expected=0x%02x, received=0x%02x" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , expected, got);
 #line 853 "trace/trace-gdbstub.h"
         } else {
-#line 28 "..\gdbstub\trace-events"
+#line 28 "../gdbstub/trace-events"
             qemu_log("gdbstub_err_checksum_incorrect " "got command packet with incorrect checksum, expected=0x%02x, received=0x%02x" "\n", expected, got);
 #line 857 "trace/trace-gdbstub.h"
         }
@@ -875,14 +875,14 @@ static inline void _nocheck__trace_gdbstub_err_unexpected_runpkt(uint8_t ch)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 29 "..\gdbstub\trace-events"
+#line 29 "../gdbstub/trace-events"
             qemu_log("%d@%zu.%06zu:gdbstub_err_unexpected_runpkt " "unexpected packet (0x%02x) while target running" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , ch);
 #line 884 "trace/trace-gdbstub.h"
         } else {
-#line 29 "..\gdbstub\trace-events"
+#line 29 "../gdbstub/trace-events"
             qemu_log("gdbstub_err_unexpected_runpkt " "unexpected packet (0x%02x) while target running" "\n", ch);
 #line 888 "trace/trace-gdbstub.h"
         }
@@ -906,14 +906,14 @@ static inline void _nocheck__trace_gdbstub_hit_watchpoint(const char * type, int
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 32 "..\gdbstub\trace-events"
+#line 32 "../gdbstub/trace-events"
             qemu_log("%d@%zu.%06zu:gdbstub_hit_watchpoint " "Watchpoint hit, type=\"%s\" cpu=%d, vaddr=0x%" PRIx64 "" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , type, cpu_gdb_index, vaddr);
 #line 915 "trace/trace-gdbstub.h"
         } else {
-#line 32 "..\gdbstub\trace-events"
+#line 32 "../gdbstub/trace-events"
             qemu_log("gdbstub_hit_watchpoint " "Watchpoint hit, type=\"%s\" cpu=%d, vaddr=0x%" PRIx64 "" "\n", type, cpu_gdb_index, vaddr);
 #line 919 "trace/trace-gdbstub.h"
         }

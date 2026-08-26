@@ -178,14 +178,14 @@ static inline void _nocheck__trace_qio_task_new(void * task, void * source, void
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 4 "..\io\trace-events"
+#line 4 "../io/trace-events"
             qemu_log("%d@%zu.%06zu:qio_task_new " "Task new task=%p source=%p func=%p opaque=%p" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , task, source, func, opaque);
 #line 187 "trace/trace-io.h"
         } else {
-#line 4 "..\io\trace-events"
+#line 4 "../io/trace-events"
             qemu_log("qio_task_new " "Task new task=%p source=%p func=%p opaque=%p" "\n", task, source, func, opaque);
 #line 191 "trace/trace-io.h"
         }
@@ -209,14 +209,14 @@ static inline void _nocheck__trace_qio_task_complete(void * task)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 5 "..\io\trace-events"
+#line 5 "../io/trace-events"
             qemu_log("%d@%zu.%06zu:qio_task_complete " "Task complete task=%p" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , task);
 #line 218 "trace/trace-io.h"
         } else {
-#line 5 "..\io\trace-events"
+#line 5 "../io/trace-events"
             qemu_log("qio_task_complete " "Task complete task=%p" "\n", task);
 #line 222 "trace/trace-io.h"
         }
@@ -240,14 +240,14 @@ static inline void _nocheck__trace_qio_task_thread_start(void * task, void * wor
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 6 "..\io\trace-events"
+#line 6 "../io/trace-events"
             qemu_log("%d@%zu.%06zu:qio_task_thread_start " "Task thread start task=%p worker=%p opaque=%p" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , task, worker, opaque);
 #line 249 "trace/trace-io.h"
         } else {
-#line 6 "..\io\trace-events"
+#line 6 "../io/trace-events"
             qemu_log("qio_task_thread_start " "Task thread start task=%p worker=%p opaque=%p" "\n", task, worker, opaque);
 #line 253 "trace/trace-io.h"
         }
@@ -271,14 +271,14 @@ static inline void _nocheck__trace_qio_task_thread_run(void * task)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 7 "..\io\trace-events"
+#line 7 "../io/trace-events"
             qemu_log("%d@%zu.%06zu:qio_task_thread_run " "Task thread run task=%p" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , task);
 #line 280 "trace/trace-io.h"
         } else {
-#line 7 "..\io\trace-events"
+#line 7 "../io/trace-events"
             qemu_log("qio_task_thread_run " "Task thread run task=%p" "\n", task);
 #line 284 "trace/trace-io.h"
         }
@@ -302,14 +302,14 @@ static inline void _nocheck__trace_qio_task_thread_exit(void * task)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 8 "..\io\trace-events"
+#line 8 "../io/trace-events"
             qemu_log("%d@%zu.%06zu:qio_task_thread_exit " "Task thread exit task=%p" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , task);
 #line 311 "trace/trace-io.h"
         } else {
-#line 8 "..\io\trace-events"
+#line 8 "../io/trace-events"
             qemu_log("qio_task_thread_exit " "Task thread exit task=%p" "\n", task);
 #line 315 "trace/trace-io.h"
         }
@@ -333,14 +333,14 @@ static inline void _nocheck__trace_qio_task_thread_result(void * task)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 9 "..\io\trace-events"
+#line 9 "../io/trace-events"
             qemu_log("%d@%zu.%06zu:qio_task_thread_result " "Task thread result task=%p" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , task);
 #line 342 "trace/trace-io.h"
         } else {
-#line 9 "..\io\trace-events"
+#line 9 "../io/trace-events"
             qemu_log("qio_task_thread_result " "Task thread result task=%p" "\n", task);
 #line 346 "trace/trace-io.h"
         }
@@ -364,14 +364,14 @@ static inline void _nocheck__trace_qio_task_thread_source_attach(void * task, vo
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 10 "..\io\trace-events"
+#line 10 "../io/trace-events"
             qemu_log("%d@%zu.%06zu:qio_task_thread_source_attach " "Task thread source attach task=%p source=%p" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , task, source);
 #line 373 "trace/trace-io.h"
         } else {
-#line 10 "..\io\trace-events"
+#line 10 "../io/trace-events"
             qemu_log("qio_task_thread_source_attach " "Task thread source attach task=%p source=%p" "\n", task, source);
 #line 377 "trace/trace-io.h"
         }
@@ -395,14 +395,14 @@ static inline void _nocheck__trace_qio_task_thread_source_cancel(void * task, vo
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 11 "..\io\trace-events"
+#line 11 "../io/trace-events"
             qemu_log("%d@%zu.%06zu:qio_task_thread_source_cancel " "Task thread source cancel task=%p source=%p" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , task, source);
 #line 404 "trace/trace-io.h"
         } else {
-#line 11 "..\io\trace-events"
+#line 11 "../io/trace-events"
             qemu_log("qio_task_thread_source_cancel " "Task thread source cancel task=%p source=%p" "\n", task, source);
 #line 408 "trace/trace-io.h"
         }
@@ -426,14 +426,14 @@ static inline void _nocheck__trace_qio_channel_null_new(void * ioc)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 14 "..\io\trace-events"
+#line 14 "../io/trace-events"
             qemu_log("%d@%zu.%06zu:qio_channel_null_new " "Null new ioc=%p" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , ioc);
 #line 435 "trace/trace-io.h"
         } else {
-#line 14 "..\io\trace-events"
+#line 14 "../io/trace-events"
             qemu_log("qio_channel_null_new " "Null new ioc=%p" "\n", ioc);
 #line 439 "trace/trace-io.h"
         }
@@ -457,14 +457,14 @@ static inline void _nocheck__trace_qio_channel_socket_new(void * ioc)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 17 "..\io\trace-events"
+#line 17 "../io/trace-events"
             qemu_log("%d@%zu.%06zu:qio_channel_socket_new " "Socket new ioc=%p" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , ioc);
 #line 466 "trace/trace-io.h"
         } else {
-#line 17 "..\io\trace-events"
+#line 17 "../io/trace-events"
             qemu_log("qio_channel_socket_new " "Socket new ioc=%p" "\n", ioc);
 #line 470 "trace/trace-io.h"
         }
@@ -488,14 +488,14 @@ static inline void _nocheck__trace_qio_channel_socket_new_fd(void * ioc, int fd)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 18 "..\io\trace-events"
+#line 18 "../io/trace-events"
             qemu_log("%d@%zu.%06zu:qio_channel_socket_new_fd " "Socket new ioc=%p fd=%d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , ioc, fd);
 #line 497 "trace/trace-io.h"
         } else {
-#line 18 "..\io\trace-events"
+#line 18 "../io/trace-events"
             qemu_log("qio_channel_socket_new_fd " "Socket new ioc=%p fd=%d" "\n", ioc, fd);
 #line 501 "trace/trace-io.h"
         }
@@ -519,14 +519,14 @@ static inline void _nocheck__trace_qio_channel_socket_connect_sync(void * ioc, v
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 19 "..\io\trace-events"
+#line 19 "../io/trace-events"
             qemu_log("%d@%zu.%06zu:qio_channel_socket_connect_sync " "Socket connect sync ioc=%p addr=%p" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , ioc, addr);
 #line 528 "trace/trace-io.h"
         } else {
-#line 19 "..\io\trace-events"
+#line 19 "../io/trace-events"
             qemu_log("qio_channel_socket_connect_sync " "Socket connect sync ioc=%p addr=%p" "\n", ioc, addr);
 #line 532 "trace/trace-io.h"
         }
@@ -550,14 +550,14 @@ static inline void _nocheck__trace_qio_channel_socket_connect_async(void * ioc, 
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 20 "..\io\trace-events"
+#line 20 "../io/trace-events"
             qemu_log("%d@%zu.%06zu:qio_channel_socket_connect_async " "Socket connect async ioc=%p addr=%p" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , ioc, addr);
 #line 559 "trace/trace-io.h"
         } else {
-#line 20 "..\io\trace-events"
+#line 20 "../io/trace-events"
             qemu_log("qio_channel_socket_connect_async " "Socket connect async ioc=%p addr=%p" "\n", ioc, addr);
 #line 563 "trace/trace-io.h"
         }
@@ -581,14 +581,14 @@ static inline void _nocheck__trace_qio_channel_socket_connect_fail(void * ioc)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 21 "..\io\trace-events"
+#line 21 "../io/trace-events"
             qemu_log("%d@%zu.%06zu:qio_channel_socket_connect_fail " "Socket connect fail ioc=%p" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , ioc);
 #line 590 "trace/trace-io.h"
         } else {
-#line 21 "..\io\trace-events"
+#line 21 "../io/trace-events"
             qemu_log("qio_channel_socket_connect_fail " "Socket connect fail ioc=%p" "\n", ioc);
 #line 594 "trace/trace-io.h"
         }
@@ -612,14 +612,14 @@ static inline void _nocheck__trace_qio_channel_socket_connect_complete(void * io
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 22 "..\io\trace-events"
+#line 22 "../io/trace-events"
             qemu_log("%d@%zu.%06zu:qio_channel_socket_connect_complete " "Socket connect complete ioc=%p fd=%d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , ioc, fd);
 #line 621 "trace/trace-io.h"
         } else {
-#line 22 "..\io\trace-events"
+#line 22 "../io/trace-events"
             qemu_log("qio_channel_socket_connect_complete " "Socket connect complete ioc=%p fd=%d" "\n", ioc, fd);
 #line 625 "trace/trace-io.h"
         }
@@ -643,14 +643,14 @@ static inline void _nocheck__trace_qio_channel_socket_listen_sync(void * ioc, vo
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 23 "..\io\trace-events"
+#line 23 "../io/trace-events"
             qemu_log("%d@%zu.%06zu:qio_channel_socket_listen_sync " "Socket listen sync ioc=%p addr=%p num=%d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , ioc, addr, num);
 #line 652 "trace/trace-io.h"
         } else {
-#line 23 "..\io\trace-events"
+#line 23 "../io/trace-events"
             qemu_log("qio_channel_socket_listen_sync " "Socket listen sync ioc=%p addr=%p num=%d" "\n", ioc, addr, num);
 #line 656 "trace/trace-io.h"
         }
@@ -674,14 +674,14 @@ static inline void _nocheck__trace_qio_channel_socket_listen_async(void * ioc, v
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 24 "..\io\trace-events"
+#line 24 "../io/trace-events"
             qemu_log("%d@%zu.%06zu:qio_channel_socket_listen_async " "Socket listen async ioc=%p addr=%p num=%d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , ioc, addr, num);
 #line 683 "trace/trace-io.h"
         } else {
-#line 24 "..\io\trace-events"
+#line 24 "../io/trace-events"
             qemu_log("qio_channel_socket_listen_async " "Socket listen async ioc=%p addr=%p num=%d" "\n", ioc, addr, num);
 #line 687 "trace/trace-io.h"
         }
@@ -705,14 +705,14 @@ static inline void _nocheck__trace_qio_channel_socket_listen_fail(void * ioc)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 25 "..\io\trace-events"
+#line 25 "../io/trace-events"
             qemu_log("%d@%zu.%06zu:qio_channel_socket_listen_fail " "Socket listen fail ioc=%p" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , ioc);
 #line 714 "trace/trace-io.h"
         } else {
-#line 25 "..\io\trace-events"
+#line 25 "../io/trace-events"
             qemu_log("qio_channel_socket_listen_fail " "Socket listen fail ioc=%p" "\n", ioc);
 #line 718 "trace/trace-io.h"
         }
@@ -736,14 +736,14 @@ static inline void _nocheck__trace_qio_channel_socket_listen_complete(void * ioc
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 26 "..\io\trace-events"
+#line 26 "../io/trace-events"
             qemu_log("%d@%zu.%06zu:qio_channel_socket_listen_complete " "Socket listen complete ioc=%p fd=%d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , ioc, fd);
 #line 745 "trace/trace-io.h"
         } else {
-#line 26 "..\io\trace-events"
+#line 26 "../io/trace-events"
             qemu_log("qio_channel_socket_listen_complete " "Socket listen complete ioc=%p fd=%d" "\n", ioc, fd);
 #line 749 "trace/trace-io.h"
         }
@@ -767,14 +767,14 @@ static inline void _nocheck__trace_qio_channel_socket_dgram_sync(void * ioc, voi
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 27 "..\io\trace-events"
+#line 27 "../io/trace-events"
             qemu_log("%d@%zu.%06zu:qio_channel_socket_dgram_sync " "Socket dgram sync ioc=%p localAddr=%p remoteAddr=%p" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , ioc, localAddr, remoteAddr);
 #line 776 "trace/trace-io.h"
         } else {
-#line 27 "..\io\trace-events"
+#line 27 "../io/trace-events"
             qemu_log("qio_channel_socket_dgram_sync " "Socket dgram sync ioc=%p localAddr=%p remoteAddr=%p" "\n", ioc, localAddr, remoteAddr);
 #line 780 "trace/trace-io.h"
         }
@@ -798,14 +798,14 @@ static inline void _nocheck__trace_qio_channel_socket_dgram_async(void * ioc, vo
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 28 "..\io\trace-events"
+#line 28 "../io/trace-events"
             qemu_log("%d@%zu.%06zu:qio_channel_socket_dgram_async " "Socket dgram async ioc=%p localAddr=%p remoteAddr=%p" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , ioc, localAddr, remoteAddr);
 #line 807 "trace/trace-io.h"
         } else {
-#line 28 "..\io\trace-events"
+#line 28 "../io/trace-events"
             qemu_log("qio_channel_socket_dgram_async " "Socket dgram async ioc=%p localAddr=%p remoteAddr=%p" "\n", ioc, localAddr, remoteAddr);
 #line 811 "trace/trace-io.h"
         }
@@ -829,14 +829,14 @@ static inline void _nocheck__trace_qio_channel_socket_dgram_fail(void * ioc)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 29 "..\io\trace-events"
+#line 29 "../io/trace-events"
             qemu_log("%d@%zu.%06zu:qio_channel_socket_dgram_fail " "Socket dgram fail ioc=%p" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , ioc);
 #line 838 "trace/trace-io.h"
         } else {
-#line 29 "..\io\trace-events"
+#line 29 "../io/trace-events"
             qemu_log("qio_channel_socket_dgram_fail " "Socket dgram fail ioc=%p" "\n", ioc);
 #line 842 "trace/trace-io.h"
         }
@@ -860,14 +860,14 @@ static inline void _nocheck__trace_qio_channel_socket_dgram_complete(void * ioc,
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 30 "..\io\trace-events"
+#line 30 "../io/trace-events"
             qemu_log("%d@%zu.%06zu:qio_channel_socket_dgram_complete " "Socket dgram complete ioc=%p fd=%d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , ioc, fd);
 #line 869 "trace/trace-io.h"
         } else {
-#line 30 "..\io\trace-events"
+#line 30 "../io/trace-events"
             qemu_log("qio_channel_socket_dgram_complete " "Socket dgram complete ioc=%p fd=%d" "\n", ioc, fd);
 #line 873 "trace/trace-io.h"
         }
@@ -891,14 +891,14 @@ static inline void _nocheck__trace_qio_channel_socket_accept(void * ioc)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 31 "..\io\trace-events"
+#line 31 "../io/trace-events"
             qemu_log("%d@%zu.%06zu:qio_channel_socket_accept " "Socket accept start ioc=%p" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , ioc);
 #line 900 "trace/trace-io.h"
         } else {
-#line 31 "..\io\trace-events"
+#line 31 "../io/trace-events"
             qemu_log("qio_channel_socket_accept " "Socket accept start ioc=%p" "\n", ioc);
 #line 904 "trace/trace-io.h"
         }
@@ -922,14 +922,14 @@ static inline void _nocheck__trace_qio_channel_socket_accept_fail(void * ioc)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 32 "..\io\trace-events"
+#line 32 "../io/trace-events"
             qemu_log("%d@%zu.%06zu:qio_channel_socket_accept_fail " "Socket accept fail ioc=%p" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , ioc);
 #line 931 "trace/trace-io.h"
         } else {
-#line 32 "..\io\trace-events"
+#line 32 "../io/trace-events"
             qemu_log("qio_channel_socket_accept_fail " "Socket accept fail ioc=%p" "\n", ioc);
 #line 935 "trace/trace-io.h"
         }
@@ -953,14 +953,14 @@ static inline void _nocheck__trace_qio_channel_socket_accept_complete(void * ioc
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 33 "..\io\trace-events"
+#line 33 "../io/trace-events"
             qemu_log("%d@%zu.%06zu:qio_channel_socket_accept_complete " "Socket accept complete ioc=%p cioc=%p fd=%d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , ioc, cioc, fd);
 #line 962 "trace/trace-io.h"
         } else {
-#line 33 "..\io\trace-events"
+#line 33 "../io/trace-events"
             qemu_log("qio_channel_socket_accept_complete " "Socket accept complete ioc=%p cioc=%p fd=%d" "\n", ioc, cioc, fd);
 #line 966 "trace/trace-io.h"
         }
@@ -984,14 +984,14 @@ static inline void _nocheck__trace_qio_channel_file_new_fd(void * ioc, int fd)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 36 "..\io\trace-events"
+#line 36 "../io/trace-events"
             qemu_log("%d@%zu.%06zu:qio_channel_file_new_fd " "File new fd ioc=%p fd=%d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , ioc, fd);
 #line 993 "trace/trace-io.h"
         } else {
-#line 36 "..\io\trace-events"
+#line 36 "../io/trace-events"
             qemu_log("qio_channel_file_new_fd " "File new fd ioc=%p fd=%d" "\n", ioc, fd);
 #line 997 "trace/trace-io.h"
         }
@@ -1015,14 +1015,14 @@ static inline void _nocheck__trace_qio_channel_file_new_path(void * ioc, const c
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 37 "..\io\trace-events"
+#line 37 "../io/trace-events"
             qemu_log("%d@%zu.%06zu:qio_channel_file_new_path " "File new fd ioc=%p path=%s flags=%d mode=%d fd=%d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , ioc, path, flags, mode, fd);
 #line 1024 "trace/trace-io.h"
         } else {
-#line 37 "..\io\trace-events"
+#line 37 "../io/trace-events"
             qemu_log("qio_channel_file_new_path " "File new fd ioc=%p path=%s flags=%d mode=%d fd=%d" "\n", ioc, path, flags, mode, fd);
 #line 1028 "trace/trace-io.h"
         }
@@ -1046,14 +1046,14 @@ static inline void _nocheck__trace_qio_channel_tls_new_client(void * ioc, void *
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 40 "..\io\trace-events"
+#line 40 "../io/trace-events"
             qemu_log("%d@%zu.%06zu:qio_channel_tls_new_client " "TLS new client ioc=%p master=%p creds=%p hostname=%s" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , ioc, master, creds, hostname);
 #line 1055 "trace/trace-io.h"
         } else {
-#line 40 "..\io\trace-events"
+#line 40 "../io/trace-events"
             qemu_log("qio_channel_tls_new_client " "TLS new client ioc=%p master=%p creds=%p hostname=%s" "\n", ioc, master, creds, hostname);
 #line 1059 "trace/trace-io.h"
         }
@@ -1077,14 +1077,14 @@ static inline void _nocheck__trace_qio_channel_tls_new_server(void * ioc, void *
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 41 "..\io\trace-events"
+#line 41 "../io/trace-events"
             qemu_log("%d@%zu.%06zu:qio_channel_tls_new_server " "TLS new client ioc=%p master=%p creds=%p acltname=%s" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , ioc, master, creds, aclname);
 #line 1086 "trace/trace-io.h"
         } else {
-#line 41 "..\io\trace-events"
+#line 41 "../io/trace-events"
             qemu_log("qio_channel_tls_new_server " "TLS new client ioc=%p master=%p creds=%p acltname=%s" "\n", ioc, master, creds, aclname);
 #line 1090 "trace/trace-io.h"
         }
@@ -1108,14 +1108,14 @@ static inline void _nocheck__trace_qio_channel_tls_handshake_start(void * ioc)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 42 "..\io\trace-events"
+#line 42 "../io/trace-events"
             qemu_log("%d@%zu.%06zu:qio_channel_tls_handshake_start " "TLS handshake start ioc=%p" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , ioc);
 #line 1117 "trace/trace-io.h"
         } else {
-#line 42 "..\io\trace-events"
+#line 42 "../io/trace-events"
             qemu_log("qio_channel_tls_handshake_start " "TLS handshake start ioc=%p" "\n", ioc);
 #line 1121 "trace/trace-io.h"
         }
@@ -1139,14 +1139,14 @@ static inline void _nocheck__trace_qio_channel_tls_handshake_pending(void * ioc,
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 43 "..\io\trace-events"
+#line 43 "../io/trace-events"
             qemu_log("%d@%zu.%06zu:qio_channel_tls_handshake_pending " "TLS handshake pending ioc=%p status=%d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , ioc, status);
 #line 1148 "trace/trace-io.h"
         } else {
-#line 43 "..\io\trace-events"
+#line 43 "../io/trace-events"
             qemu_log("qio_channel_tls_handshake_pending " "TLS handshake pending ioc=%p status=%d" "\n", ioc, status);
 #line 1152 "trace/trace-io.h"
         }
@@ -1170,14 +1170,14 @@ static inline void _nocheck__trace_qio_channel_tls_handshake_fail(void * ioc)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 44 "..\io\trace-events"
+#line 44 "../io/trace-events"
             qemu_log("%d@%zu.%06zu:qio_channel_tls_handshake_fail " "TLS handshake fail ioc=%p" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , ioc);
 #line 1179 "trace/trace-io.h"
         } else {
-#line 44 "..\io\trace-events"
+#line 44 "../io/trace-events"
             qemu_log("qio_channel_tls_handshake_fail " "TLS handshake fail ioc=%p" "\n", ioc);
 #line 1183 "trace/trace-io.h"
         }
@@ -1201,14 +1201,14 @@ static inline void _nocheck__trace_qio_channel_tls_handshake_complete(void * ioc
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 45 "..\io\trace-events"
+#line 45 "../io/trace-events"
             qemu_log("%d@%zu.%06zu:qio_channel_tls_handshake_complete " "TLS handshake complete ioc=%p" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , ioc);
 #line 1210 "trace/trace-io.h"
         } else {
-#line 45 "..\io\trace-events"
+#line 45 "../io/trace-events"
             qemu_log("qio_channel_tls_handshake_complete " "TLS handshake complete ioc=%p" "\n", ioc);
 #line 1214 "trace/trace-io.h"
         }
@@ -1232,14 +1232,14 @@ static inline void _nocheck__trace_qio_channel_tls_credentials_allow(void * ioc)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 46 "..\io\trace-events"
+#line 46 "../io/trace-events"
             qemu_log("%d@%zu.%06zu:qio_channel_tls_credentials_allow " "TLS credentials allow ioc=%p" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , ioc);
 #line 1241 "trace/trace-io.h"
         } else {
-#line 46 "..\io\trace-events"
+#line 46 "../io/trace-events"
             qemu_log("qio_channel_tls_credentials_allow " "TLS credentials allow ioc=%p" "\n", ioc);
 #line 1245 "trace/trace-io.h"
         }
@@ -1263,14 +1263,14 @@ static inline void _nocheck__trace_qio_channel_tls_credentials_deny(void * ioc)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 47 "..\io\trace-events"
+#line 47 "../io/trace-events"
             qemu_log("%d@%zu.%06zu:qio_channel_tls_credentials_deny " "TLS credentials deny ioc=%p" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , ioc);
 #line 1272 "trace/trace-io.h"
         } else {
-#line 47 "..\io\trace-events"
+#line 47 "../io/trace-events"
             qemu_log("qio_channel_tls_credentials_deny " "TLS credentials deny ioc=%p" "\n", ioc);
 #line 1276 "trace/trace-io.h"
         }
@@ -1294,14 +1294,14 @@ static inline void _nocheck__trace_qio_channel_websock_new_server(void * ioc, vo
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 50 "..\io\trace-events"
+#line 50 "../io/trace-events"
             qemu_log("%d@%zu.%06zu:qio_channel_websock_new_server " "Websock new client ioc=%p master=%p" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , ioc, master);
 #line 1303 "trace/trace-io.h"
         } else {
-#line 50 "..\io\trace-events"
+#line 50 "../io/trace-events"
             qemu_log("qio_channel_websock_new_server " "Websock new client ioc=%p master=%p" "\n", ioc, master);
 #line 1307 "trace/trace-io.h"
         }
@@ -1325,14 +1325,14 @@ static inline void _nocheck__trace_qio_channel_websock_handshake_start(void * io
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 51 "..\io\trace-events"
+#line 51 "../io/trace-events"
             qemu_log("%d@%zu.%06zu:qio_channel_websock_handshake_start " "Websock handshake start ioc=%p" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , ioc);
 #line 1334 "trace/trace-io.h"
         } else {
-#line 51 "..\io\trace-events"
+#line 51 "../io/trace-events"
             qemu_log("qio_channel_websock_handshake_start " "Websock handshake start ioc=%p" "\n", ioc);
 #line 1338 "trace/trace-io.h"
         }
@@ -1356,14 +1356,14 @@ static inline void _nocheck__trace_qio_channel_websock_handshake_pending(void * 
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 52 "..\io\trace-events"
+#line 52 "../io/trace-events"
             qemu_log("%d@%zu.%06zu:qio_channel_websock_handshake_pending " "Websock handshake pending ioc=%p status=%d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , ioc, status);
 #line 1365 "trace/trace-io.h"
         } else {
-#line 52 "..\io\trace-events"
+#line 52 "../io/trace-events"
             qemu_log("qio_channel_websock_handshake_pending " "Websock handshake pending ioc=%p status=%d" "\n", ioc, status);
 #line 1369 "trace/trace-io.h"
         }
@@ -1387,14 +1387,14 @@ static inline void _nocheck__trace_qio_channel_websock_handshake_reply(void * io
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 53 "..\io\trace-events"
+#line 53 "../io/trace-events"
             qemu_log("%d@%zu.%06zu:qio_channel_websock_handshake_reply " "Websock handshake reply ioc=%p" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , ioc);
 #line 1396 "trace/trace-io.h"
         } else {
-#line 53 "..\io\trace-events"
+#line 53 "../io/trace-events"
             qemu_log("qio_channel_websock_handshake_reply " "Websock handshake reply ioc=%p" "\n", ioc);
 #line 1400 "trace/trace-io.h"
         }
@@ -1418,14 +1418,14 @@ static inline void _nocheck__trace_qio_channel_websock_handshake_fail(void * ioc
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 54 "..\io\trace-events"
+#line 54 "../io/trace-events"
             qemu_log("%d@%zu.%06zu:qio_channel_websock_handshake_fail " "Websock handshake fail ioc=%p err=%s" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , ioc, msg);
 #line 1427 "trace/trace-io.h"
         } else {
-#line 54 "..\io\trace-events"
+#line 54 "../io/trace-events"
             qemu_log("qio_channel_websock_handshake_fail " "Websock handshake fail ioc=%p err=%s" "\n", ioc, msg);
 #line 1431 "trace/trace-io.h"
         }
@@ -1449,14 +1449,14 @@ static inline void _nocheck__trace_qio_channel_websock_handshake_complete(void *
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 55 "..\io\trace-events"
+#line 55 "../io/trace-events"
             qemu_log("%d@%zu.%06zu:qio_channel_websock_handshake_complete " "Websock handshake complete ioc=%p" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , ioc);
 #line 1458 "trace/trace-io.h"
         } else {
-#line 55 "..\io\trace-events"
+#line 55 "../io/trace-events"
             qemu_log("qio_channel_websock_handshake_complete " "Websock handshake complete ioc=%p" "\n", ioc);
 #line 1462 "trace/trace-io.h"
         }
@@ -1480,14 +1480,14 @@ static inline void _nocheck__trace_qio_channel_websock_http_greeting(void * ioc,
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 56 "..\io\trace-events"
+#line 56 "../io/trace-events"
             qemu_log("%d@%zu.%06zu:qio_channel_websock_http_greeting " "Websocket HTTP request ioc=%p greeting='%s'" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , ioc, greeting);
 #line 1489 "trace/trace-io.h"
         } else {
-#line 56 "..\io\trace-events"
+#line 56 "../io/trace-events"
             qemu_log("qio_channel_websock_http_greeting " "Websocket HTTP request ioc=%p greeting='%s'" "\n", ioc, greeting);
 #line 1493 "trace/trace-io.h"
         }
@@ -1511,14 +1511,14 @@ static inline void _nocheck__trace_qio_channel_websock_http_request(void * ioc, 
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 57 "..\io\trace-events"
+#line 57 "../io/trace-events"
             qemu_log("%d@%zu.%06zu:qio_channel_websock_http_request " "Websocket HTTP request ioc=%p protocols='%s' version='%s' host='%s' connection='%s' upgrade='%s' key='%s'" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , ioc, protocols, version, host, connection, upgrade, key);
 #line 1520 "trace/trace-io.h"
         } else {
-#line 57 "..\io\trace-events"
+#line 57 "../io/trace-events"
             qemu_log("qio_channel_websock_http_request " "Websocket HTTP request ioc=%p protocols='%s' version='%s' host='%s' connection='%s' upgrade='%s' key='%s'" "\n", ioc, protocols, version, host, connection, upgrade, key);
 #line 1524 "trace/trace-io.h"
         }
@@ -1542,14 +1542,14 @@ static inline void _nocheck__trace_qio_channel_websock_header_partial_decode(voi
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 58 "..\io\trace-events"
+#line 58 "../io/trace-events"
             qemu_log("%d@%zu.%06zu:qio_channel_websock_header_partial_decode " "Websocket header decoded ioc=%p payload-len=%zu fin=0x%x opcode=0x%x has_mask=0x%x" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , ioc, payloadlen, fin, opcode, has_mask);
 #line 1551 "trace/trace-io.h"
         } else {
-#line 58 "..\io\trace-events"
+#line 58 "../io/trace-events"
             qemu_log("qio_channel_websock_header_partial_decode " "Websocket header decoded ioc=%p payload-len=%zu fin=0x%x opcode=0x%x has_mask=0x%x" "\n", ioc, payloadlen, fin, opcode, has_mask);
 #line 1555 "trace/trace-io.h"
         }
@@ -1573,14 +1573,14 @@ static inline void _nocheck__trace_qio_channel_websock_header_full_decode(void *
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 59 "..\io\trace-events"
+#line 59 "../io/trace-events"
             qemu_log("%d@%zu.%06zu:qio_channel_websock_header_full_decode " "Websocket header decoded ioc=%p header-len=%zu payload-len=%zu mask=0x%x" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , ioc, headerlen, payloadlen, mask);
 #line 1582 "trace/trace-io.h"
         } else {
-#line 59 "..\io\trace-events"
+#line 59 "../io/trace-events"
             qemu_log("qio_channel_websock_header_full_decode " "Websocket header decoded ioc=%p header-len=%zu payload-len=%zu mask=0x%x" "\n", ioc, headerlen, payloadlen, mask);
 #line 1586 "trace/trace-io.h"
         }
@@ -1604,14 +1604,14 @@ static inline void _nocheck__trace_qio_channel_websock_payload_decode(void * ioc
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 60 "..\io\trace-events"
+#line 60 "../io/trace-events"
             qemu_log("%d@%zu.%06zu:qio_channel_websock_payload_decode " "Websocket header decoded ioc=%p opcode=0x%x payload-remain=%zu" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , ioc, opcode, payload_remain);
 #line 1613 "trace/trace-io.h"
         } else {
-#line 60 "..\io\trace-events"
+#line 60 "../io/trace-events"
             qemu_log("qio_channel_websock_payload_decode " "Websocket header decoded ioc=%p opcode=0x%x payload-remain=%zu" "\n", ioc, opcode, payload_remain);
 #line 1617 "trace/trace-io.h"
         }
@@ -1635,14 +1635,14 @@ static inline void _nocheck__trace_qio_channel_websock_encode(void * ioc, uint8_
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 61 "..\io\trace-events"
+#line 61 "../io/trace-events"
             qemu_log("%d@%zu.%06zu:qio_channel_websock_encode " "Websocket encoded ioc=%p opcode=0x%x header-len=%zu payload-len=%zu" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , ioc, opcode, payloadlen, headerlen);
 #line 1644 "trace/trace-io.h"
         } else {
-#line 61 "..\io\trace-events"
+#line 61 "../io/trace-events"
             qemu_log("qio_channel_websock_encode " "Websocket encoded ioc=%p opcode=0x%x header-len=%zu payload-len=%zu" "\n", ioc, opcode, payloadlen, headerlen);
 #line 1648 "trace/trace-io.h"
         }
@@ -1666,14 +1666,14 @@ static inline void _nocheck__trace_qio_channel_websock_close(void * ioc)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 62 "..\io\trace-events"
+#line 62 "../io/trace-events"
             qemu_log("%d@%zu.%06zu:qio_channel_websock_close " "Websocket close ioc=%p" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , ioc);
 #line 1675 "trace/trace-io.h"
         } else {
-#line 62 "..\io\trace-events"
+#line 62 "../io/trace-events"
             qemu_log("qio_channel_websock_close " "Websocket close ioc=%p" "\n", ioc);
 #line 1679 "trace/trace-io.h"
         }
@@ -1697,14 +1697,14 @@ static inline void _nocheck__trace_qio_channel_command_new_pid(void * ioc, int w
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 65 "..\io\trace-events"
+#line 65 "../io/trace-events"
             qemu_log("%d@%zu.%06zu:qio_channel_command_new_pid " "Command new pid ioc=%p writefd=%d readfd=%d pid=%d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , ioc, writefd, readfd, pid);
 #line 1706 "trace/trace-io.h"
         } else {
-#line 65 "..\io\trace-events"
+#line 65 "../io/trace-events"
             qemu_log("qio_channel_command_new_pid " "Command new pid ioc=%p writefd=%d readfd=%d pid=%d" "\n", ioc, writefd, readfd, pid);
 #line 1710 "trace/trace-io.h"
         }
@@ -1728,14 +1728,14 @@ static inline void _nocheck__trace_qio_channel_command_new_spawn(void * ioc, con
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 66 "..\io\trace-events"
+#line 66 "../io/trace-events"
             qemu_log("%d@%zu.%06zu:qio_channel_command_new_spawn " "Command new spawn ioc=%p binary=%s flags=%d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , ioc, binary, flags);
 #line 1737 "trace/trace-io.h"
         } else {
-#line 66 "..\io\trace-events"
+#line 66 "../io/trace-events"
             qemu_log("qio_channel_command_new_spawn " "Command new spawn ioc=%p binary=%s flags=%d" "\n", ioc, binary, flags);
 #line 1741 "trace/trace-io.h"
         }
@@ -1759,14 +1759,14 @@ static inline void _nocheck__trace_qio_channel_command_abort(void * ioc, int pid
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 67 "..\io\trace-events"
+#line 67 "../io/trace-events"
             qemu_log("%d@%zu.%06zu:qio_channel_command_abort " "Command abort ioc=%p pid=%d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , ioc, pid);
 #line 1768 "trace/trace-io.h"
         } else {
-#line 67 "..\io\trace-events"
+#line 67 "../io/trace-events"
             qemu_log("qio_channel_command_abort " "Command abort ioc=%p pid=%d" "\n", ioc, pid);
 #line 1772 "trace/trace-io.h"
         }
@@ -1790,14 +1790,14 @@ static inline void _nocheck__trace_qio_channel_command_wait(void * ioc, int pid,
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 68 "..\io\trace-events"
+#line 68 "../io/trace-events"
             qemu_log("%d@%zu.%06zu:qio_channel_command_wait " "Command abort ioc=%p pid=%d ret=%d status=%d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , ioc, pid, ret, status);
 #line 1799 "trace/trace-io.h"
         } else {
-#line 68 "..\io\trace-events"
+#line 68 "../io/trace-events"
             qemu_log("qio_channel_command_wait " "Command abort ioc=%p pid=%d ret=%d status=%d" "\n", ioc, pid, ret, status);
 #line 1803 "trace/trace-io.h"
         }

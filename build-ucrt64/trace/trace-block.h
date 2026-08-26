@@ -511,14 +511,14 @@ static inline void _nocheck__trace_bdrv_open_common(void * bs, const char * file
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 4 "..\block\trace-events"
+#line 4 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:bdrv_open_common " "bs %p filename \"%s\" flags 0x%x format_name \"%s\"" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , bs, filename, flags, format_name);
 #line 520 "trace/trace-block.h"
         } else {
-#line 4 "..\block\trace-events"
+#line 4 "../block/trace-events"
             qemu_log("bdrv_open_common " "bs %p filename \"%s\" flags 0x%x format_name \"%s\"" "\n", bs, filename, flags, format_name);
 #line 524 "trace/trace-block.h"
         }
@@ -542,14 +542,14 @@ static inline void _nocheck__trace_bdrv_lock_medium(void * bs, bool locked)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 5 "..\block\trace-events"
+#line 5 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:bdrv_lock_medium " "bs %p locked %d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , bs, locked);
 #line 551 "trace/trace-block.h"
         } else {
-#line 5 "..\block\trace-events"
+#line 5 "../block/trace-events"
             qemu_log("bdrv_lock_medium " "bs %p locked %d" "\n", bs, locked);
 #line 555 "trace/trace-block.h"
         }
@@ -573,14 +573,14 @@ static inline void _nocheck__trace_blk_co_preadv(void * blk, void * bs, int64_t 
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 8 "..\block\trace-events"
+#line 8 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:blk_co_preadv " "blk %p bs %p offset %"PRId64" bytes %" PRId64 " flags 0x%x" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , blk, bs, offset, bytes, flags);
 #line 582 "trace/trace-block.h"
         } else {
-#line 8 "..\block\trace-events"
+#line 8 "../block/trace-events"
             qemu_log("blk_co_preadv " "blk %p bs %p offset %"PRId64" bytes %" PRId64 " flags 0x%x" "\n", blk, bs, offset, bytes, flags);
 #line 586 "trace/trace-block.h"
         }
@@ -604,14 +604,14 @@ static inline void _nocheck__trace_blk_co_pwritev(void * blk, void * bs, int64_t
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 9 "..\block\trace-events"
+#line 9 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:blk_co_pwritev " "blk %p bs %p offset %"PRId64" bytes %" PRId64 " flags 0x%x" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , blk, bs, offset, bytes, flags);
 #line 613 "trace/trace-block.h"
         } else {
-#line 9 "..\block\trace-events"
+#line 9 "../block/trace-events"
             qemu_log("blk_co_pwritev " "blk %p bs %p offset %"PRId64" bytes %" PRId64 " flags 0x%x" "\n", blk, bs, offset, bytes, flags);
 #line 617 "trace/trace-block.h"
         }
@@ -635,14 +635,14 @@ static inline void _nocheck__trace_blk_root_attach(void * child, void * blk, voi
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 10 "..\block\trace-events"
+#line 10 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:blk_root_attach " "child %p blk %p bs %p" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , child, blk, bs);
 #line 644 "trace/trace-block.h"
         } else {
-#line 10 "..\block\trace-events"
+#line 10 "../block/trace-events"
             qemu_log("blk_root_attach " "child %p blk %p bs %p" "\n", child, blk, bs);
 #line 648 "trace/trace-block.h"
         }
@@ -666,14 +666,14 @@ static inline void _nocheck__trace_blk_root_detach(void * child, void * blk, voi
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 11 "..\block\trace-events"
+#line 11 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:blk_root_detach " "child %p blk %p bs %p" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , child, blk, bs);
 #line 675 "trace/trace-block.h"
         } else {
-#line 11 "..\block\trace-events"
+#line 11 "../block/trace-events"
             qemu_log("blk_root_detach " "child %p blk %p bs %p" "\n", child, blk, bs);
 #line 679 "trace/trace-block.h"
         }
@@ -697,14 +697,14 @@ static inline void _nocheck__trace_bdrv_co_preadv_part(void * bs, int64_t offset
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 14 "..\block\trace-events"
+#line 14 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:bdrv_co_preadv_part " "bs %p offset %" PRId64 " bytes %" PRId64 " flags 0x%x" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , bs, offset, bytes, flags);
 #line 706 "trace/trace-block.h"
         } else {
-#line 14 "..\block\trace-events"
+#line 14 "../block/trace-events"
             qemu_log("bdrv_co_preadv_part " "bs %p offset %" PRId64 " bytes %" PRId64 " flags 0x%x" "\n", bs, offset, bytes, flags);
 #line 710 "trace/trace-block.h"
         }
@@ -728,14 +728,14 @@ static inline void _nocheck__trace_bdrv_co_pwritev_part(void * bs, int64_t offse
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 15 "..\block\trace-events"
+#line 15 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:bdrv_co_pwritev_part " "bs %p offset %" PRId64 " bytes %" PRId64 " flags 0x%x" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , bs, offset, bytes, flags);
 #line 737 "trace/trace-block.h"
         } else {
-#line 15 "..\block\trace-events"
+#line 15 "../block/trace-events"
             qemu_log("bdrv_co_pwritev_part " "bs %p offset %" PRId64 " bytes %" PRId64 " flags 0x%x" "\n", bs, offset, bytes, flags);
 #line 741 "trace/trace-block.h"
         }
@@ -759,14 +759,14 @@ static inline void _nocheck__trace_bdrv_co_pwrite_zeroes(void * bs, int64_t offs
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 16 "..\block\trace-events"
+#line 16 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:bdrv_co_pwrite_zeroes " "bs %p offset %" PRId64 " bytes %" PRId64 " flags 0x%x" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , bs, offset, bytes, flags);
 #line 768 "trace/trace-block.h"
         } else {
-#line 16 "..\block\trace-events"
+#line 16 "../block/trace-events"
             qemu_log("bdrv_co_pwrite_zeroes " "bs %p offset %" PRId64 " bytes %" PRId64 " flags 0x%x" "\n", bs, offset, bytes, flags);
 #line 772 "trace/trace-block.h"
         }
@@ -790,14 +790,14 @@ static inline void _nocheck__trace_bdrv_co_do_copy_on_readv(void * bs, int64_t o
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 17 "..\block\trace-events"
+#line 17 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:bdrv_co_do_copy_on_readv " "bs %p offset %" PRId64 " bytes %" PRId64 " cluster_offset %" PRId64 " cluster_bytes %" PRId64 "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , bs, offset, bytes, cluster_offset, cluster_bytes);
 #line 799 "trace/trace-block.h"
         } else {
-#line 17 "..\block\trace-events"
+#line 17 "../block/trace-events"
             qemu_log("bdrv_co_do_copy_on_readv " "bs %p offset %" PRId64 " bytes %" PRId64 " cluster_offset %" PRId64 " cluster_bytes %" PRId64 "\n", bs, offset, bytes, cluster_offset, cluster_bytes);
 #line 803 "trace/trace-block.h"
         }
@@ -821,14 +821,14 @@ static inline void _nocheck__trace_bdrv_co_copy_range_from(void * src, int64_t s
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 18 "..\block\trace-events"
+#line 18 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:bdrv_co_copy_range_from " "src %p offset %" PRId64 " dst %p offset %" PRId64 " bytes %" PRId64 " rw flags 0x%x 0x%x" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , src, src_offset, dst, dst_offset, bytes, read_flags, write_flags);
 #line 830 "trace/trace-block.h"
         } else {
-#line 18 "..\block\trace-events"
+#line 18 "../block/trace-events"
             qemu_log("bdrv_co_copy_range_from " "src %p offset %" PRId64 " dst %p offset %" PRId64 " bytes %" PRId64 " rw flags 0x%x 0x%x" "\n", src, src_offset, dst, dst_offset, bytes, read_flags, write_flags);
 #line 834 "trace/trace-block.h"
         }
@@ -852,14 +852,14 @@ static inline void _nocheck__trace_bdrv_co_copy_range_to(void * src, int64_t src
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 19 "..\block\trace-events"
+#line 19 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:bdrv_co_copy_range_to " "src %p offset %" PRId64 " dst %p offset %" PRId64 " bytes %" PRId64 " rw flags 0x%x 0x%x" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , src, src_offset, dst, dst_offset, bytes, read_flags, write_flags);
 #line 861 "trace/trace-block.h"
         } else {
-#line 19 "..\block\trace-events"
+#line 19 "../block/trace-events"
             qemu_log("bdrv_co_copy_range_to " "src %p offset %" PRId64 " dst %p offset %" PRId64 " bytes %" PRId64 " rw flags 0x%x 0x%x" "\n", src, src_offset, dst, dst_offset, bytes, read_flags, write_flags);
 #line 865 "trace/trace-block.h"
         }
@@ -883,14 +883,14 @@ static inline void _nocheck__trace_stream_one_iteration(void * s, int64_t offset
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 22 "..\block\trace-events"
+#line 22 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:stream_one_iteration " "s %p offset %" PRId64 " bytes %" PRIu64 " is_allocated %d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , s, offset, bytes, is_allocated);
 #line 892 "trace/trace-block.h"
         } else {
-#line 22 "..\block\trace-events"
+#line 22 "../block/trace-events"
             qemu_log("stream_one_iteration " "s %p offset %" PRId64 " bytes %" PRIu64 " is_allocated %d" "\n", s, offset, bytes, is_allocated);
 #line 896 "trace/trace-block.h"
         }
@@ -914,14 +914,14 @@ static inline void _nocheck__trace_stream_start(void * bs, void * base, void * s
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 23 "..\block\trace-events"
+#line 23 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:stream_start " "bs %p base %p s %p" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , bs, base, s);
 #line 923 "trace/trace-block.h"
         } else {
-#line 23 "..\block\trace-events"
+#line 23 "../block/trace-events"
             qemu_log("stream_start " "bs %p base %p s %p" "\n", bs, base, s);
 #line 927 "trace/trace-block.h"
         }
@@ -945,14 +945,14 @@ static inline void _nocheck__trace_commit_one_iteration(void * s, int64_t offset
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 26 "..\block\trace-events"
+#line 26 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:commit_one_iteration " "s %p offset %" PRId64 " bytes %" PRIu64 " is_allocated %d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , s, offset, bytes, is_allocated);
 #line 954 "trace/trace-block.h"
         } else {
-#line 26 "..\block\trace-events"
+#line 26 "../block/trace-events"
             qemu_log("commit_one_iteration " "s %p offset %" PRId64 " bytes %" PRIu64 " is_allocated %d" "\n", s, offset, bytes, is_allocated);
 #line 958 "trace/trace-block.h"
         }
@@ -976,14 +976,14 @@ static inline void _nocheck__trace_commit_start(void * bs, void * base, void * t
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 27 "..\block\trace-events"
+#line 27 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:commit_start " "bs %p base %p top %p s %p" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , bs, base, top, s);
 #line 985 "trace/trace-block.h"
         } else {
-#line 27 "..\block\trace-events"
+#line 27 "../block/trace-events"
             qemu_log("commit_start " "bs %p base %p top %p s %p" "\n", bs, base, top, s);
 #line 989 "trace/trace-block.h"
         }
@@ -1007,14 +1007,14 @@ static inline void _nocheck__trace_mirror_start(void * bs, void * s, void * opaq
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 30 "..\block\trace-events"
+#line 30 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:mirror_start " "bs %p s %p opaque %p" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , bs, s, opaque);
 #line 1016 "trace/trace-block.h"
         } else {
-#line 30 "..\block\trace-events"
+#line 30 "../block/trace-events"
             qemu_log("mirror_start " "bs %p s %p opaque %p" "\n", bs, s, opaque);
 #line 1020 "trace/trace-block.h"
         }
@@ -1038,14 +1038,14 @@ static inline void _nocheck__trace_mirror_restart_iter(void * s, int64_t cnt)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 31 "..\block\trace-events"
+#line 31 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:mirror_restart_iter " "s %p dirty count %"PRId64 "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , s, cnt);
 #line 1047 "trace/trace-block.h"
         } else {
-#line 31 "..\block\trace-events"
+#line 31 "../block/trace-events"
             qemu_log("mirror_restart_iter " "s %p dirty count %"PRId64 "\n", s, cnt);
 #line 1051 "trace/trace-block.h"
         }
@@ -1069,14 +1069,14 @@ static inline void _nocheck__trace_mirror_before_flush(void * s)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 32 "..\block\trace-events"
+#line 32 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:mirror_before_flush " "s %p" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , s);
 #line 1078 "trace/trace-block.h"
         } else {
-#line 32 "..\block\trace-events"
+#line 32 "../block/trace-events"
             qemu_log("mirror_before_flush " "s %p" "\n", s);
 #line 1082 "trace/trace-block.h"
         }
@@ -1100,14 +1100,14 @@ static inline void _nocheck__trace_mirror_before_drain(void * s, int64_t cnt)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 33 "..\block\trace-events"
+#line 33 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:mirror_before_drain " "s %p dirty count %"PRId64 "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , s, cnt);
 #line 1109 "trace/trace-block.h"
         } else {
-#line 33 "..\block\trace-events"
+#line 33 "../block/trace-events"
             qemu_log("mirror_before_drain " "s %p dirty count %"PRId64 "\n", s, cnt);
 #line 1113 "trace/trace-block.h"
         }
@@ -1131,14 +1131,14 @@ static inline void _nocheck__trace_mirror_before_sleep(void * s, int64_t cnt, in
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 34 "..\block\trace-events"
+#line 34 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:mirror_before_sleep " "s %p dirty count %"PRId64" synced %d delay %"PRIu64"ns" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , s, cnt, synced, delay_ns);
 #line 1140 "trace/trace-block.h"
         } else {
-#line 34 "..\block\trace-events"
+#line 34 "../block/trace-events"
             qemu_log("mirror_before_sleep " "s %p dirty count %"PRId64" synced %d delay %"PRIu64"ns" "\n", s, cnt, synced, delay_ns);
 #line 1144 "trace/trace-block.h"
         }
@@ -1162,14 +1162,14 @@ static inline void _nocheck__trace_mirror_one_iteration(void * s, int64_t offset
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 35 "..\block\trace-events"
+#line 35 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:mirror_one_iteration " "s %p offset %" PRId64 " bytes %" PRIu64 "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , s, offset, bytes);
 #line 1171 "trace/trace-block.h"
         } else {
-#line 35 "..\block\trace-events"
+#line 35 "../block/trace-events"
             qemu_log("mirror_one_iteration " "s %p offset %" PRId64 " bytes %" PRIu64 "\n", s, offset, bytes);
 #line 1175 "trace/trace-block.h"
         }
@@ -1193,14 +1193,14 @@ static inline void _nocheck__trace_mirror_iteration_done(void * s, int64_t offse
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 36 "..\block\trace-events"
+#line 36 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:mirror_iteration_done " "s %p offset %" PRId64 " bytes %" PRIu64 " ret %d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , s, offset, bytes, ret);
 #line 1202 "trace/trace-block.h"
         } else {
-#line 36 "..\block\trace-events"
+#line 36 "../block/trace-events"
             qemu_log("mirror_iteration_done " "s %p offset %" PRId64 " bytes %" PRIu64 " ret %d" "\n", s, offset, bytes, ret);
 #line 1206 "trace/trace-block.h"
         }
@@ -1224,14 +1224,14 @@ static inline void _nocheck__trace_mirror_yield(void * s, int64_t cnt, int buf_f
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 37 "..\block\trace-events"
+#line 37 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:mirror_yield " "s %p dirty count %"PRId64" free buffers %d in_flight %d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , s, cnt, buf_free_count, in_flight);
 #line 1233 "trace/trace-block.h"
         } else {
-#line 37 "..\block\trace-events"
+#line 37 "../block/trace-events"
             qemu_log("mirror_yield " "s %p dirty count %"PRId64" free buffers %d in_flight %d" "\n", s, cnt, buf_free_count, in_flight);
 #line 1237 "trace/trace-block.h"
         }
@@ -1255,14 +1255,14 @@ static inline void _nocheck__trace_mirror_yield_in_flight(void * s, int64_t offs
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 38 "..\block\trace-events"
+#line 38 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:mirror_yield_in_flight " "s %p offset %" PRId64 " in_flight %d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , s, offset, in_flight);
 #line 1264 "trace/trace-block.h"
         } else {
-#line 38 "..\block\trace-events"
+#line 38 "../block/trace-events"
             qemu_log("mirror_yield_in_flight " "s %p offset %" PRId64 " in_flight %d" "\n", s, offset, in_flight);
 #line 1268 "trace/trace-block.h"
         }
@@ -1286,14 +1286,14 @@ static inline void _nocheck__trace_backup_do_cow_enter(void * job, int64_t start
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 41 "..\block\trace-events"
+#line 41 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:backup_do_cow_enter " "job %p start %" PRId64 " offset %" PRId64 " bytes %" PRIu64 "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , job, start, offset, bytes);
 #line 1295 "trace/trace-block.h"
         } else {
-#line 41 "..\block\trace-events"
+#line 41 "../block/trace-events"
             qemu_log("backup_do_cow_enter " "job %p start %" PRId64 " offset %" PRId64 " bytes %" PRIu64 "\n", job, start, offset, bytes);
 #line 1299 "trace/trace-block.h"
         }
@@ -1317,14 +1317,14 @@ static inline void _nocheck__trace_backup_do_cow_return(void * job, int64_t offs
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 42 "..\block\trace-events"
+#line 42 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:backup_do_cow_return " "job %p offset %" PRId64 " bytes %" PRIu64 " ret %d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , job, offset, bytes, ret);
 #line 1326 "trace/trace-block.h"
         } else {
-#line 42 "..\block\trace-events"
+#line 42 "../block/trace-events"
             qemu_log("backup_do_cow_return " "job %p offset %" PRId64 " bytes %" PRIu64 " ret %d" "\n", job, offset, bytes, ret);
 #line 1330 "trace/trace-block.h"
         }
@@ -1348,14 +1348,14 @@ static inline void _nocheck__trace_block_copy_skip_range(void * bcs, int64_t sta
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 45 "..\block\trace-events"
+#line 45 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:block_copy_skip_range " "bcs %p start %"PRId64" bytes %"PRId64 "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , bcs, start, bytes);
 #line 1357 "trace/trace-block.h"
         } else {
-#line 45 "..\block\trace-events"
+#line 45 "../block/trace-events"
             qemu_log("block_copy_skip_range " "bcs %p start %"PRId64" bytes %"PRId64 "\n", bcs, start, bytes);
 #line 1361 "trace/trace-block.h"
         }
@@ -1379,14 +1379,14 @@ static inline void _nocheck__trace_block_copy_process(void * bcs, int64_t start)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 46 "..\block\trace-events"
+#line 46 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:block_copy_process " "bcs %p start %"PRId64 "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , bcs, start);
 #line 1388 "trace/trace-block.h"
         } else {
-#line 46 "..\block\trace-events"
+#line 46 "../block/trace-events"
             qemu_log("block_copy_process " "bcs %p start %"PRId64 "\n", bcs, start);
 #line 1392 "trace/trace-block.h"
         }
@@ -1410,14 +1410,14 @@ static inline void _nocheck__trace_block_copy_copy_range_fail(void * bcs, int64_
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 47 "..\block\trace-events"
+#line 47 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:block_copy_copy_range_fail " "bcs %p start %"PRId64" ret %d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , bcs, start, ret);
 #line 1419 "trace/trace-block.h"
         } else {
-#line 47 "..\block\trace-events"
+#line 47 "../block/trace-events"
             qemu_log("block_copy_copy_range_fail " "bcs %p start %"PRId64" ret %d" "\n", bcs, start, ret);
 #line 1423 "trace/trace-block.h"
         }
@@ -1441,14 +1441,14 @@ static inline void _nocheck__trace_block_copy_read_fail(void * bcs, int64_t star
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 48 "..\block\trace-events"
+#line 48 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:block_copy_read_fail " "bcs %p start %"PRId64" ret %d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , bcs, start, ret);
 #line 1450 "trace/trace-block.h"
         } else {
-#line 48 "..\block\trace-events"
+#line 48 "../block/trace-events"
             qemu_log("block_copy_read_fail " "bcs %p start %"PRId64" ret %d" "\n", bcs, start, ret);
 #line 1454 "trace/trace-block.h"
         }
@@ -1472,14 +1472,14 @@ static inline void _nocheck__trace_block_copy_write_fail(void * bcs, int64_t sta
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 49 "..\block\trace-events"
+#line 49 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:block_copy_write_fail " "bcs %p start %"PRId64" ret %d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , bcs, start, ret);
 #line 1481 "trace/trace-block.h"
         } else {
-#line 49 "..\block\trace-events"
+#line 49 "../block/trace-events"
             qemu_log("block_copy_write_fail " "bcs %p start %"PRId64" ret %d" "\n", bcs, start, ret);
 #line 1485 "trace/trace-block.h"
         }
@@ -1503,14 +1503,14 @@ static inline void _nocheck__trace_block_copy_write_zeroes_fail(void * bcs, int6
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 50 "..\block\trace-events"
+#line 50 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:block_copy_write_zeroes_fail " "bcs %p start %"PRId64" ret %d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , bcs, start, ret);
 #line 1512 "trace/trace-block.h"
         } else {
-#line 50 "..\block\trace-events"
+#line 50 "../block/trace-events"
             qemu_log("block_copy_write_zeroes_fail " "bcs %p start %"PRId64" ret %d" "\n", bcs, start, ret);
 #line 1516 "trace/trace-block.h"
         }
@@ -1534,14 +1534,14 @@ static inline void _nocheck__trace_qmp_block_job_cancel(void * job)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 53 "..\block\trace-events"
+#line 53 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:qmp_block_job_cancel " "job %p" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , job);
 #line 1543 "trace/trace-block.h"
         } else {
-#line 53 "..\block\trace-events"
+#line 53 "../block/trace-events"
             qemu_log("qmp_block_job_cancel " "job %p" "\n", job);
 #line 1547 "trace/trace-block.h"
         }
@@ -1565,14 +1565,14 @@ static inline void _nocheck__trace_qmp_block_job_pause(void * job)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 54 "..\block\trace-events"
+#line 54 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:qmp_block_job_pause " "job %p" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , job);
 #line 1574 "trace/trace-block.h"
         } else {
-#line 54 "..\block\trace-events"
+#line 54 "../block/trace-events"
             qemu_log("qmp_block_job_pause " "job %p" "\n", job);
 #line 1578 "trace/trace-block.h"
         }
@@ -1596,14 +1596,14 @@ static inline void _nocheck__trace_qmp_block_job_resume(void * job)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 55 "..\block\trace-events"
+#line 55 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:qmp_block_job_resume " "job %p" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , job);
 #line 1605 "trace/trace-block.h"
         } else {
-#line 55 "..\block\trace-events"
+#line 55 "../block/trace-events"
             qemu_log("qmp_block_job_resume " "job %p" "\n", job);
 #line 1609 "trace/trace-block.h"
         }
@@ -1627,14 +1627,14 @@ static inline void _nocheck__trace_qmp_block_job_complete(void * job)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 56 "..\block\trace-events"
+#line 56 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:qmp_block_job_complete " "job %p" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , job);
 #line 1636 "trace/trace-block.h"
         } else {
-#line 56 "..\block\trace-events"
+#line 56 "../block/trace-events"
             qemu_log("qmp_block_job_complete " "job %p" "\n", job);
 #line 1640 "trace/trace-block.h"
         }
@@ -1658,14 +1658,14 @@ static inline void _nocheck__trace_qmp_block_job_finalize(void * job)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 57 "..\block\trace-events"
+#line 57 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:qmp_block_job_finalize " "job %p" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , job);
 #line 1667 "trace/trace-block.h"
         } else {
-#line 57 "..\block\trace-events"
+#line 57 "../block/trace-events"
             qemu_log("qmp_block_job_finalize " "job %p" "\n", job);
 #line 1671 "trace/trace-block.h"
         }
@@ -1689,14 +1689,14 @@ static inline void _nocheck__trace_qmp_block_job_dismiss(void * job)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 58 "..\block\trace-events"
+#line 58 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:qmp_block_job_dismiss " "job %p" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , job);
 #line 1698 "trace/trace-block.h"
         } else {
-#line 58 "..\block\trace-events"
+#line 58 "../block/trace-events"
             qemu_log("qmp_block_job_dismiss " "job %p" "\n", job);
 #line 1702 "trace/trace-block.h"
         }
@@ -1720,14 +1720,14 @@ static inline void _nocheck__trace_qmp_block_stream(void * bs)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 59 "..\block\trace-events"
+#line 59 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:qmp_block_stream " "bs %p" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , bs);
 #line 1729 "trace/trace-block.h"
         } else {
-#line 59 "..\block\trace-events"
+#line 59 "../block/trace-events"
             qemu_log("qmp_block_stream " "bs %p" "\n", bs);
 #line 1733 "trace/trace-block.h"
         }
@@ -1751,14 +1751,14 @@ static inline void _nocheck__trace_file_paio_submit(void * acb, void * opaque, i
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 62 "..\block\trace-events"
+#line 62 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:file_paio_submit " "acb %p opaque %p offset %"PRId64" count %d type %d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , acb, opaque, offset, count, type);
 #line 1760 "trace/trace-block.h"
         } else {
-#line 62 "..\block\trace-events"
+#line 62 "../block/trace-events"
             qemu_log("file_paio_submit " "acb %p opaque %p offset %"PRId64" count %d type %d" "\n", acb, opaque, offset, count, type);
 #line 1764 "trace/trace-block.h"
         }
@@ -1782,14 +1782,14 @@ static inline void _nocheck__trace_luring_init_state(void * s, size_t size)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 65 "..\block\trace-events"
+#line 65 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:luring_init_state " "s %p size %zu" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , s, size);
 #line 1791 "trace/trace-block.h"
         } else {
-#line 65 "..\block\trace-events"
+#line 65 "../block/trace-events"
             qemu_log("luring_init_state " "s %p size %zu" "\n", s, size);
 #line 1795 "trace/trace-block.h"
         }
@@ -1813,14 +1813,14 @@ static inline void _nocheck__trace_luring_cleanup_state(void * s)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 66 "..\block\trace-events"
+#line 66 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:luring_cleanup_state " "%p freed" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , s);
 #line 1822 "trace/trace-block.h"
         } else {
-#line 66 "..\block\trace-events"
+#line 66 "../block/trace-events"
             qemu_log("luring_cleanup_state " "%p freed" "\n", s);
 #line 1826 "trace/trace-block.h"
         }
@@ -1844,14 +1844,14 @@ static inline void _nocheck__trace_luring_unplug_fn(void * s, int blocked, int q
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 67 "..\block\trace-events"
+#line 67 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:luring_unplug_fn " "LuringState %p blocked %d queued %d inflight %d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , s, blocked, queued, inflight);
 #line 1853 "trace/trace-block.h"
         } else {
-#line 67 "..\block\trace-events"
+#line 67 "../block/trace-events"
             qemu_log("luring_unplug_fn " "LuringState %p blocked %d queued %d inflight %d" "\n", s, blocked, queued, inflight);
 #line 1857 "trace/trace-block.h"
         }
@@ -1875,14 +1875,14 @@ static inline void _nocheck__trace_luring_do_submit(void * s, int blocked, int q
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 68 "..\block\trace-events"
+#line 68 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:luring_do_submit " "LuringState %p blocked %d queued %d inflight %d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , s, blocked, queued, inflight);
 #line 1884 "trace/trace-block.h"
         } else {
-#line 68 "..\block\trace-events"
+#line 68 "../block/trace-events"
             qemu_log("luring_do_submit " "LuringState %p blocked %d queued %d inflight %d" "\n", s, blocked, queued, inflight);
 #line 1888 "trace/trace-block.h"
         }
@@ -1906,14 +1906,14 @@ static inline void _nocheck__trace_luring_do_submit_done(void * s, int ret)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 69 "..\block\trace-events"
+#line 69 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:luring_do_submit_done " "LuringState %p submitted to kernel %d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , s, ret);
 #line 1915 "trace/trace-block.h"
         } else {
-#line 69 "..\block\trace-events"
+#line 69 "../block/trace-events"
             qemu_log("luring_do_submit_done " "LuringState %p submitted to kernel %d" "\n", s, ret);
 #line 1919 "trace/trace-block.h"
         }
@@ -1937,14 +1937,14 @@ static inline void _nocheck__trace_luring_co_submit(void * bs, void * s, void * 
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 70 "..\block\trace-events"
+#line 70 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:luring_co_submit " "bs %p s %p luringcb %p fd %d offset %" PRId64 " nbytes %zd type %d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , bs, s, luringcb, fd, offset, nbytes, type);
 #line 1946 "trace/trace-block.h"
         } else {
-#line 70 "..\block\trace-events"
+#line 70 "../block/trace-events"
             qemu_log("luring_co_submit " "bs %p s %p luringcb %p fd %d offset %" PRId64 " nbytes %zd type %d" "\n", bs, s, luringcb, fd, offset, nbytes, type);
 #line 1950 "trace/trace-block.h"
         }
@@ -1968,14 +1968,14 @@ static inline void _nocheck__trace_luring_process_completion(void * s, void * ai
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 71 "..\block\trace-events"
+#line 71 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:luring_process_completion " "LuringState %p luringcb %p ret %d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , s, aiocb, ret);
 #line 1977 "trace/trace-block.h"
         } else {
-#line 71 "..\block\trace-events"
+#line 71 "../block/trace-events"
             qemu_log("luring_process_completion " "LuringState %p luringcb %p ret %d" "\n", s, aiocb, ret);
 #line 1981 "trace/trace-block.h"
         }
@@ -1999,14 +1999,14 @@ static inline void _nocheck__trace_luring_io_uring_submit(void * s, int ret)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 72 "..\block\trace-events"
+#line 72 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:luring_io_uring_submit " "LuringState %p ret %d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , s, ret);
 #line 2008 "trace/trace-block.h"
         } else {
-#line 72 "..\block\trace-events"
+#line 72 "../block/trace-events"
             qemu_log("luring_io_uring_submit " "LuringState %p ret %d" "\n", s, ret);
 #line 2012 "trace/trace-block.h"
         }
@@ -2030,14 +2030,14 @@ static inline void _nocheck__trace_luring_resubmit_short_read(void * s, void * l
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 73 "..\block\trace-events"
+#line 73 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:luring_resubmit_short_read " "LuringState %p luringcb %p nread %d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , s, luringcb, nread);
 #line 2039 "trace/trace-block.h"
         } else {
-#line 73 "..\block\trace-events"
+#line 73 "../block/trace-events"
             qemu_log("luring_resubmit_short_read " "LuringState %p luringcb %p nread %d" "\n", s, luringcb, nread);
 #line 2043 "trace/trace-block.h"
         }
@@ -2061,14 +2061,14 @@ static inline void _nocheck__trace_qcow2_add_task(void * co, void * bs, void * p
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 76 "..\block\trace-events"
+#line 76 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:qcow2_add_task " "co %p bs %p pool %p: %s: cluster_type %d file_cluster_offset %" PRIu64 " offset %" PRIu64 " bytes %" PRIu64 " qiov %p qiov_offset %zu" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , co, bs, pool, action, cluster_type, host_offset, offset, bytes, qiov, qiov_offset);
 #line 2070 "trace/trace-block.h"
         } else {
-#line 76 "..\block\trace-events"
+#line 76 "../block/trace-events"
             qemu_log("qcow2_add_task " "co %p bs %p pool %p: %s: cluster_type %d file_cluster_offset %" PRIu64 " offset %" PRIu64 " bytes %" PRIu64 " qiov %p qiov_offset %zu" "\n", co, bs, pool, action, cluster_type, host_offset, offset, bytes, qiov, qiov_offset);
 #line 2074 "trace/trace-block.h"
         }
@@ -2092,14 +2092,14 @@ static inline void _nocheck__trace_qcow2_writev_start_req(void * co, int64_t off
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 77 "..\block\trace-events"
+#line 77 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:qcow2_writev_start_req " "co %p offset 0x%" PRIx64 " bytes %" PRId64 "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , co, offset, bytes);
 #line 2101 "trace/trace-block.h"
         } else {
-#line 77 "..\block\trace-events"
+#line 77 "../block/trace-events"
             qemu_log("qcow2_writev_start_req " "co %p offset 0x%" PRIx64 " bytes %" PRId64 "\n", co, offset, bytes);
 #line 2105 "trace/trace-block.h"
         }
@@ -2123,14 +2123,14 @@ static inline void _nocheck__trace_qcow2_writev_done_req(void * co, int ret)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 78 "..\block\trace-events"
+#line 78 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:qcow2_writev_done_req " "co %p ret %d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , co, ret);
 #line 2132 "trace/trace-block.h"
         } else {
-#line 78 "..\block\trace-events"
+#line 78 "../block/trace-events"
             qemu_log("qcow2_writev_done_req " "co %p ret %d" "\n", co, ret);
 #line 2136 "trace/trace-block.h"
         }
@@ -2154,14 +2154,14 @@ static inline void _nocheck__trace_qcow2_writev_start_part(void * co)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 79 "..\block\trace-events"
+#line 79 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:qcow2_writev_start_part " "co %p" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , co);
 #line 2163 "trace/trace-block.h"
         } else {
-#line 79 "..\block\trace-events"
+#line 79 "../block/trace-events"
             qemu_log("qcow2_writev_start_part " "co %p" "\n", co);
 #line 2167 "trace/trace-block.h"
         }
@@ -2185,14 +2185,14 @@ static inline void _nocheck__trace_qcow2_writev_done_part(void * co, int cur_byt
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 80 "..\block\trace-events"
+#line 80 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:qcow2_writev_done_part " "co %p cur_bytes %d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , co, cur_bytes);
 #line 2194 "trace/trace-block.h"
         } else {
-#line 80 "..\block\trace-events"
+#line 80 "../block/trace-events"
             qemu_log("qcow2_writev_done_part " "co %p cur_bytes %d" "\n", co, cur_bytes);
 #line 2198 "trace/trace-block.h"
         }
@@ -2216,14 +2216,14 @@ static inline void _nocheck__trace_qcow2_writev_data(void * co, uint64_t offset)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 81 "..\block\trace-events"
+#line 81 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:qcow2_writev_data " "co %p offset 0x%" PRIx64 "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , co, offset);
 #line 2225 "trace/trace-block.h"
         } else {
-#line 81 "..\block\trace-events"
+#line 81 "../block/trace-events"
             qemu_log("qcow2_writev_data " "co %p offset 0x%" PRIx64 "\n", co, offset);
 #line 2229 "trace/trace-block.h"
         }
@@ -2247,14 +2247,14 @@ static inline void _nocheck__trace_qcow2_pwrite_zeroes_start_req(void * co, int6
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 82 "..\block\trace-events"
+#line 82 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:qcow2_pwrite_zeroes_start_req " "co %p offset 0x%" PRIx64 " bytes %" PRId64 "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , co, offset, bytes);
 #line 2256 "trace/trace-block.h"
         } else {
-#line 82 "..\block\trace-events"
+#line 82 "../block/trace-events"
             qemu_log("qcow2_pwrite_zeroes_start_req " "co %p offset 0x%" PRIx64 " bytes %" PRId64 "\n", co, offset, bytes);
 #line 2260 "trace/trace-block.h"
         }
@@ -2278,14 +2278,14 @@ static inline void _nocheck__trace_qcow2_pwrite_zeroes(void * co, int64_t offset
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 83 "..\block\trace-events"
+#line 83 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:qcow2_pwrite_zeroes " "co %p offset 0x%" PRIx64 " bytes %" PRId64 "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , co, offset, bytes);
 #line 2287 "trace/trace-block.h"
         } else {
-#line 83 "..\block\trace-events"
+#line 83 "../block/trace-events"
             qemu_log("qcow2_pwrite_zeroes " "co %p offset 0x%" PRIx64 " bytes %" PRId64 "\n", co, offset, bytes);
 #line 2291 "trace/trace-block.h"
         }
@@ -2309,14 +2309,14 @@ static inline void _nocheck__trace_qcow2_skip_cow(void * co, uint64_t offset, in
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 84 "..\block\trace-events"
+#line 84 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:qcow2_skip_cow " "co %p offset 0x%" PRIx64 " nb_clusters %d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , co, offset, nb_clusters);
 #line 2318 "trace/trace-block.h"
         } else {
-#line 84 "..\block\trace-events"
+#line 84 "../block/trace-events"
             qemu_log("qcow2_skip_cow " "co %p offset 0x%" PRIx64 " nb_clusters %d" "\n", co, offset, nb_clusters);
 #line 2322 "trace/trace-block.h"
         }
@@ -2340,14 +2340,14 @@ static inline void _nocheck__trace_qcow2_alloc_clusters_offset(void * co, uint64
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 87 "..\block\trace-events"
+#line 87 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:qcow2_alloc_clusters_offset " "co %p offset 0x%" PRIx64 " bytes %d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , co, offset, bytes);
 #line 2349 "trace/trace-block.h"
         } else {
-#line 87 "..\block\trace-events"
+#line 87 "../block/trace-events"
             qemu_log("qcow2_alloc_clusters_offset " "co %p offset 0x%" PRIx64 " bytes %d" "\n", co, offset, bytes);
 #line 2353 "trace/trace-block.h"
         }
@@ -2371,14 +2371,14 @@ static inline void _nocheck__trace_qcow2_handle_copied(void * co, uint64_t guest
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 88 "..\block\trace-events"
+#line 88 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:qcow2_handle_copied " "co %p guest_offset 0x%" PRIx64 " host_offset 0x%" PRIx64 " bytes 0x%" PRIx64 "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , co, guest_offset, host_offset, bytes);
 #line 2380 "trace/trace-block.h"
         } else {
-#line 88 "..\block\trace-events"
+#line 88 "../block/trace-events"
             qemu_log("qcow2_handle_copied " "co %p guest_offset 0x%" PRIx64 " host_offset 0x%" PRIx64 " bytes 0x%" PRIx64 "\n", co, guest_offset, host_offset, bytes);
 #line 2384 "trace/trace-block.h"
         }
@@ -2402,14 +2402,14 @@ static inline void _nocheck__trace_qcow2_handle_alloc(void * co, uint64_t guest_
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 89 "..\block\trace-events"
+#line 89 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:qcow2_handle_alloc " "co %p guest_offset 0x%" PRIx64 " host_offset 0x%" PRIx64 " bytes 0x%" PRIx64 "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , co, guest_offset, host_offset, bytes);
 #line 2411 "trace/trace-block.h"
         } else {
-#line 89 "..\block\trace-events"
+#line 89 "../block/trace-events"
             qemu_log("qcow2_handle_alloc " "co %p guest_offset 0x%" PRIx64 " host_offset 0x%" PRIx64 " bytes 0x%" PRIx64 "\n", co, guest_offset, host_offset, bytes);
 #line 2415 "trace/trace-block.h"
         }
@@ -2433,14 +2433,14 @@ static inline void _nocheck__trace_qcow2_do_alloc_clusters_offset(void * co, uin
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 90 "..\block\trace-events"
+#line 90 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:qcow2_do_alloc_clusters_offset " "co %p guest_offset 0x%" PRIx64 " host_offset 0x%" PRIx64 " nb_clusters %d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , co, guest_offset, host_offset, nb_clusters);
 #line 2442 "trace/trace-block.h"
         } else {
-#line 90 "..\block\trace-events"
+#line 90 "../block/trace-events"
             qemu_log("qcow2_do_alloc_clusters_offset " "co %p guest_offset 0x%" PRIx64 " host_offset 0x%" PRIx64 " nb_clusters %d" "\n", co, guest_offset, host_offset, nb_clusters);
 #line 2446 "trace/trace-block.h"
         }
@@ -2464,14 +2464,14 @@ static inline void _nocheck__trace_qcow2_cluster_alloc_phys(void * co)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 91 "..\block\trace-events"
+#line 91 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:qcow2_cluster_alloc_phys " "co %p" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , co);
 #line 2473 "trace/trace-block.h"
         } else {
-#line 91 "..\block\trace-events"
+#line 91 "../block/trace-events"
             qemu_log("qcow2_cluster_alloc_phys " "co %p" "\n", co);
 #line 2477 "trace/trace-block.h"
         }
@@ -2495,14 +2495,14 @@ static inline void _nocheck__trace_qcow2_cluster_link_l2(void * co, int nb_clust
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 92 "..\block\trace-events"
+#line 92 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:qcow2_cluster_link_l2 " "co %p nb_clusters %d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , co, nb_clusters);
 #line 2504 "trace/trace-block.h"
         } else {
-#line 92 "..\block\trace-events"
+#line 92 "../block/trace-events"
             qemu_log("qcow2_cluster_link_l2 " "co %p nb_clusters %d" "\n", co, nb_clusters);
 #line 2508 "trace/trace-block.h"
         }
@@ -2526,14 +2526,14 @@ static inline void _nocheck__trace_qcow2_l2_allocate(void * bs, int l1_index)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 94 "..\block\trace-events"
+#line 94 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:qcow2_l2_allocate " "bs %p l1_index %d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , bs, l1_index);
 #line 2535 "trace/trace-block.h"
         } else {
-#line 94 "..\block\trace-events"
+#line 94 "../block/trace-events"
             qemu_log("qcow2_l2_allocate " "bs %p l1_index %d" "\n", bs, l1_index);
 #line 2539 "trace/trace-block.h"
         }
@@ -2557,14 +2557,14 @@ static inline void _nocheck__trace_qcow2_l2_allocate_get_empty(void * bs, int l1
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 95 "..\block\trace-events"
+#line 95 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:qcow2_l2_allocate_get_empty " "bs %p l1_index %d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , bs, l1_index);
 #line 2566 "trace/trace-block.h"
         } else {
-#line 95 "..\block\trace-events"
+#line 95 "../block/trace-events"
             qemu_log("qcow2_l2_allocate_get_empty " "bs %p l1_index %d" "\n", bs, l1_index);
 #line 2570 "trace/trace-block.h"
         }
@@ -2588,14 +2588,14 @@ static inline void _nocheck__trace_qcow2_l2_allocate_write_l2(void * bs, int l1_
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 96 "..\block\trace-events"
+#line 96 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:qcow2_l2_allocate_write_l2 " "bs %p l1_index %d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , bs, l1_index);
 #line 2597 "trace/trace-block.h"
         } else {
-#line 96 "..\block\trace-events"
+#line 96 "../block/trace-events"
             qemu_log("qcow2_l2_allocate_write_l2 " "bs %p l1_index %d" "\n", bs, l1_index);
 #line 2601 "trace/trace-block.h"
         }
@@ -2619,14 +2619,14 @@ static inline void _nocheck__trace_qcow2_l2_allocate_write_l1(void * bs, int l1_
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 97 "..\block\trace-events"
+#line 97 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:qcow2_l2_allocate_write_l1 " "bs %p l1_index %d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , bs, l1_index);
 #line 2628 "trace/trace-block.h"
         } else {
-#line 97 "..\block\trace-events"
+#line 97 "../block/trace-events"
             qemu_log("qcow2_l2_allocate_write_l1 " "bs %p l1_index %d" "\n", bs, l1_index);
 #line 2632 "trace/trace-block.h"
         }
@@ -2650,14 +2650,14 @@ static inline void _nocheck__trace_qcow2_l2_allocate_done(void * bs, int l1_inde
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 98 "..\block\trace-events"
+#line 98 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:qcow2_l2_allocate_done " "bs %p l1_index %d ret %d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , bs, l1_index, ret);
 #line 2659 "trace/trace-block.h"
         } else {
-#line 98 "..\block\trace-events"
+#line 98 "../block/trace-events"
             qemu_log("qcow2_l2_allocate_done " "bs %p l1_index %d ret %d" "\n", bs, l1_index, ret);
 #line 2663 "trace/trace-block.h"
         }
@@ -2681,14 +2681,14 @@ static inline void _nocheck__trace_qcow2_cache_get(void * co, int c, uint64_t of
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 101 "..\block\trace-events"
+#line 101 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:qcow2_cache_get " "co %p is_l2_cache %d offset 0x%" PRIx64 " read_from_disk %d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , co, c, offset, read_from_disk);
 #line 2690 "trace/trace-block.h"
         } else {
-#line 101 "..\block\trace-events"
+#line 101 "../block/trace-events"
             qemu_log("qcow2_cache_get " "co %p is_l2_cache %d offset 0x%" PRIx64 " read_from_disk %d" "\n", co, c, offset, read_from_disk);
 #line 2694 "trace/trace-block.h"
         }
@@ -2712,14 +2712,14 @@ static inline void _nocheck__trace_qcow2_cache_get_replace_entry(void * co, int 
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 102 "..\block\trace-events"
+#line 102 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:qcow2_cache_get_replace_entry " "co %p is_l2_cache %d index %d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , co, c, i);
 #line 2721 "trace/trace-block.h"
         } else {
-#line 102 "..\block\trace-events"
+#line 102 "../block/trace-events"
             qemu_log("qcow2_cache_get_replace_entry " "co %p is_l2_cache %d index %d" "\n", co, c, i);
 #line 2725 "trace/trace-block.h"
         }
@@ -2743,14 +2743,14 @@ static inline void _nocheck__trace_qcow2_cache_get_read(void * co, int c, int i)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 103 "..\block\trace-events"
+#line 103 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:qcow2_cache_get_read " "co %p is_l2_cache %d index %d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , co, c, i);
 #line 2752 "trace/trace-block.h"
         } else {
-#line 103 "..\block\trace-events"
+#line 103 "../block/trace-events"
             qemu_log("qcow2_cache_get_read " "co %p is_l2_cache %d index %d" "\n", co, c, i);
 #line 2756 "trace/trace-block.h"
         }
@@ -2774,14 +2774,14 @@ static inline void _nocheck__trace_qcow2_cache_get_done(void * co, int c, int i)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 104 "..\block\trace-events"
+#line 104 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:qcow2_cache_get_done " "co %p is_l2_cache %d index %d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , co, c, i);
 #line 2783 "trace/trace-block.h"
         } else {
-#line 104 "..\block\trace-events"
+#line 104 "../block/trace-events"
             qemu_log("qcow2_cache_get_done " "co %p is_l2_cache %d index %d" "\n", co, c, i);
 #line 2787 "trace/trace-block.h"
         }
@@ -2805,14 +2805,14 @@ static inline void _nocheck__trace_qcow2_cache_flush(void * co, int c)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 105 "..\block\trace-events"
+#line 105 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:qcow2_cache_flush " "co %p is_l2_cache %d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , co, c);
 #line 2814 "trace/trace-block.h"
         } else {
-#line 105 "..\block\trace-events"
+#line 105 "../block/trace-events"
             qemu_log("qcow2_cache_flush " "co %p is_l2_cache %d" "\n", co, c);
 #line 2818 "trace/trace-block.h"
         }
@@ -2836,14 +2836,14 @@ static inline void _nocheck__trace_qcow2_cache_entry_flush(void * co, int c, int
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 106 "..\block\trace-events"
+#line 106 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:qcow2_cache_entry_flush " "co %p is_l2_cache %d index %d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , co, c, i);
 #line 2845 "trace/trace-block.h"
         } else {
-#line 106 "..\block\trace-events"
+#line 106 "../block/trace-events"
             qemu_log("qcow2_cache_entry_flush " "co %p is_l2_cache %d index %d" "\n", co, c, i);
 #line 2849 "trace/trace-block.h"
         }
@@ -2867,14 +2867,14 @@ static inline void _nocheck__trace_qcow2_process_discards_failed_region(uint64_t
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 109 "..\block\trace-events"
+#line 109 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:qcow2_process_discards_failed_region " "offset 0x%" PRIx64 " bytes 0x%" PRIx64 " ret %d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , offset, bytes, ret);
 #line 2876 "trace/trace-block.h"
         } else {
-#line 109 "..\block\trace-events"
+#line 109 "../block/trace-events"
             qemu_log("qcow2_process_discards_failed_region " "offset 0x%" PRIx64 " bytes 0x%" PRIx64 " ret %d" "\n", offset, bytes, ret);
 #line 2880 "trace/trace-block.h"
         }
@@ -2898,14 +2898,14 @@ static inline void _nocheck__trace_qed_alloc_l2_cache_entry(void * l2_cache, voi
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 112 "..\block\trace-events"
+#line 112 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:qed_alloc_l2_cache_entry " "l2_cache %p entry %p" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , l2_cache, entry);
 #line 2907 "trace/trace-block.h"
         } else {
-#line 112 "..\block\trace-events"
+#line 112 "../block/trace-events"
             qemu_log("qed_alloc_l2_cache_entry " "l2_cache %p entry %p" "\n", l2_cache, entry);
 #line 2911 "trace/trace-block.h"
         }
@@ -2929,14 +2929,14 @@ static inline void _nocheck__trace_qed_unref_l2_cache_entry(void * entry, int re
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 113 "..\block\trace-events"
+#line 113 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:qed_unref_l2_cache_entry " "entry %p ref %d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , entry, ref);
 #line 2938 "trace/trace-block.h"
         } else {
-#line 113 "..\block\trace-events"
+#line 113 "../block/trace-events"
             qemu_log("qed_unref_l2_cache_entry " "entry %p ref %d" "\n", entry, ref);
 #line 2942 "trace/trace-block.h"
         }
@@ -2960,14 +2960,14 @@ static inline void _nocheck__trace_qed_find_l2_cache_entry(void * l2_cache, void
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 114 "..\block\trace-events"
+#line 114 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:qed_find_l2_cache_entry " "l2_cache %p entry %p offset %"PRIu64" ref %d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , l2_cache, entry, offset, ref);
 #line 2969 "trace/trace-block.h"
         } else {
-#line 114 "..\block\trace-events"
+#line 114 "../block/trace-events"
             qemu_log("qed_find_l2_cache_entry " "l2_cache %p entry %p offset %"PRIu64" ref %d" "\n", l2_cache, entry, offset, ref);
 #line 2973 "trace/trace-block.h"
         }
@@ -2991,14 +2991,14 @@ static inline void _nocheck__trace_qed_read_table(void * s, uint64_t offset, voi
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 117 "..\block\trace-events"
+#line 117 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:qed_read_table " "s %p offset %"PRIu64" table %p" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , s, offset, table);
 #line 3000 "trace/trace-block.h"
         } else {
-#line 117 "..\block\trace-events"
+#line 117 "../block/trace-events"
             qemu_log("qed_read_table " "s %p offset %"PRIu64" table %p" "\n", s, offset, table);
 #line 3004 "trace/trace-block.h"
         }
@@ -3022,14 +3022,14 @@ static inline void _nocheck__trace_qed_read_table_cb(void * s, void * table, int
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 118 "..\block\trace-events"
+#line 118 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:qed_read_table_cb " "s %p table %p ret %d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , s, table, ret);
 #line 3031 "trace/trace-block.h"
         } else {
-#line 118 "..\block\trace-events"
+#line 118 "../block/trace-events"
             qemu_log("qed_read_table_cb " "s %p table %p ret %d" "\n", s, table, ret);
 #line 3035 "trace/trace-block.h"
         }
@@ -3053,14 +3053,14 @@ static inline void _nocheck__trace_qed_write_table(void * s, uint64_t offset, vo
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 119 "..\block\trace-events"
+#line 119 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:qed_write_table " "s %p offset %"PRIu64" table %p index %u n %u" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , s, offset, table, index, n);
 #line 3062 "trace/trace-block.h"
         } else {
-#line 119 "..\block\trace-events"
+#line 119 "../block/trace-events"
             qemu_log("qed_write_table " "s %p offset %"PRIu64" table %p index %u n %u" "\n", s, offset, table, index, n);
 #line 3066 "trace/trace-block.h"
         }
@@ -3084,14 +3084,14 @@ static inline void _nocheck__trace_qed_write_table_cb(void * s, void * table, in
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 120 "..\block\trace-events"
+#line 120 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:qed_write_table_cb " "s %p table %p flush %d ret %d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , s, table, flush, ret);
 #line 3093 "trace/trace-block.h"
         } else {
-#line 120 "..\block\trace-events"
+#line 120 "../block/trace-events"
             qemu_log("qed_write_table_cb " "s %p table %p flush %d ret %d" "\n", s, table, flush, ret);
 #line 3097 "trace/trace-block.h"
         }
@@ -3115,14 +3115,14 @@ static inline void _nocheck__trace_qed_need_check_timer_cb(void * s)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 123 "..\block\trace-events"
+#line 123 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:qed_need_check_timer_cb " "s %p" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , s);
 #line 3124 "trace/trace-block.h"
         } else {
-#line 123 "..\block\trace-events"
+#line 123 "../block/trace-events"
             qemu_log("qed_need_check_timer_cb " "s %p" "\n", s);
 #line 3128 "trace/trace-block.h"
         }
@@ -3146,14 +3146,14 @@ static inline void _nocheck__trace_qed_start_need_check_timer(void * s)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 124 "..\block\trace-events"
+#line 124 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:qed_start_need_check_timer " "s %p" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , s);
 #line 3155 "trace/trace-block.h"
         } else {
-#line 124 "..\block\trace-events"
+#line 124 "../block/trace-events"
             qemu_log("qed_start_need_check_timer " "s %p" "\n", s);
 #line 3159 "trace/trace-block.h"
         }
@@ -3177,14 +3177,14 @@ static inline void _nocheck__trace_qed_cancel_need_check_timer(void * s)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 125 "..\block\trace-events"
+#line 125 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:qed_cancel_need_check_timer " "s %p" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , s);
 #line 3186 "trace/trace-block.h"
         } else {
-#line 125 "..\block\trace-events"
+#line 125 "../block/trace-events"
             qemu_log("qed_cancel_need_check_timer " "s %p" "\n", s);
 #line 3190 "trace/trace-block.h"
         }
@@ -3208,14 +3208,14 @@ static inline void _nocheck__trace_qed_aio_complete(void * s, void * acb, int re
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 126 "..\block\trace-events"
+#line 126 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:qed_aio_complete " "s %p acb %p ret %d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , s, acb, ret);
 #line 3217 "trace/trace-block.h"
         } else {
-#line 126 "..\block\trace-events"
+#line 126 "../block/trace-events"
             qemu_log("qed_aio_complete " "s %p acb %p ret %d" "\n", s, acb, ret);
 #line 3221 "trace/trace-block.h"
         }
@@ -3239,14 +3239,14 @@ static inline void _nocheck__trace_qed_aio_setup(void * s, void * acb, int64_t s
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 127 "..\block\trace-events"
+#line 127 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:qed_aio_setup " "s %p acb %p sector_num %"PRId64" nb_sectors %d opaque %p flags 0x%x" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , s, acb, sector_num, nb_sectors, opaque, flags);
 #line 3248 "trace/trace-block.h"
         } else {
-#line 127 "..\block\trace-events"
+#line 127 "../block/trace-events"
             qemu_log("qed_aio_setup " "s %p acb %p sector_num %"PRId64" nb_sectors %d opaque %p flags 0x%x" "\n", s, acb, sector_num, nb_sectors, opaque, flags);
 #line 3252 "trace/trace-block.h"
         }
@@ -3270,14 +3270,14 @@ static inline void _nocheck__trace_qed_aio_next_io(void * s, void * acb, int ret
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 128 "..\block\trace-events"
+#line 128 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:qed_aio_next_io " "s %p acb %p ret %d cur_pos %"PRIu64 "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , s, acb, ret, cur_pos);
 #line 3279 "trace/trace-block.h"
         } else {
-#line 128 "..\block\trace-events"
+#line 128 "../block/trace-events"
             qemu_log("qed_aio_next_io " "s %p acb %p ret %d cur_pos %"PRIu64 "\n", s, acb, ret, cur_pos);
 #line 3283 "trace/trace-block.h"
         }
@@ -3301,14 +3301,14 @@ static inline void _nocheck__trace_qed_aio_read_data(void * s, void * acb, int r
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 129 "..\block\trace-events"
+#line 129 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:qed_aio_read_data " "s %p acb %p ret %d offset %"PRIu64" len %zu" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , s, acb, ret, offset, len);
 #line 3310 "trace/trace-block.h"
         } else {
-#line 129 "..\block\trace-events"
+#line 129 "../block/trace-events"
             qemu_log("qed_aio_read_data " "s %p acb %p ret %d offset %"PRIu64" len %zu" "\n", s, acb, ret, offset, len);
 #line 3314 "trace/trace-block.h"
         }
@@ -3332,14 +3332,14 @@ static inline void _nocheck__trace_qed_aio_write_data(void * s, void * acb, int 
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 130 "..\block\trace-events"
+#line 130 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:qed_aio_write_data " "s %p acb %p ret %d offset %"PRIu64" len %zu" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , s, acb, ret, offset, len);
 #line 3341 "trace/trace-block.h"
         } else {
-#line 130 "..\block\trace-events"
+#line 130 "../block/trace-events"
             qemu_log("qed_aio_write_data " "s %p acb %p ret %d offset %"PRIu64" len %zu" "\n", s, acb, ret, offset, len);
 #line 3345 "trace/trace-block.h"
         }
@@ -3363,14 +3363,14 @@ static inline void _nocheck__trace_qed_aio_write_prefill(void * s, void * acb, u
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 131 "..\block\trace-events"
+#line 131 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:qed_aio_write_prefill " "s %p acb %p start %"PRIu64" len %zu offset %"PRIu64 "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , s, acb, start, len, offset);
 #line 3372 "trace/trace-block.h"
         } else {
-#line 131 "..\block\trace-events"
+#line 131 "../block/trace-events"
             qemu_log("qed_aio_write_prefill " "s %p acb %p start %"PRIu64" len %zu offset %"PRIu64 "\n", s, acb, start, len, offset);
 #line 3376 "trace/trace-block.h"
         }
@@ -3394,14 +3394,14 @@ static inline void _nocheck__trace_qed_aio_write_postfill(void * s, void * acb, 
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 132 "..\block\trace-events"
+#line 132 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:qed_aio_write_postfill " "s %p acb %p start %"PRIu64" len %zu offset %"PRIu64 "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , s, acb, start, len, offset);
 #line 3403 "trace/trace-block.h"
         } else {
-#line 132 "..\block\trace-events"
+#line 132 "../block/trace-events"
             qemu_log("qed_aio_write_postfill " "s %p acb %p start %"PRIu64" len %zu offset %"PRIu64 "\n", s, acb, start, len, offset);
 #line 3407 "trace/trace-block.h"
         }
@@ -3425,14 +3425,14 @@ static inline void _nocheck__trace_qed_aio_write_main(void * s, void * acb, int 
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 133 "..\block\trace-events"
+#line 133 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:qed_aio_write_main " "s %p acb %p ret %d offset %"PRIu64" len %zu" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , s, acb, ret, offset, len);
 #line 3434 "trace/trace-block.h"
         } else {
-#line 133 "..\block\trace-events"
+#line 133 "../block/trace-events"
             qemu_log("qed_aio_write_main " "s %p acb %p ret %d offset %"PRIu64" len %zu" "\n", s, acb, ret, offset, len);
 #line 3438 "trace/trace-block.h"
         }
@@ -3456,14 +3456,14 @@ static inline void _nocheck__trace_nvme_controller_capability_raw(uint64_t value
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 136 "..\block\trace-events"
+#line 136 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:nvme_controller_capability_raw " "0x%08"PRIx64 "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , value);
 #line 3465 "trace/trace-block.h"
         } else {
-#line 136 "..\block\trace-events"
+#line 136 "../block/trace-events"
             qemu_log("nvme_controller_capability_raw " "0x%08"PRIx64 "\n", value);
 #line 3469 "trace/trace-block.h"
         }
@@ -3487,14 +3487,14 @@ static inline void _nocheck__trace_nvme_controller_capability(const char * desc,
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 137 "..\block\trace-events"
+#line 137 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:nvme_controller_capability " "%s: %"PRIu64 "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , desc, value);
 #line 3496 "trace/trace-block.h"
         } else {
-#line 137 "..\block\trace-events"
+#line 137 "../block/trace-events"
             qemu_log("nvme_controller_capability " "%s: %"PRIu64 "\n", desc, value);
 #line 3500 "trace/trace-block.h"
         }
@@ -3518,14 +3518,14 @@ static inline void _nocheck__trace_nvme_controller_spec_version(uint32_t mjr, ui
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 138 "..\block\trace-events"
+#line 138 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:nvme_controller_spec_version " "Specification supported: %u.%u.%u" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , mjr, mnr, ter);
 #line 3527 "trace/trace-block.h"
         } else {
-#line 138 "..\block\trace-events"
+#line 138 "../block/trace-events"
             qemu_log("nvme_controller_spec_version " "Specification supported: %u.%u.%u" "\n", mjr, mnr, ter);
 #line 3531 "trace/trace-block.h"
         }
@@ -3549,14 +3549,14 @@ static inline void _nocheck__trace_nvme_kick(void * s, unsigned q_index)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 139 "..\block\trace-events"
+#line 139 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:nvme_kick " "s %p q #%u" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , s, q_index);
 #line 3558 "trace/trace-block.h"
         } else {
-#line 139 "..\block\trace-events"
+#line 139 "../block/trace-events"
             qemu_log("nvme_kick " "s %p q #%u" "\n", s, q_index);
 #line 3562 "trace/trace-block.h"
         }
@@ -3580,14 +3580,14 @@ static inline void _nocheck__trace_nvme_dma_flush_queue_wait(void * s)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 140 "..\block\trace-events"
+#line 140 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:nvme_dma_flush_queue_wait " "s %p" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , s);
 #line 3589 "trace/trace-block.h"
         } else {
-#line 140 "..\block\trace-events"
+#line 140 "../block/trace-events"
             qemu_log("nvme_dma_flush_queue_wait " "s %p" "\n", s);
 #line 3593 "trace/trace-block.h"
         }
@@ -3611,14 +3611,14 @@ static inline void _nocheck__trace_nvme_error(int cmd_specific, int sq_head, int
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 141 "..\block\trace-events"
+#line 141 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:nvme_error " "cmd_specific %d sq_head %d sqid %d cid %d status 0x%x" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , cmd_specific, sq_head, sqid, cid, status);
 #line 3620 "trace/trace-block.h"
         } else {
-#line 141 "..\block\trace-events"
+#line 141 "../block/trace-events"
             qemu_log("nvme_error " "cmd_specific %d sq_head %d sqid %d cid %d status 0x%x" "\n", cmd_specific, sq_head, sqid, cid, status);
 #line 3624 "trace/trace-block.h"
         }
@@ -3642,14 +3642,14 @@ static inline void _nocheck__trace_nvme_process_completion(void * s, unsigned q_
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 142 "..\block\trace-events"
+#line 142 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:nvme_process_completion " "s %p q #%u inflight %d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , s, q_index, inflight);
 #line 3651 "trace/trace-block.h"
         } else {
-#line 142 "..\block\trace-events"
+#line 142 "../block/trace-events"
             qemu_log("nvme_process_completion " "s %p q #%u inflight %d" "\n", s, q_index, inflight);
 #line 3655 "trace/trace-block.h"
         }
@@ -3673,14 +3673,14 @@ static inline void _nocheck__trace_nvme_complete_command(void * s, unsigned q_in
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 143 "..\block\trace-events"
+#line 143 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:nvme_complete_command " "s %p q #%u cid %d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , s, q_index, cid);
 #line 3682 "trace/trace-block.h"
         } else {
-#line 143 "..\block\trace-events"
+#line 143 "../block/trace-events"
             qemu_log("nvme_complete_command " "s %p q #%u cid %d" "\n", s, q_index, cid);
 #line 3686 "trace/trace-block.h"
         }
@@ -3704,14 +3704,14 @@ static inline void _nocheck__trace_nvme_submit_command(void * s, unsigned q_inde
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 144 "..\block\trace-events"
+#line 144 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:nvme_submit_command " "s %p q #%u cid %d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , s, q_index, cid);
 #line 3713 "trace/trace-block.h"
         } else {
-#line 144 "..\block\trace-events"
+#line 144 "../block/trace-events"
             qemu_log("nvme_submit_command " "s %p q #%u cid %d" "\n", s, q_index, cid);
 #line 3717 "trace/trace-block.h"
         }
@@ -3735,14 +3735,14 @@ static inline void _nocheck__trace_nvme_submit_command_raw(int c0, int c1, int c
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 145 "..\block\trace-events"
+#line 145 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:nvme_submit_command_raw " "%02x %02x %02x %02x %02x %02x %02x %02x" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , c0, c1, c2, c3, c4, c5, c6, c7);
 #line 3744 "trace/trace-block.h"
         } else {
-#line 145 "..\block\trace-events"
+#line 145 "../block/trace-events"
             qemu_log("nvme_submit_command_raw " "%02x %02x %02x %02x %02x %02x %02x %02x" "\n", c0, c1, c2, c3, c4, c5, c6, c7);
 #line 3748 "trace/trace-block.h"
         }
@@ -3766,14 +3766,14 @@ static inline void _nocheck__trace_nvme_handle_event(void * s)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 146 "..\block\trace-events"
+#line 146 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:nvme_handle_event " "s %p" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , s);
 #line 3775 "trace/trace-block.h"
         } else {
-#line 146 "..\block\trace-events"
+#line 146 "../block/trace-events"
             qemu_log("nvme_handle_event " "s %p" "\n", s);
 #line 3779 "trace/trace-block.h"
         }
@@ -3797,14 +3797,14 @@ static inline void _nocheck__trace_nvme_poll_queue(void * s, unsigned q_index)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 147 "..\block\trace-events"
+#line 147 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:nvme_poll_queue " "s %p q #%u" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , s, q_index);
 #line 3806 "trace/trace-block.h"
         } else {
-#line 147 "..\block\trace-events"
+#line 147 "../block/trace-events"
             qemu_log("nvme_poll_queue " "s %p q #%u" "\n", s, q_index);
 #line 3810 "trace/trace-block.h"
         }
@@ -3828,14 +3828,14 @@ static inline void _nocheck__trace_nvme_prw_aligned(void * s, int is_write, uint
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 148 "..\block\trace-events"
+#line 148 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:nvme_prw_aligned " "s %p is_write %d offset 0x%"PRIx64" bytes %"PRId64" flags %d niov %d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , s, is_write, offset, bytes, flags, niov);
 #line 3837 "trace/trace-block.h"
         } else {
-#line 148 "..\block\trace-events"
+#line 148 "../block/trace-events"
             qemu_log("nvme_prw_aligned " "s %p is_write %d offset 0x%"PRIx64" bytes %"PRId64" flags %d niov %d" "\n", s, is_write, offset, bytes, flags, niov);
 #line 3841 "trace/trace-block.h"
         }
@@ -3859,14 +3859,14 @@ static inline void _nocheck__trace_nvme_write_zeroes(void * s, uint64_t offset, 
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 149 "..\block\trace-events"
+#line 149 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:nvme_write_zeroes " "s %p offset 0x%"PRIx64" bytes %"PRId64" flags %d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , s, offset, bytes, flags);
 #line 3868 "trace/trace-block.h"
         } else {
-#line 149 "..\block\trace-events"
+#line 149 "../block/trace-events"
             qemu_log("nvme_write_zeroes " "s %p offset 0x%"PRIx64" bytes %"PRId64" flags %d" "\n", s, offset, bytes, flags);
 #line 3872 "trace/trace-block.h"
         }
@@ -3890,14 +3890,14 @@ static inline void _nocheck__trace_nvme_qiov_unaligned(const void * qiov, int n,
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 150 "..\block\trace-events"
+#line 150 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:nvme_qiov_unaligned " "qiov %p n %d base %p size 0x%zx align 0x%x" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , qiov, n, base, size, align);
 #line 3899 "trace/trace-block.h"
         } else {
-#line 150 "..\block\trace-events"
+#line 150 "../block/trace-events"
             qemu_log("nvme_qiov_unaligned " "qiov %p n %d base %p size 0x%zx align 0x%x" "\n", qiov, n, base, size, align);
 #line 3903 "trace/trace-block.h"
         }
@@ -3921,14 +3921,14 @@ static inline void _nocheck__trace_nvme_prw_buffered(void * s, uint64_t offset, 
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 151 "..\block\trace-events"
+#line 151 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:nvme_prw_buffered " "s %p offset 0x%"PRIx64" bytes %"PRId64" niov %d is_write %d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , s, offset, bytes, niov, is_write);
 #line 3930 "trace/trace-block.h"
         } else {
-#line 151 "..\block\trace-events"
+#line 151 "../block/trace-events"
             qemu_log("nvme_prw_buffered " "s %p offset 0x%"PRIx64" bytes %"PRId64" niov %d is_write %d" "\n", s, offset, bytes, niov, is_write);
 #line 3934 "trace/trace-block.h"
         }
@@ -3952,14 +3952,14 @@ static inline void _nocheck__trace_nvme_rw_done(void * s, int is_write, uint64_t
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 152 "..\block\trace-events"
+#line 152 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:nvme_rw_done " "s %p is_write %d offset 0x%"PRIx64" bytes %"PRId64" ret %d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , s, is_write, offset, bytes, ret);
 #line 3961 "trace/trace-block.h"
         } else {
-#line 152 "..\block\trace-events"
+#line 152 "../block/trace-events"
             qemu_log("nvme_rw_done " "s %p is_write %d offset 0x%"PRIx64" bytes %"PRId64" ret %d" "\n", s, is_write, offset, bytes, ret);
 #line 3965 "trace/trace-block.h"
         }
@@ -3983,14 +3983,14 @@ static inline void _nocheck__trace_nvme_dsm(void * s, int64_t offset, int64_t by
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 153 "..\block\trace-events"
+#line 153 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:nvme_dsm " "s %p offset 0x%"PRIx64" bytes %"PRId64"" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , s, offset, bytes);
 #line 3992 "trace/trace-block.h"
         } else {
-#line 153 "..\block\trace-events"
+#line 153 "../block/trace-events"
             qemu_log("nvme_dsm " "s %p offset 0x%"PRIx64" bytes %"PRId64"" "\n", s, offset, bytes);
 #line 3996 "trace/trace-block.h"
         }
@@ -4014,14 +4014,14 @@ static inline void _nocheck__trace_nvme_dsm_done(void * s, int64_t offset, int64
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 154 "..\block\trace-events"
+#line 154 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:nvme_dsm_done " "s %p offset 0x%"PRIx64" bytes %"PRId64" ret %d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , s, offset, bytes, ret);
 #line 4023 "trace/trace-block.h"
         } else {
-#line 154 "..\block\trace-events"
+#line 154 "../block/trace-events"
             qemu_log("nvme_dsm_done " "s %p offset 0x%"PRIx64" bytes %"PRId64" ret %d" "\n", s, offset, bytes, ret);
 #line 4027 "trace/trace-block.h"
         }
@@ -4045,14 +4045,14 @@ static inline void _nocheck__trace_nvme_dma_map_flush(void * s)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 155 "..\block\trace-events"
+#line 155 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:nvme_dma_map_flush " "s %p" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , s);
 #line 4054 "trace/trace-block.h"
         } else {
-#line 155 "..\block\trace-events"
+#line 155 "../block/trace-events"
             qemu_log("nvme_dma_map_flush " "s %p" "\n", s);
 #line 4058 "trace/trace-block.h"
         }
@@ -4076,14 +4076,14 @@ static inline void _nocheck__trace_nvme_free_req_queue_wait(void * s, unsigned q
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 156 "..\block\trace-events"
+#line 156 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:nvme_free_req_queue_wait " "s %p q #%u" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , s, q_index);
 #line 4085 "trace/trace-block.h"
         } else {
-#line 156 "..\block\trace-events"
+#line 156 "../block/trace-events"
             qemu_log("nvme_free_req_queue_wait " "s %p q #%u" "\n", s, q_index);
 #line 4089 "trace/trace-block.h"
         }
@@ -4107,14 +4107,14 @@ static inline void _nocheck__trace_nvme_create_queue_pair(unsigned q_index, void
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 157 "..\block\trace-events"
+#line 157 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:nvme_create_queue_pair " "index %u q %p size %zu aioctx %p fd %d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , q_index, q, size, aio_context, fd);
 #line 4116 "trace/trace-block.h"
         } else {
-#line 157 "..\block\trace-events"
+#line 157 "../block/trace-events"
             qemu_log("nvme_create_queue_pair " "index %u q %p size %zu aioctx %p fd %d" "\n", q_index, q, size, aio_context, fd);
 #line 4120 "trace/trace-block.h"
         }
@@ -4138,14 +4138,14 @@ static inline void _nocheck__trace_nvme_free_queue_pair(unsigned q_index, void *
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 158 "..\block\trace-events"
+#line 158 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:nvme_free_queue_pair " "index %u q %p cq %p sq %p" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , q_index, q, cq, sq);
 #line 4147 "trace/trace-block.h"
         } else {
-#line 158 "..\block\trace-events"
+#line 158 "../block/trace-events"
             qemu_log("nvme_free_queue_pair " "index %u q %p cq %p sq %p" "\n", q_index, q, cq, sq);
 #line 4151 "trace/trace-block.h"
         }
@@ -4169,14 +4169,14 @@ static inline void _nocheck__trace_nvme_cmd_map_qiov(void * s, void * cmd, void 
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 159 "..\block\trace-events"
+#line 159 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:nvme_cmd_map_qiov " "s %p cmd %p req %p qiov %p entries %d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , s, cmd, req, qiov, entries);
 #line 4178 "trace/trace-block.h"
         } else {
-#line 159 "..\block\trace-events"
+#line 159 "../block/trace-events"
             qemu_log("nvme_cmd_map_qiov " "s %p cmd %p req %p qiov %p entries %d" "\n", s, cmd, req, qiov, entries);
 #line 4182 "trace/trace-block.h"
         }
@@ -4200,14 +4200,14 @@ static inline void _nocheck__trace_nvme_cmd_map_qiov_pages(void * s, int i, uint
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 160 "..\block\trace-events"
+#line 160 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:nvme_cmd_map_qiov_pages " "s %p page[%d] 0x%"PRIx64 "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , s, i, page);
 #line 4209 "trace/trace-block.h"
         } else {
-#line 160 "..\block\trace-events"
+#line 160 "../block/trace-events"
             qemu_log("nvme_cmd_map_qiov_pages " "s %p page[%d] 0x%"PRIx64 "\n", s, i, page);
 #line 4213 "trace/trace-block.h"
         }
@@ -4231,14 +4231,14 @@ static inline void _nocheck__trace_nvme_cmd_map_qiov_iov(void * s, int i, void *
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 161 "..\block\trace-events"
+#line 161 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:nvme_cmd_map_qiov_iov " "s %p iov[%d] %p pages %d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , s, i, page, pages);
 #line 4240 "trace/trace-block.h"
         } else {
-#line 161 "..\block\trace-events"
+#line 161 "../block/trace-events"
             qemu_log("nvme_cmd_map_qiov_iov " "s %p iov[%d] %p pages %d" "\n", s, i, page, pages);
 #line 4244 "trace/trace-block.h"
         }
@@ -4262,14 +4262,14 @@ static inline void _nocheck__trace_iscsi_xcopy(void * src_lun, uint64_t src_off,
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 164 "..\block\trace-events"
+#line 164 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:iscsi_xcopy " "src_lun %p offset %"PRIu64" dst_lun %p offset %"PRIu64" bytes %"PRIu64" ret %d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , src_lun, src_off, dst_lun, dst_off, bytes, ret);
 #line 4271 "trace/trace-block.h"
         } else {
-#line 164 "..\block\trace-events"
+#line 164 "../block/trace-events"
             qemu_log("iscsi_xcopy " "src_lun %p offset %"PRIu64" dst_lun %p offset %"PRIu64" bytes %"PRIu64" ret %d" "\n", src_lun, src_off, dst_lun, dst_off, bytes, ret);
 #line 4275 "trace/trace-block.h"
         }
@@ -4293,14 +4293,14 @@ static inline void _nocheck__trace_nbd_parse_blockstatus_compliance(const char *
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 167 "..\block\trace-events"
+#line 167 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_parse_blockstatus_compliance " "ignoring extra data from non-compliant server: %s" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , err);
 #line 4302 "trace/trace-block.h"
         } else {
-#line 167 "..\block\trace-events"
+#line 167 "../block/trace-events"
             qemu_log("nbd_parse_blockstatus_compliance " "ignoring extra data from non-compliant server: %s" "\n", err);
 #line 4306 "trace/trace-block.h"
         }
@@ -4324,14 +4324,14 @@ static inline void _nocheck__trace_nbd_structured_read_compliance(const char * t
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 168 "..\block\trace-events"
+#line 168 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_structured_read_compliance " "server sent non-compliant unaligned read %s chunk" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , type);
 #line 4333 "trace/trace-block.h"
         } else {
-#line 168 "..\block\trace-events"
+#line 168 "../block/trace-events"
             qemu_log("nbd_structured_read_compliance " "server sent non-compliant unaligned read %s chunk" "\n", type);
 #line 4337 "trace/trace-block.h"
         }
@@ -4355,14 +4355,14 @@ static inline void _nocheck__trace_nbd_read_reply_entry_fail(int ret, const char
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 169 "..\block\trace-events"
+#line 169 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_read_reply_entry_fail " "ret = %d, err: %s" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , ret, err);
 #line 4364 "trace/trace-block.h"
         } else {
-#line 169 "..\block\trace-events"
+#line 169 "../block/trace-events"
             qemu_log("nbd_read_reply_entry_fail " "ret = %d, err: %s" "\n", ret, err);
 #line 4368 "trace/trace-block.h"
         }
@@ -4386,14 +4386,14 @@ static inline void _nocheck__trace_nbd_co_request_fail(uint64_t from, uint32_t l
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 170 "..\block\trace-events"
+#line 170 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_co_request_fail " "Request failed { .from = %" PRIu64", .len = %" PRIu32 ", .handle = %" PRIu64 ", .flags = 0x%" PRIx16 ", .type = %" PRIu16 " (%s) } ret = %d, err: %s" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , from, len, handle, flags, type, name, ret, err);
 #line 4395 "trace/trace-block.h"
         } else {
-#line 170 "..\block\trace-events"
+#line 170 "../block/trace-events"
             qemu_log("nbd_co_request_fail " "Request failed { .from = %" PRIu64", .len = %" PRIu32 ", .handle = %" PRIu64 ", .flags = 0x%" PRIx16 ", .type = %" PRIu16 " (%s) } ret = %d, err: %s" "\n", from, len, handle, flags, type, name, ret, err);
 #line 4399 "trace/trace-block.h"
         }
@@ -4417,14 +4417,14 @@ static inline void _nocheck__trace_nbd_client_handshake(const char * export_name
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 171 "..\block\trace-events"
+#line 171 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_client_handshake " "export '%s'" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , export_name);
 #line 4426 "trace/trace-block.h"
         } else {
-#line 171 "..\block\trace-events"
+#line 171 "../block/trace-events"
             qemu_log("nbd_client_handshake " "export '%s'" "\n", export_name);
 #line 4430 "trace/trace-block.h"
         }
@@ -4448,14 +4448,14 @@ static inline void _nocheck__trace_nbd_client_handshake_success(const char * exp
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 172 "..\block\trace-events"
+#line 172 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_client_handshake_success " "export '%s'" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , export_name);
 #line 4457 "trace/trace-block.h"
         } else {
-#line 172 "..\block\trace-events"
+#line 172 "../block/trace-events"
             qemu_log("nbd_client_handshake_success " "export '%s'" "\n", export_name);
 #line 4461 "trace/trace-block.h"
         }
@@ -4479,14 +4479,14 @@ static inline void _nocheck__trace_nbd_reconnect_attempt(unsigned in_flight)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 173 "..\block\trace-events"
+#line 173 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_reconnect_attempt " "in_flight %u" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , in_flight);
 #line 4488 "trace/trace-block.h"
         } else {
-#line 173 "..\block\trace-events"
+#line 173 "../block/trace-events"
             qemu_log("nbd_reconnect_attempt " "in_flight %u" "\n", in_flight);
 #line 4492 "trace/trace-block.h"
         }
@@ -4510,14 +4510,14 @@ static inline void _nocheck__trace_nbd_reconnect_attempt_result(int ret, unsigne
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 174 "..\block\trace-events"
+#line 174 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:nbd_reconnect_attempt_result " "ret %d in_flight %u" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , ret, in_flight);
 #line 4519 "trace/trace-block.h"
         } else {
-#line 174 "..\block\trace-events"
+#line 174 "../block/trace-events"
             qemu_log("nbd_reconnect_attempt_result " "ret %d in_flight %u" "\n", ret, in_flight);
 #line 4523 "trace/trace-block.h"
         }
@@ -4541,14 +4541,14 @@ static inline void _nocheck__trace_ssh_restart_coroutine(void * co)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 177 "..\block\trace-events"
+#line 177 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:ssh_restart_coroutine " "co=%p" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , co);
 #line 4550 "trace/trace-block.h"
         } else {
-#line 177 "..\block\trace-events"
+#line 177 "../block/trace-events"
             qemu_log("ssh_restart_coroutine " "co=%p" "\n", co);
 #line 4554 "trace/trace-block.h"
         }
@@ -4572,14 +4572,14 @@ static inline void _nocheck__trace_ssh_flush(void)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 178 "..\block\trace-events"
+#line 178 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:ssh_flush " "fsync" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      );
 #line 4581 "trace/trace-block.h"
         } else {
-#line 178 "..\block\trace-events"
+#line 178 "../block/trace-events"
             qemu_log("ssh_flush " "fsync" "\n");
 #line 4585 "trace/trace-block.h"
         }
@@ -4603,14 +4603,14 @@ static inline void _nocheck__trace_ssh_check_host_key_knownhosts(void)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 179 "..\block\trace-events"
+#line 179 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:ssh_check_host_key_knownhosts " "host key OK" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      );
 #line 4612 "trace/trace-block.h"
         } else {
-#line 179 "..\block\trace-events"
+#line 179 "../block/trace-events"
             qemu_log("ssh_check_host_key_knownhosts " "host key OK" "\n");
 #line 4616 "trace/trace-block.h"
         }
@@ -4634,14 +4634,14 @@ static inline void _nocheck__trace_ssh_connect_to_ssh(char * path, int flags, in
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 180 "..\block\trace-events"
+#line 180 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:ssh_connect_to_ssh " "opening file %s flags=0x%x creat_mode=0%o" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , path, flags, mode);
 #line 4643 "trace/trace-block.h"
         } else {
-#line 180 "..\block\trace-events"
+#line 180 "../block/trace-events"
             qemu_log("ssh_connect_to_ssh " "opening file %s flags=0x%x creat_mode=0%o" "\n", path, flags, mode);
 #line 4647 "trace/trace-block.h"
         }
@@ -4665,14 +4665,14 @@ static inline void _nocheck__trace_ssh_co_yield(int sock, void * rd_handler, voi
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 181 "..\block\trace-events"
+#line 181 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:ssh_co_yield " "s->sock=%d rd_handler=%p wr_handler=%p" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , sock, rd_handler, wr_handler);
 #line 4674 "trace/trace-block.h"
         } else {
-#line 181 "..\block\trace-events"
+#line 181 "../block/trace-events"
             qemu_log("ssh_co_yield " "s->sock=%d rd_handler=%p wr_handler=%p" "\n", sock, rd_handler, wr_handler);
 #line 4678 "trace/trace-block.h"
         }
@@ -4696,14 +4696,14 @@ static inline void _nocheck__trace_ssh_co_yield_back(int sock)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 182 "..\block\trace-events"
+#line 182 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:ssh_co_yield_back " "s->sock=%d - back" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , sock);
 #line 4705 "trace/trace-block.h"
         } else {
-#line 182 "..\block\trace-events"
+#line 182 "../block/trace-events"
             qemu_log("ssh_co_yield_back " "s->sock=%d - back" "\n", sock);
 #line 4709 "trace/trace-block.h"
         }
@@ -4727,14 +4727,14 @@ static inline void _nocheck__trace_ssh_getlength(int64_t length)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 183 "..\block\trace-events"
+#line 183 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:ssh_getlength " "length=%" PRIi64 "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , length);
 #line 4736 "trace/trace-block.h"
         } else {
-#line 183 "..\block\trace-events"
+#line 183 "../block/trace-events"
             qemu_log("ssh_getlength " "length=%" PRIi64 "\n", length);
 #line 4740 "trace/trace-block.h"
         }
@@ -4758,14 +4758,14 @@ static inline void _nocheck__trace_ssh_co_create_opts(uint64_t size)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 184 "..\block\trace-events"
+#line 184 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:ssh_co_create_opts " "total_size=%" PRIu64 "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , size);
 #line 4767 "trace/trace-block.h"
         } else {
-#line 184 "..\block\trace-events"
+#line 184 "../block/trace-events"
             qemu_log("ssh_co_create_opts " "total_size=%" PRIu64 "\n", size);
 #line 4771 "trace/trace-block.h"
         }
@@ -4789,14 +4789,14 @@ static inline void _nocheck__trace_ssh_read(int64_t offset, size_t size)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 185 "..\block\trace-events"
+#line 185 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:ssh_read " "offset=%" PRIi64 " size=%zu" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , offset, size);
 #line 4798 "trace/trace-block.h"
         } else {
-#line 185 "..\block\trace-events"
+#line 185 "../block/trace-events"
             qemu_log("ssh_read " "offset=%" PRIi64 " size=%zu" "\n", offset, size);
 #line 4802 "trace/trace-block.h"
         }
@@ -4820,14 +4820,14 @@ static inline void _nocheck__trace_ssh_read_buf(void * buf, size_t size, size_t 
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 186 "..\block\trace-events"
+#line 186 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:ssh_read_buf " "sftp_read buf=%p size=%zu (actual size=%zu)" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , buf, size, actual_size);
 #line 4829 "trace/trace-block.h"
         } else {
-#line 186 "..\block\trace-events"
+#line 186 "../block/trace-events"
             qemu_log("ssh_read_buf " "sftp_read buf=%p size=%zu (actual size=%zu)" "\n", buf, size, actual_size);
 #line 4833 "trace/trace-block.h"
         }
@@ -4851,14 +4851,14 @@ static inline void _nocheck__trace_ssh_read_return(ssize_t ret, int sftp_err)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 187 "..\block\trace-events"
+#line 187 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:ssh_read_return " "sftp_read returned %zd (sftp error=%d)" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , ret, sftp_err);
 #line 4860 "trace/trace-block.h"
         } else {
-#line 187 "..\block\trace-events"
+#line 187 "../block/trace-events"
             qemu_log("ssh_read_return " "sftp_read returned %zd (sftp error=%d)" "\n", ret, sftp_err);
 #line 4864 "trace/trace-block.h"
         }
@@ -4882,14 +4882,14 @@ static inline void _nocheck__trace_ssh_write(int64_t offset, size_t size)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 188 "..\block\trace-events"
+#line 188 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:ssh_write " "offset=%" PRIi64 " size=%zu" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , offset, size);
 #line 4891 "trace/trace-block.h"
         } else {
-#line 188 "..\block\trace-events"
+#line 188 "../block/trace-events"
             qemu_log("ssh_write " "offset=%" PRIi64 " size=%zu" "\n", offset, size);
 #line 4895 "trace/trace-block.h"
         }
@@ -4913,14 +4913,14 @@ static inline void _nocheck__trace_ssh_write_buf(void * buf, size_t size, size_t
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 189 "..\block\trace-events"
+#line 189 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:ssh_write_buf " "sftp_write buf=%p size=%zu (actual size=%zu)" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , buf, size, actual_size);
 #line 4922 "trace/trace-block.h"
         } else {
-#line 189 "..\block\trace-events"
+#line 189 "../block/trace-events"
             qemu_log("ssh_write_buf " "sftp_write buf=%p size=%zu (actual size=%zu)" "\n", buf, size, actual_size);
 #line 4926 "trace/trace-block.h"
         }
@@ -4944,14 +4944,14 @@ static inline void _nocheck__trace_ssh_write_return(ssize_t ret, int sftp_err)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 190 "..\block\trace-events"
+#line 190 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:ssh_write_return " "sftp_write returned %zd (sftp error=%d)" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , ret, sftp_err);
 #line 4953 "trace/trace-block.h"
         } else {
-#line 190 "..\block\trace-events"
+#line 190 "../block/trace-events"
             qemu_log("ssh_write_return " "sftp_write returned %zd (sftp error=%d)" "\n", ret, sftp_err);
 #line 4957 "trace/trace-block.h"
         }
@@ -4975,14 +4975,14 @@ static inline void _nocheck__trace_ssh_seek(int64_t offset)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 191 "..\block\trace-events"
+#line 191 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:ssh_seek " "seeking to offset=%" PRIi64 "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , offset);
 #line 4984 "trace/trace-block.h"
         } else {
-#line 191 "..\block\trace-events"
+#line 191 "../block/trace-events"
             qemu_log("ssh_seek " "seeking to offset=%" PRIi64 "\n", offset);
 #line 4988 "trace/trace-block.h"
         }
@@ -5006,14 +5006,14 @@ static inline void _nocheck__trace_ssh_auth_methods(int methods)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 192 "..\block\trace-events"
+#line 192 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:ssh_auth_methods " "auth methods=0x%x" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , methods);
 #line 5015 "trace/trace-block.h"
         } else {
-#line 192 "..\block\trace-events"
+#line 192 "../block/trace-events"
             qemu_log("ssh_auth_methods " "auth methods=0x%x" "\n", methods);
 #line 5019 "trace/trace-block.h"
         }
@@ -5037,14 +5037,14 @@ static inline void _nocheck__trace_ssh_server_status(int status)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 193 "..\block\trace-events"
+#line 193 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:ssh_server_status " "server status=%d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , status);
 #line 5046 "trace/trace-block.h"
         } else {
-#line 193 "..\block\trace-events"
+#line 193 "../block/trace-events"
             qemu_log("ssh_server_status " "server status=%d" "\n", status);
 #line 5050 "trace/trace-block.h"
         }
@@ -5068,14 +5068,14 @@ static inline void _nocheck__trace_curl_timer_cb(long timeout_ms)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 196 "..\block\trace-events"
+#line 196 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:curl_timer_cb " "timer callback timeout_ms %ld" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , timeout_ms);
 #line 5077 "trace/trace-block.h"
         } else {
-#line 196 "..\block\trace-events"
+#line 196 "../block/trace-events"
             qemu_log("curl_timer_cb " "timer callback timeout_ms %ld" "\n", timeout_ms);
 #line 5081 "trace/trace-block.h"
         }
@@ -5099,14 +5099,14 @@ static inline void _nocheck__trace_curl_sock_cb(int action, int fd)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 197 "..\block\trace-events"
+#line 197 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:curl_sock_cb " "sock action %d on fd %d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , action, fd);
 #line 5108 "trace/trace-block.h"
         } else {
-#line 197 "..\block\trace-events"
+#line 197 "../block/trace-events"
             qemu_log("curl_sock_cb " "sock action %d on fd %d" "\n", action, fd);
 #line 5112 "trace/trace-block.h"
         }
@@ -5130,14 +5130,14 @@ static inline void _nocheck__trace_curl_read_cb(size_t realsize)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 198 "..\block\trace-events"
+#line 198 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:curl_read_cb " "just reading %zu bytes" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , realsize);
 #line 5139 "trace/trace-block.h"
         } else {
-#line 198 "..\block\trace-events"
+#line 198 "../block/trace-events"
             qemu_log("curl_read_cb " "just reading %zu bytes" "\n", realsize);
 #line 5143 "trace/trace-block.h"
         }
@@ -5161,14 +5161,14 @@ static inline void _nocheck__trace_curl_open(const char * file)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 199 "..\block\trace-events"
+#line 199 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:curl_open " "opening %s" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , file);
 #line 5170 "trace/trace-block.h"
         } else {
-#line 199 "..\block\trace-events"
+#line 199 "../block/trace-events"
             qemu_log("curl_open " "opening %s" "\n", file);
 #line 5174 "trace/trace-block.h"
         }
@@ -5192,14 +5192,14 @@ static inline void _nocheck__trace_curl_open_size(uint64_t size)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 200 "..\block\trace-events"
+#line 200 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:curl_open_size " "size = %" PRIu64 "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , size);
 #line 5201 "trace/trace-block.h"
         } else {
-#line 200 "..\block\trace-events"
+#line 200 "../block/trace-events"
             qemu_log("curl_open_size " "size = %" PRIu64 "\n", size);
 #line 5205 "trace/trace-block.h"
         }
@@ -5223,14 +5223,14 @@ static inline void _nocheck__trace_curl_setup_preadv(uint64_t bytes, uint64_t st
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 201 "..\block\trace-events"
+#line 201 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:curl_setup_preadv " "reading %" PRIu64 " at %" PRIu64 " (%s)" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , bytes, start, range);
 #line 5232 "trace/trace-block.h"
         } else {
-#line 201 "..\block\trace-events"
+#line 201 "../block/trace-events"
             qemu_log("curl_setup_preadv " "reading %" PRIu64 " at %" PRIu64 " (%s)" "\n", bytes, start, range);
 #line 5236 "trace/trace-block.h"
         }
@@ -5254,14 +5254,14 @@ static inline void _nocheck__trace_curl_close(void)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 202 "..\block\trace-events"
+#line 202 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:curl_close " "close" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      );
 #line 5263 "trace/trace-block.h"
         } else {
-#line 202 "..\block\trace-events"
+#line 202 "../block/trace-events"
             qemu_log("curl_close " "close" "\n");
 #line 5267 "trace/trace-block.h"
         }
@@ -5285,14 +5285,14 @@ static inline void _nocheck__trace_file_copy_file_range(void * bs, int src, int6
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 205 "..\block\trace-events"
+#line 205 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:file_copy_file_range " "bs %p src_fd %d offset %"PRIu64" dst_fd %d offset %"PRIu64" bytes %"PRIu64" flags %d ret %"PRId64 "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , bs, src, src_off, dst, dst_off, bytes, flags, ret);
 #line 5294 "trace/trace-block.h"
         } else {
-#line 205 "..\block\trace-events"
+#line 205 "../block/trace-events"
             qemu_log("file_copy_file_range " "bs %p src_fd %d offset %"PRIu64" dst_fd %d offset %"PRIu64" bytes %"PRIu64" flags %d ret %"PRId64 "\n", bs, src, src_off, dst, dst_off, bytes, flags, ret);
 #line 5298 "trace/trace-block.h"
         }
@@ -5316,14 +5316,14 @@ static inline void _nocheck__trace_file_FindEjectableOpticalMedia(const char * m
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 206 "..\block\trace-events"
+#line 206 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:file_FindEjectableOpticalMedia " "Matching using %s" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , media);
 #line 5325 "trace/trace-block.h"
         } else {
-#line 206 "..\block\trace-events"
+#line 206 "../block/trace-events"
             qemu_log("file_FindEjectableOpticalMedia " "Matching using %s" "\n", media);
 #line 5329 "trace/trace-block.h"
         }
@@ -5347,14 +5347,14 @@ static inline void _nocheck__trace_file_setup_cdrom(const char * partition)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 207 "..\block\trace-events"
+#line 207 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:file_setup_cdrom " "Using %s as optical disc" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , partition);
 #line 5356 "trace/trace-block.h"
         } else {
-#line 207 "..\block\trace-events"
+#line 207 "../block/trace-events"
             qemu_log("file_setup_cdrom " "Using %s as optical disc" "\n", partition);
 #line 5360 "trace/trace-block.h"
         }
@@ -5378,14 +5378,14 @@ static inline void _nocheck__trace_file_hdev_is_sg(int type, int version)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 208 "..\block\trace-events"
+#line 208 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:file_hdev_is_sg " "SG device found: type=%d, version=%d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , type, version);
 #line 5387 "trace/trace-block.h"
         } else {
-#line 208 "..\block\trace-events"
+#line 208 "../block/trace-events"
             qemu_log("file_hdev_is_sg " "SG device found: type=%d, version=%d" "\n", type, version);
 #line 5391 "trace/trace-block.h"
         }
@@ -5409,14 +5409,14 @@ static inline void _nocheck__trace_file_flush_fdatasync_failed(int err)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 209 "..\block\trace-events"
+#line 209 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:file_flush_fdatasync_failed " "errno %d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , err);
 #line 5418 "trace/trace-block.h"
         } else {
-#line 209 "..\block\trace-events"
+#line 209 "../block/trace-events"
             qemu_log("file_flush_fdatasync_failed " "errno %d" "\n", err);
 #line 5422 "trace/trace-block.h"
         }
@@ -5440,14 +5440,14 @@ static inline void _nocheck__trace_zbd_zone_report(void * bs, unsigned int nr_zo
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 210 "..\block\trace-events"
+#line 210 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:zbd_zone_report " "bs %p report %d zones starting at sector offset 0x%" PRIx64 "" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , bs, nr_zones, sector);
 #line 5449 "trace/trace-block.h"
         } else {
-#line 210 "..\block\trace-events"
+#line 210 "../block/trace-events"
             qemu_log("zbd_zone_report " "bs %p report %d zones starting at sector offset 0x%" PRIx64 "" "\n", bs, nr_zones, sector);
 #line 5453 "trace/trace-block.h"
         }
@@ -5471,14 +5471,14 @@ static inline void _nocheck__trace_zbd_zone_mgmt(void * bs, const char * op_name
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 211 "..\block\trace-events"
+#line 211 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:zbd_zone_mgmt " "bs %p %s starts at sector offset 0x%" PRIx64 " over a range of 0x%" PRIx64 " sectors" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , bs, op_name, sector, len);
 #line 5480 "trace/trace-block.h"
         } else {
-#line 211 "..\block\trace-events"
+#line 211 "../block/trace-events"
             qemu_log("zbd_zone_mgmt " "bs %p %s starts at sector offset 0x%" PRIx64 " over a range of 0x%" PRIx64 " sectors" "\n", bs, op_name, sector, len);
 #line 5484 "trace/trace-block.h"
         }
@@ -5502,14 +5502,14 @@ static inline void _nocheck__trace_zbd_zone_append(void * bs, int64_t sector)
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 212 "..\block\trace-events"
+#line 212 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:zbd_zone_append " "bs %p append at sector offset 0x%" PRIx64 "" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , bs, sector);
 #line 5511 "trace/trace-block.h"
         } else {
-#line 212 "..\block\trace-events"
+#line 212 "../block/trace-events"
             qemu_log("zbd_zone_append " "bs %p append at sector offset 0x%" PRIx64 "" "\n", bs, sector);
 #line 5515 "trace/trace-block.h"
         }
@@ -5533,14 +5533,14 @@ static inline void _nocheck__trace_zbd_zone_append_complete(void * bs, int64_t s
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 213 "..\block\trace-events"
+#line 213 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:zbd_zone_append_complete " "bs %p returns append sector 0x%" PRIx64 "" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , bs, sector);
 #line 5542 "trace/trace-block.h"
         } else {
-#line 213 "..\block\trace-events"
+#line 213 "../block/trace-events"
             qemu_log("zbd_zone_append_complete " "bs %p returns append sector 0x%" PRIx64 "" "\n", bs, sector);
 #line 5546 "trace/trace-block.h"
         }
@@ -5564,14 +5564,14 @@ static inline void _nocheck__trace_sftp_error(const char * op, const char * ssh_
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 216 "..\block\trace-events"
+#line 216 "../block/trace-events"
             qemu_log("%d@%zu.%06zu:sftp_error " "%s failed: %s (libssh error code: %d, sftp error code: %d)" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , op, ssh_err, ssh_err_code, sftp_err_code);
 #line 5573 "trace/trace-block.h"
         } else {
-#line 216 "..\block\trace-events"
+#line 216 "../block/trace-events"
             qemu_log("sftp_error " "%s failed: %s (libssh error code: %d, sftp error code: %d)" "\n", op, ssh_err, ssh_err_code, sftp_err_code);
 #line 5577 "trace/trace-block.h"
         }

@@ -40,14 +40,14 @@ static inline void _nocheck__trace_qauthz_is_allowed(void * authz, const char * 
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 4 "..\authz\trace-events"
+#line 4 "../authz/trace-events"
             qemu_log("%d@%zu.%06zu:qauthz_is_allowed " "AuthZ %p check identity=%s allowed=%d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , authz, identity, allowed);
 #line 49 "trace/trace-authz.h"
         } else {
-#line 4 "..\authz\trace-events"
+#line 4 "../authz/trace-events"
             qemu_log("qauthz_is_allowed " "AuthZ %p check identity=%s allowed=%d" "\n", authz, identity, allowed);
 #line 53 "trace/trace-authz.h"
         }
@@ -71,14 +71,14 @@ static inline void _nocheck__trace_qauthz_simple_is_allowed(void * authz, const 
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 7 "..\authz\trace-events"
+#line 7 "../authz/trace-events"
             qemu_log("%d@%zu.%06zu:qauthz_simple_is_allowed " "AuthZ simple %p check want identity=%s got identity=%s" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , authz, wantidentity, gotidentity);
 #line 80 "trace/trace-authz.h"
         } else {
-#line 7 "..\authz\trace-events"
+#line 7 "../authz/trace-events"
             qemu_log("qauthz_simple_is_allowed " "AuthZ simple %p check want identity=%s got identity=%s" "\n", authz, wantidentity, gotidentity);
 #line 84 "trace/trace-authz.h"
         }
@@ -102,14 +102,14 @@ static inline void _nocheck__trace_qauthz_list_check_rule(void * authz, const ch
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 10 "..\authz\trace-events"
+#line 10 "../authz/trace-events"
             qemu_log("%d@%zu.%06zu:qauthz_list_check_rule " "AuthZ list %p check rule=%s identity=%s format=%d policy=%d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , authz, identity, rule, format, policy);
 #line 111 "trace/trace-authz.h"
         } else {
-#line 10 "..\authz\trace-events"
+#line 10 "../authz/trace-events"
             qemu_log("qauthz_list_check_rule " "AuthZ list %p check rule=%s identity=%s format=%d policy=%d" "\n", authz, identity, rule, format, policy);
 #line 115 "trace/trace-authz.h"
         }
@@ -133,14 +133,14 @@ static inline void _nocheck__trace_qauthz_list_default_policy(void * authz, cons
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 11 "..\authz\trace-events"
+#line 11 "../authz/trace-events"
             qemu_log("%d@%zu.%06zu:qauthz_list_default_policy " "AuthZ list %p default identity=%s policy=%d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , authz, identity, policy);
 #line 142 "trace/trace-authz.h"
         } else {
-#line 11 "..\authz\trace-events"
+#line 11 "../authz/trace-events"
             qemu_log("qauthz_list_default_policy " "AuthZ list %p default identity=%s policy=%d" "\n", authz, identity, policy);
 #line 146 "trace/trace-authz.h"
         }
@@ -164,14 +164,14 @@ static inline void _nocheck__trace_qauthz_list_file_load(void * authz, const cha
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 14 "..\authz\trace-events"
+#line 14 "../authz/trace-events"
             qemu_log("%d@%zu.%06zu:qauthz_list_file_load " "AuthZ file %p load filename=%s" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , authz, filename);
 #line 173 "trace/trace-authz.h"
         } else {
-#line 14 "..\authz\trace-events"
+#line 14 "../authz/trace-events"
             qemu_log("qauthz_list_file_load " "AuthZ file %p load filename=%s" "\n", authz, filename);
 #line 177 "trace/trace-authz.h"
         }
@@ -195,14 +195,14 @@ static inline void _nocheck__trace_qauthz_list_file_refresh(void * authz, const 
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 15 "..\authz\trace-events"
+#line 15 "../authz/trace-events"
             qemu_log("%d@%zu.%06zu:qauthz_list_file_refresh " "AuthZ file %p load filename=%s success=%d" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , authz, filename, success);
 #line 204 "trace/trace-authz.h"
         } else {
-#line 15 "..\authz\trace-events"
+#line 15 "../authz/trace-events"
             qemu_log("qauthz_list_file_refresh " "AuthZ file %p load filename=%s success=%d" "\n", authz, filename, success);
 #line 208 "trace/trace-authz.h"
         }
@@ -226,14 +226,14 @@ static inline void _nocheck__trace_qauthz_pam_check(void * authz, const char * i
         if (message_with_timestamp) {
             struct timeval _now;
             gettimeofday(&_now, NULL);
-#line 18 "..\authz\trace-events"
+#line 18 "../authz/trace-events"
             qemu_log("%d@%zu.%06zu:qauthz_pam_check " "AuthZ PAM %p identity=%s service=%s" "\n",
                      qemu_get_thread_id(),
                      (size_t)_now.tv_sec, (size_t)_now.tv_usec
                      , authz, identity, service);
 #line 235 "trace/trace-authz.h"
         } else {
-#line 18 "..\authz\trace-events"
+#line 18 "../authz/trace-events"
             qemu_log("qauthz_pam_check " "AuthZ PAM %p identity=%s service=%s" "\n", authz, identity, service);
 #line 239 "trace/trace-authz.h"
         }
