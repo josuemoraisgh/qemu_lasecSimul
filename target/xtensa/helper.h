@@ -2,6 +2,11 @@ DEF_HELPER_2(exception, noreturn, env, i32)
 DEF_HELPER_3(exception_cause, noreturn, env, i32, i32)
 DEF_HELPER_4(exception_cause_vaddr, noreturn, env, i32, i32, i32)
 DEF_HELPER_3(debug_exception, noreturn, env, i32, i32)
+/* [XTENSA-EXC-TRACE] ver .spec 32.5.10/32.5.11 -- observador NAO-intrusivo (nao levanta excecao,
+ * nao muda cs->exception_index nem PC) de entrada por PC em enderecos especificos deste build do
+ * firmware (esp_cache_err_get_cpuid/panic_soc_check_pseudo_cause), pra confirmar/refutar a hipotese
+ * de esp_cache_err_get_cpuid() sempre retornar -1. */
+DEF_HELPER_3(trace_watched_pc, void, env, i32, i32)
 
 DEF_HELPER_1(sync_windowbase, void, env)
 DEF_HELPER_4(entry, void, env, i32, i32, i32)

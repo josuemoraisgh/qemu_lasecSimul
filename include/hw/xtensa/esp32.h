@@ -1,6 +1,7 @@
 #pragma once
 
 #include "qemu/osdep.h"
+#include "qemu/timer.h"
 #include "hw/hw.h"
 #include "target/xtensa/cpu.h"
 #include "hw/misc/esp32_reg.h"
@@ -78,4 +79,11 @@ typedef struct Esp32SocState {
 
     uint32_t apb_clk_freq;
     uint32_t cpu_clk_freq;
+
+    /* [XTENSA-PC-SAMPLER] ver .spec 32.5.17 -- timer periodico (nao ligado a nenhum evento do guest)
+     * que amostra o PC dos dois nucleos continuamente, pra determinar se um nucleo fica genuinamente
+     * parado (spin-wait) numa janela silenciosa qualquer, em vez de depender de um unico instantaneo
+     * no momento de um evento (achado de 32.5.16: um instantaneo unico nao distingue "parado" de
+     * "so passando por ali"). */
+    QEMUTimer *pc_sampler_timer;
 } Esp32SocState;

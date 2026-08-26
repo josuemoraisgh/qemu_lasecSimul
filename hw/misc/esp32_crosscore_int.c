@@ -18,6 +18,7 @@
 #include "hw/qdev-properties.h"
 #include "hw/misc/esp32_reg.h"
 #include "hw/misc/esp32_crosscore_int.h"
+#include "hw/misc/esp32_dport.h"
 
 
 static uint64_t esp32_crosscore_int_read(void *opaque, hwaddr addr, unsigned int size)
@@ -31,6 +32,11 @@ static void esp32_crosscore_int_write(void *opaque, hwaddr addr,
     Esp32CrosscoreInt *s = ESP32_CROSSCORE_INT(opaque);
     int index = addr / 4;
     assert(index < s->n_irqs);
+    /* [CACHE-TRACE] ver .spec 32.5.8 -- este e o unico ponto de "IPC request" cross-core visivel a
+     * nivel de dispositivo (esp_ipc_isr_stall_other_cpu()/esp_ipc_isr_release_other_cpu() escrevem
+     * aqui pra sinalizar/acordar o outro nucleo). `index` identifica a linha (tipicamente uma por
+     * par origem/destino); `value&1` e o nivel (pulso de interrupcao). */
+    esp32_cache_trace_generic_event("crosscore_int_write", -1, (uint64_t)index, (uint32_t)(value & 0x1));
     qemu_set_irq(s->irqs[index], value & 0x1);
 }
 

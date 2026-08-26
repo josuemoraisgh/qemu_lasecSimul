@@ -123,6 +123,90 @@ static void remove_cpu_watchpoints(XtensaCPU* xcs)
     }
 }
 
+/* ===== [XTENSA-PC-SAMPLER] instrumentacao temporaria, ver .spec secao 32.5.17 =====
+ * Achado de 32.5.16: uma janela de ~1,3s completamente silenciosa (nenhum registro rastreado por
+ * este fork muda de estado) precede toda expiracao genuina do watchdog do TIMER_GROUP1. Um unico
+ * instantaneo do PC no momento do evento nao distingue "nucleo genuinamente parado num spin-wait"
+ * de "nucleo so passando por ali" -- ja levou a uma hipotese (ADC) levantada e corretamente
+ * refutada em 32.5.16. Este timer, DISPARADO PERIODICAMENTE por tempo VIRTUAL (nao ligado a
+ * nenhuma escrita/leitura/excecao do guest), amostra o PC dos dois nucleos continuamente, pra
+ * decidir de vez entre as duas hipoteses. Sera revertido apos a causa raiz ser confirmada. */
+#define ESP32_PC_SAMPLER_INTERVAL_NS (2 * 1000 * 1000) /* 2ms de tempo virtual */
+#define ESP32_PC_SAMPLER_CAPACITY 8192  /* 8192 * 2ms = ~16s de historico, mais que suficiente */
+#define ESP32_PC_SAMPLER_WINDOW   2048  /* ultimos ~4s despejados na captura */
+#define ESP32_PC_SAMPLER_PATH "c:/tmp/lasecsimul_xtensa_pcsampler"
+
+typedef struct Esp32PcSamplerEntry {
+    int64_t virt_ns;
+    int64_t host_ns;
+    uint32_t pc0;
+    uint32_t pc1;
+} Esp32PcSamplerEntry;
+
+static Esp32PcSamplerEntry esp32_pc_sampler_ring[ESP32_PC_SAMPLER_CAPACITY];
+static uint64_t esp32_pc_sampler_seq;
+static bool esp32_pc_sampler_first_captured;
+
+static const char *esp32_pc_sampler_pid_path(const char *base)
+{
+    static char path[256];
+    snprintf(path, sizeof(path), "%s.%" PRId64 ".log", base, (int64_t)getpid());
+    return path;
+}
+
+static void esp32_pc_sampler_write_window(const char *path_base, const char *reason)
+{
+    if (esp32_pc_sampler_seq == 0) {
+        return;
+    }
+    FILE *f = fopen(esp32_pc_sampler_pid_path(path_base), "w");
+    if (!f) {
+        return;
+    }
+    const uint64_t total = esp32_pc_sampler_seq;
+    const uint64_t ring_count = total < ESP32_PC_SAMPLER_CAPACITY ? total : ESP32_PC_SAMPLER_CAPACITY;
+    const uint64_t window = total < ESP32_PC_SAMPLER_WINDOW ? total : ESP32_PC_SAMPLER_WINDOW;
+    const uint64_t available = window < ring_count ? window : ring_count;
+    const uint64_t start = total - available;
+    fprintf(f, "# [XTENSA-PC-SAMPLER] %s -- %" PRIu64 " amostras totais (mostrando as ultimas %"
+               PRIu64 ", intervalo=%dms virtuais)\n", reason, total, available,
+               ESP32_PC_SAMPLER_INTERVAL_NS / 1000000);
+    for (uint64_t seq = start; seq < total; ++seq) {
+        const Esp32PcSamplerEntry *ev = &esp32_pc_sampler_ring[seq % ESP32_PC_SAMPLER_CAPACITY];
+        fprintf(f, "[%06" PRIu64 "] virt_ns=%" PRId64 " host_ns=%" PRId64 " pc0=0x%08x pc1=0x%08x\n",
+                seq, ev->virt_ns, ev->host_ns, ev->pc0, ev->pc1);
+    }
+    fclose(f);
+}
+
+/* Chamada de fora deste arquivo (hw/timer/esp32_timg.c, codigo "common") no momento exato de uma
+ * expiracao do WDT -- despeja a janela recente incondicionalmente, capturando exatamente os
+ * segundos que precedem o evento. Declarada em include/hw/misc/esp32_dport.h (generica, sem tipos
+ * de target) pelo mesmo motivo ja documentado pra esp32_intmatrix_get_raw_status_bits(). */
+void esp32_pc_sampler_capture_window(void)
+{
+    esp32_pc_sampler_write_window(ESP32_PC_SAMPLER_PATH "_WDT", "expiracao do TIMER_GROUP1 WDT");
+}
+
+static void esp32_pc_sampler_cb(void *opaque)
+{
+    Esp32SocState *s = (Esp32SocState *)opaque;
+    Esp32PcSamplerEntry *ev = &esp32_pc_sampler_ring[esp32_pc_sampler_seq % ESP32_PC_SAMPLER_CAPACITY];
+    ev->virt_ns = qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL);
+    ev->host_ns = get_clock();
+    ev->pc0 = (uint32_t)s->cpu[0].env.pc;
+    ev->pc1 = (uint32_t)s->cpu[1].env.pc;
+    esp32_pc_sampler_seq++;
+
+    if (!esp32_pc_sampler_first_captured && esp32_pc_sampler_seq >= ESP32_PC_SAMPLER_WINDOW) {
+        esp32_pc_sampler_first_captured = true;
+        esp32_pc_sampler_write_window(ESP32_PC_SAMPLER_PATH, "primeira janela completa (diagnostico)");
+    }
+
+    timer_mod(s->pc_sampler_timer, ev->virt_ns + ESP32_PC_SAMPLER_INTERVAL_NS);
+}
+/* ===== fim [XTENSA-PC-SAMPLER] ===== */
+
 static void esp32_cpu_stall(void *opaque, int n, int level);
 
 static void esp32_log_reset(Esp32SocState *s, uint32_t reset_mask)
@@ -131,15 +215,20 @@ static void esp32_log_reset(Esp32SocState *s, uint32_t reset_mask)
     const bool expected_app_cpu_boot_reset =
         esp32_reset_count == 2 && reset_mask == ESP32_SOC_RESET_APPCPU &&
         s->rtc_cntl.reset_cause[1] == ESP32_SW_CPU_RESET;
+    /* [CACHE-TRACE] ver .spec 32.5.13 -- pid= adicionado temporariamente a esta linha JA existente
+     * (nao uma nova instrumentacao) so pra permitir correlacionar qual arquivo de trace por-PID
+     * pertence a qual ciclo da bateria, ja que esta linha ja aparece em "Logs QEMU do ciclo N" do
+     * harness pra ciclos que falham. Sera revertido junto com o resto da instrumentacao. */
     fprintf(stderr,
             "[LasecSimul][ESP32 reset] count=%" PRIu64
             " mask=0x%02x cause0=%u cause1=%u pc0=0x%08x pc1=0x%08x"
-            " wdt0_enabled=%u wdt1_enabled=%u network=%s expected=%s\n",
+            " wdt0_enabled=%u wdt1_enabled=%u network=%s expected=%s pid=%" PRId64 "\n",
             esp32_reset_count, reset_mask, s->rtc_cntl.reset_cause[0],
             s->rtc_cntl.reset_cause[1], (uint32_t)s->cpu[0].env.pc,
             (uint32_t)s->cpu[1].env.pc, s->timg[0].wdt.en, s->timg[1].wdt.en,
             (s->eth || s->wifi_dev) ? "enabled" : "disabled",
-            expected_app_cpu_boot_reset ? "app-cpu-startup" : "no");
+            expected_app_cpu_boot_reset ? "app-cpu-startup" : "no",
+            (int64_t)getpid());
     fflush(stderr);
 }
 
@@ -148,6 +237,7 @@ static void esp32_app_cpu_reset_async(CPUState *cs, run_on_cpu_data data)
     Esp32SocState *s = data.host_ptr;
 
     g_assert(cs == CPU(&s->cpu[1]));
+    esp32_cache_trace_reset_event(&s->dport, "reset_app_cpu_async", 1, ESP32_SOC_RESET_APPCPU);
     esp32_log_reset(s, ESP32_SOC_RESET_APPCPU);
     xtensa_select_static_vectors(&s->cpu[1].env,
                                  s->rtc_cntl.stat_vector_sel[1]);
@@ -162,6 +252,7 @@ static void esp32_dig_reset(void *opaque, int n, int level)
     if( !level ) return;
     Esp32SocState *s = ESP32_SOC(opaque);
 
+    esp32_cache_trace_reset_event(&s->dport, "reset_dig", -1, ESP32_SOC_RESET_DIG);
     esp32_dport_clear_ill_trap_state(&s->dport);
     s->requested_reset = ESP32_SOC_RESET_DIG;
     qemu_system_reset_request(SHUTDOWN_CAUSE_GUEST_RESET);
@@ -172,6 +263,7 @@ static void esp32_cpu_reset(void* opaque, int n, int level)
     if( !level ) return;
     Esp32SocState *s = ESP32_SOC(opaque);
 
+    esp32_cache_trace_reset_event(&s->dport, "reset_cpu_sw", n, ESP32_SW_CPU_RESET);
     s->rtc_cntl.reset_cause[n] = ESP32_SW_CPU_RESET;
     if (n == 1) {
         /*
@@ -199,6 +291,7 @@ static void esp32_timg_cpu_reset(void* opaque, int n, int level)
     if( !level ) return;
     Esp32SocState *s = ESP32_SOC(opaque);
 
+    esp32_cache_trace_reset_event(&s->dport, "reset_timg_cpu", n, ESP32_TGWDT_CPU_RESET);
     s->rtc_cntl.reset_cause[n] = ESP32_TGWDT_CPU_RESET;
     if (n == 1) {
         async_run_on_cpu(CPU(&s->cpu[1]), esp32_app_cpu_reset_async,
@@ -219,6 +312,7 @@ static void esp32_timg_sys_reset(void* opaque, int n, int level)
     if( !level ) return;
     Esp32SocState *s = ESP32_SOC(opaque);
 
+    esp32_cache_trace_reset_event(&s->dport, "reset_timg_sys", n, ESP32_SOC_RESET_DIG);
     esp32_dport_clear_ill_trap_state(&s->dport);
     s->requested_reset = ESP32_SOC_RESET_DIG;
     for( int i=0; i<ESP32_CPU_COUNT; ++i) {
@@ -470,6 +564,10 @@ static void esp32_soc_realize( DeviceState *dev, Error **errp )
     qdev_realize( DEVICE(&s->intmatrix), &s->periph_bus, &error_fatal);
     DeviceState* intmatrix_dev = DEVICE(&s->intmatrix);
     memory_region_add_subregion_overlap(dport_mem, ESP32_DPORT_PRO_INTMATRIX_BASE, sysbus_mmio_get_region(SYS_BUS_DEVICE(&s->intmatrix), 0), -1);
+    /* Ver .spec 32.5.16 -- liga o dport ao intmatrix irmao (ambos filhos do mesmo Esp32SocState) pra
+     * DPORT_PRO/APP_INTR_STATUS_0_REG poder expor o estado bruto real das fontes de interrupcao
+     * (esp32_intmatrix_get_raw_status_bits()), em vez de sempre ler zero. */
+    s->dport.intmatrix_opaque = &s->intmatrix;
 
     bool init_cache_err = false;
     if (s->dport.flash_blk)
@@ -665,6 +763,12 @@ static void esp32_soc_realize( DeviceState *dev, Error **errp )
     memory_region_add_subregion( sys_mem, apb_ctrl_date_reg, apbctrl_mem);
     uint32_t apb_ctrl_date_reg_val = 0x16042000 | 0x80000000;  /* MSB indicates ECO3 silicon revision */
     cpu_physical_memory_write( apb_ctrl_date_reg, &apb_ctrl_date_reg_val, 4 );
+
+    /* [XTENSA-PC-SAMPLER] ver .spec 32.5.17 -- arma o timer periodico de amostragem de PC assim que
+     * os dois nucleos ja existem. Primeiro disparo logo no inicio (ev->virt_ns=0 na pratica, ja que
+     * o clock virtual comeca do zero) -- amostra desde o boot. */
+    s->pc_sampler_timer = timer_new_ns(QEMU_CLOCK_VIRTUAL, esp32_pc_sampler_cb, s);
+    timer_mod(s->pc_sampler_timer, qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL));
 
     qemu_register_reset( (QEMUResetHandler*) esp32_soc_reset, dev );
 }

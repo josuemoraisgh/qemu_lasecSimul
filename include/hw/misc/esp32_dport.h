@@ -76,9 +76,39 @@ typedef struct Esp32DportState {
     uint32_t cache_ill_trap_en_reg;
     uint32_t slave_spi_config_reg;
 
+    /* Adicionado em 32.5.16 -- ponteiro opaco pro Esp32IntMatrixState irmao (mesmo pai
+     * Esp32SocState, ligado em esp32.c logo apos os dois serem inicializados). Usado so pra ler o
+     * estado bruto ("raw") das fontes de interrupcao via esp32_intmatrix_get_raw_status_bits(),
+     * exposto atraves de DPORT_PRO/APP_INTR_STATUS_0_REG -- ver esp32_dport.c. Opaco (void*, nao
+     * Esp32IntMatrixState*) porque este header nao inclui hw/xtensa/esp32_intc.h. */
+    void *intmatrix_opaque;
 } Esp32DportState;
 
 void esp32_dport_clear_ill_trap_state(Esp32DportState* s);
+
+/* [CACHE-TRACE] instrumentacao temporaria, ver esp32_dport.c e .spec secao 32.5.7 -- registra um
+ * evento de reset por-nucleo no mesmo ring buffer usado pelos eventos de cache/DPORT, para
+ * correlacionar timestamps entre os dois arquivos. `core` usa -1 para eventos que nao pertencem a
+ * um nucleo especifico (reset digital completo). */
+void esp32_cache_trace_reset_event(Esp32DportState* s, const char *tag, int core, uint32_t cause);
+
+/* Ver esp32_dport.c e .spec 32.5.8 -- generico, sem precisar de Esp32DportState (usado por
+ * hw/misc/esp32_crosscore_int.c pra rastrear o handshake completo do IPC cross-core). */
+void esp32_cache_trace_generic_event(const char *tag, int core, uint64_t vaddr, uint32_t val);
+
+/* Implementada em hw/xtensa/esp32_intc.c (ver .spec 32.5.16). Declarada aqui (nao em
+ * hw/xtensa/esp32_intc.h) porque esp32_dport.c e codigo "common" e esp32_intc.h inclui
+ * target/xtensa/cpu.h (que a build recusa fora de codigo per-target) -- mesma restricao ja
+ * documentada em 32.5.9 pro CPUClass::get_pc(). `opaque` deve ser o ponteiro
+ * Esp32DportState::intmatrix_opaque; retorna os bits [start_bit, start_bit+count) do estado bruto
+ * (`irq_raw[]`) da matriz de interrupcao, empacotados a partir do bit 0 do valor retornado. */
+uint32_t esp32_intmatrix_get_raw_status_bits(void *opaque, int start_bit, int count);
+
+/* Implementada em hw/xtensa/esp32.c (ver .spec 32.5.17). Declarada aqui pelo mesmo motivo de
+ * esp32_intmatrix_get_raw_status_bits() acima -- hw/timer/esp32_timg.c (codigo "common") precisa
+ * chamar isto no momento exato de uma expiracao do WDT do TIMER_GROUP1, despejando incondicionalmente
+ * a janela recente do amostrador continuo de PC. */
+void esp32_pc_sampler_capture_window(void);
 
 #define ESP32_DPORT_APPCPU_STALL_GPIO   "appcpu-stall"
 #define ESP32_DPORT_APPCPU_RESET_GPIO   "appcpu-reset"
@@ -132,6 +162,18 @@ REG32(DPORT_CPU_INTR_FROM_CPU_0, 0xdc)
 REG32(DPORT_CPU_INTR_FROM_CPU_1, 0xe0)
 REG32(DPORT_CPU_INTR_FROM_CPU_2, 0xe4)
 REG32(DPORT_CPU_INTR_FROM_CPU_3, 0xe8)
+
+/* Adicionados na rodada de 2026-07-27 (.spec 32.5.12/32.5.16) -- offsets reais confirmados contra
+ * components/soc/esp32/register/soc/dport_reg.h do ESP-IDF v5.5.4 real (DPORT_PRO_INTR_STATUS_0_REG/
+ * DPORT_APP_INTR_STATUS_0_REG). Bit N reflete o estado bruto ("raw", antes de roteamento) da fonte de
+ * interrupcao N da matriz (o mesmo N de periph_interrupt_t em soc/interrupts.h -- ex.: bit 20 =
+ * ETS_TG1_WDT_LEVEL_INTR_SOURCE, bit 68 nao cabe aqui pois so os primeiros 32 bits existem neste
+ * registrador). Faltando neste fork ate 32.5.15 -- xt_highint5 (highint_hdl.S real) le esse bit pra
+ * desambiguar entre o watchdog do TIMER_GROUP1 e o acesso ilegal ao cache (que compartilham a mesma
+ * linha de interrupcao de CPU neste build) -- sem ele, a leitura sempre volta zero e a desambiguacao
+ * sempre erra, rotulando um watchdog genuino como "Cache error". */
+REG32(DPORT_PRO_INTR_STATUS_0, 0xec)
+REG32(DPORT_APP_INTR_STATUS_0, 0xf8)
 
 REG32(DPORT_PRO_MAC_INTR_MAP, 0x104)
 REG32(DPORT_APP_MAC_INTR_MAP, 0x218)
