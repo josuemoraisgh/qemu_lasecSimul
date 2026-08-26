@@ -91,6 +91,11 @@ typedef struct Esp32TimgState {
     bool flash_boot_mode;
     bool wdt_en_at_reset;
     bool wdt_disable;
+    /** Fator de dilatação do Interrupt WDT (TIMER_GROUP1) no modo MTTCG em tempo real.
+     * O relógio virtual desse modo segue o host, enquanto as vCPUs emuladas não executam
+     * instruções na velocidade do silício; sem compensação, seções críticas legítimas de poucos
+     * ms no ESP32 podem ocupar centenas de ms no host e disparar falsamente o watchdog. */
+    uint32_t wdt_time_scale;
 
     bool rtc_cal_start;
     bool rtc_cal_ready;

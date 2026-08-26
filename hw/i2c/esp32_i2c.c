@@ -21,6 +21,21 @@ static void esp32_i2c_update_irq(Esp32I2CState * s)
     qemu_set_irq(s->irq, irq_state);
 }
 
+static void esp32_i2c_abort_empty_tx(Esp32I2CState *s)
+{
+    timer_del(&s->event_timer);
+    s->bytesTx = 0;
+    s->ackSamplePending = false;
+    s->sr_reg &= ~(1 << 4);             /* I2C_BUS_BUSY */
+    s->int_raw_reg &= ~(1 << 6);        /* I2C_BYTE_TRANS */
+    s->int_raw_reg |= (1 << 10) | (1 << 7); /* ACK_ERR + TRANS_COMPLETE */
+    if (s->lastCMD < ESP32_I2C_CMD_COUNT) {
+        s->cmd_reg[s->lastCMD] =
+            FIELD_DP32(s->cmd_reg[s->lastCMD], I2C_CMD, DONE, 1);
+    }
+    esp32_i2c_update_irq(s);
+}
+
 static void esp32_i2c_do_transaction( void* opaque )
 {
     Esp32I2CState* s = Esp32_I2C(opaque);
@@ -44,8 +59,13 @@ static void esp32_i2c_do_transaction( void* opaque )
         // eletrico de verdade -- so' no proprio QEMU, que sempre "via" a transacao completar.
         writeReg( s->iomem.addr+A_I2C_CMD, cmd );
         s->bytesTx = 0;
+        s->ackSamplePending = true;
         s->sr_reg |= 1<<4;                // I2C_BUS_BUSY
-        time = 2*s->period_ns/2;
+        /*
+         * O motor eletrico do Core executa cinco meias-fases antes do primeiro bit. A sexta
+         * meia-fase impede o proximo opcode de disputar o mesmo timestamp do START eletrico.
+         */
+        time = 6*s->period_ns/2;
 
         s->lastCMD++;
         cmd = s->cmd_reg[s->lastCMD];
@@ -56,11 +76,17 @@ static void esp32_i2c_do_transaction( void* opaque )
     case I2C_OPCODE_WRITE:
     {
         if( s->bytesTx == 0 ) s->bytesTx = cmd & 0xFF; //FIELD_EX32( cmd, I2C_CMD, BYTE_NUM );
+        if (fifo8_num_used(&s->tx_fifo) == 0) {
+            error_report("esp32_i2c: timed write found an empty TX FIFO");
+            esp32_i2c_abort_empty_tx(s);
+            return;
+        }
         uint8_t data = fifo8_peek( &s->tx_fifo );
         //printf("Qemu: esp32_i2c CMD write %i %i\n", s->bytesTx, data ); fflush( stdout );
         writeReg( s->iomem.addr+A_I2C_CMD, (cmd & ~0xFF) | data);
         s->int_raw_reg |= 1<<6;          // I2C_BYTE_TRANS
-        time += (19*s->period_ns)/2;
+        /* Guarda de um meio-periodo: o ACK precisa estar assentado no Core antes do timer. */
+        time += (20*s->period_ns)/2;
     }break;
 
     case I2C_OPCODE_READ:
@@ -73,7 +99,8 @@ static void esp32_i2c_do_transaction( void* opaque )
         // "no barramento" real dura o mesmo tempo em qualquer direcao).
         if( s->bytesTx == 0 ) s->bytesTx = cmd & 0xFF;
         writeReg( s->iomem.addr+A_I2C_CMD, cmd );
-        time += (19*s->period_ns)/2;
+        /* Mesma guarda do WRITE para byte/ACK eletrico. */
+        time += (20*s->period_ns)/2;
     }break;
 
     case I2C_OPCODE_STOP:
@@ -106,13 +133,6 @@ static void esp32_i2c_event( void* opaque ) // Timer event
 
     //printf("Qemu: esp32_i2c_event %i %lu\n", s->lastOpcode, getQemu_ps() ); fflush( stdout );
 
-    // Le' o ACK/NACK REAL que o Core observou no barramento eletrico (bit0 = 1 quando o outro lado
-    // NAO puxou SDA pra baixo -- ver Esp32Adapter.cpp::i2cReadRegister, mesmo canal privado
-    // Core<->QEMU deste arquivo, nunca visivel do firmware). Antes disto sempre 0 (fixo) -- o
-    // ACK_ERR abaixo nunca podia disparar de verdade, com ou sem escravo respondendo.
-    uint64_t status = readReg( s->iomem.addr+A_I2C_STATUS );
-    uint8_t ackT = (uint8_t)(status & 1u);
-
     switch( s->lastOpcode )
     {
     case I2C_OPCODE_RSTART:
@@ -121,6 +141,20 @@ static void esp32_i2c_event( void* opaque ) // Timer event
 
     case I2C_OPCODE_WRITE:
     {
+        /* Sincronize o ACK eletrico apenas para o primeiro byte (endereco) depois de RSTART.
+         * Dados do mesmo burst usam ACK assumido, evitando um round-trip Core/QEMU por byte. */
+        uint8_t ackT = 0;
+        if (s->ackSamplePending)
+        {
+            uint64_t status = readReg(s->iomem.addr + A_I2C_STATUS);
+            ackT = (uint8_t)(((status & (1u << 4)) == 0) ? (status & 1u) : 0u);
+            s->ackSamplePending = false;
+        }
+        if (fifo8_num_used(&s->tx_fifo) == 0) {
+            error_report("esp32_i2c: stale write timer found an empty TX FIFO");
+            esp32_i2c_abort_empty_tx(s);
+            return;
+        }
         fifo8_pop( &s->tx_fifo );
         s->bytesTx--;
 
@@ -278,7 +312,14 @@ static void esp32_i2c_write(void * opaque, hwaddr addr, uint64_t value, unsigned
     case A_I2C_FIFO_CONF:
         if( FIELD_EX32(value, I2C_FIFO_CONF, NONFIFO_EN) ) error_report("esp32_i2c: APB mode not implemented");
         if( FIELD_EX32(value, I2C_FIFO_CONF, RX_FIFO_RST)) fifo8_reset(&s->rx_fifo);
-        if( FIELD_EX32(value, I2C_FIFO_CONF, TX_FIFO_RST)) fifo8_reset(&s->tx_fifo);
+        if( FIELD_EX32(value, I2C_FIFO_CONF, TX_FIFO_RST)) {
+            timer_del(&s->event_timer);
+            fifo8_reset(&s->tx_fifo);
+            s->bytesTx = 0;
+            s->ackSamplePending = false;
+            s->sr_reg &= ~(1 << 4);      /* I2C_BUS_BUSY */
+            s->int_raw_reg &= ~(1 << 6); /* I2C_BYTE_TRANS */
+        }
         break;
     case A_I2C_FIFO_DATA:
         if( fifo8_num_free(&s->tx_fifo) == 0) error_report("esp32_i2c: write to I2C TX FIFO while it is full");
@@ -377,9 +418,11 @@ static void esp32_i2c_reset(DeviceState * dev)
 {
     Esp32I2CState * s = Esp32_I2C(dev);
 
+    timer_del(&s->event_timer);
     fifo8_reset(&s->rx_fifo);
     fifo8_reset(&s->tx_fifo);
     s->period_ns = 0;
+    s->ackSamplePending = false;
     s->trans_ongoing = false;
     s->ctr_reg = 0;
     s->timeout_reg = 0;

@@ -33,6 +33,7 @@ typedef struct Esp32I2CState {
     uint8_t lastOpcode;
     uint8_t bytesTx;
     uint8_t bytesRx;
+    bool ackSamplePending;
 
     uint32_t sr_reg;
 

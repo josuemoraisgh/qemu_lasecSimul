@@ -9,6 +9,7 @@
  */
 
 #include "qemu/osdep.h"
+#include "qemu/cutils.h"
 #include "qemu/log.h"
 #include "qemu/error-report.h"
 #include "qapi/error.h"
@@ -20,8 +21,11 @@
 #include "hw/registerfields.h"
 #include "hw/boards.h"
 #include "hw/timer/esp32_timg.h"
+#include "hw/misc/esp32_dport.h"
 
 #define TIMG_REGFILE_SIZE 0x100
+#define TIMG_INTERRUPT_WDT_REALTIME_SCALE_DEFAULT 100
+#define TIMG_INTERRUPT_WDT_SCALE_MAX 100
 
 static uint64_t esp32_timg_timer_get_count(Esp32TimgTimerState *s, uint64_t ns_now);
 static uint64_t esp32_timg_timer_count_to_ns(Esp32TimgTimerState *s, uint64_t count);
@@ -556,6 +560,20 @@ static void esp32_timg_wdt_arm(Esp32TimgWdtState *ws, uint64_t ns_now)
     uint64_t count_to_timeout =
         stage_timeout > cur_count ? stage_timeout - cur_count : 0;
     uint64_t ns_to_timeout = muldiv64(count_to_timeout, 1000 * ws->prescale, ws->parent->apb_freq_hz / 1000000);
+    /*
+     * Em mttcg-realtime, QEMU_CLOCK_VIRTUAL acompanha o relógio de parede, mas uma vCPU Xtensa
+     * emulada não executa as instruções de uma seção crítica na velocidade do ESP32 real. O
+     * Interrupt WDT do TIMER_GROUP1 acabava medindo lentidão/agendamento do host: operações
+     * legítimas de flash/cache que levam poucos ms no chip ocupavam 300-700ms aqui e disparavam
+     * "Interrupt wdt timeout" em ~4,5% dos boots (.spec 32.5.22). Dilatar somente esse watchdog
+     * preserva millis()/timers/periféricos em tempo real e mantém detecção de deadlock, apenas com
+     * o orçamento compatível com a execução emulada. Modo determinístico mantém escala 1 por
+     * padrão; LASECSIMUL_ESP32_WDT_SCALE=1 restaura a temporização literal para diagnóstico.
+     */
+    if (ws->parent->id == 1 && ws->parent->wdt_time_scale > 1) {
+        ns_to_timeout = ns_to_timeout > UINT64_MAX / ws->parent->wdt_time_scale
+            ? UINT64_MAX : ns_to_timeout * ws->parent->wdt_time_scale;
+    }
     TIMG_DEBUG_LOG("%s: TG%d ns=0x%08llx stage %d count=0x%08llx count_to_timeout=0x%08llx ns_to_timeout=0x%08llx\n",
                    __func__, ws->parent->id, ns_now, ws->cur_stage, cur_count, count_to_timeout, ns_to_timeout);
     timer_mod_anticipate_ns(&ws->stage_timer, ns_now + ns_to_timeout);
@@ -567,6 +585,20 @@ static void esp32_timg_wdt_cb(void *opaque)
     Esp32TimgState *s = ws->parent;
     Esp32TimgWdtStageMode mode = ws->mode[ws->cur_stage];
     TIMG_DEBUG_LOG("%s: TG%d stage %d timeout mode %d\n", __func__, s->id, ws->cur_stage, mode);
+    /* [CACHE-TRACE] ver .spec 32.5.12/32.5.13 -- confirma se o WDT do TIMER_GROUP1 (o usado pelo
+     * Interrupt Watchdog da ESP-IDF real, compartilhando a linha de CPU 26 com o cache-IA neste
+     * build -- achado de 32.5.12) realmente expira nas reproducoes do "Cache error", ou se a linha
+     * 26 e ativada por outro motivo. `s->id`: 0=TIMER_GROUP0 (WDT principal do sistema), 1=TIMER_GROUP1
+     * (Interrupt Watchdog). */
+    esp32_cache_trace_generic_event("timg_wdt_expire", s->id,
+                                     (uint64_t)ws->cur_stage, (uint32_t)mode);
+    /* [XTENSA-PC-SAMPLER] ver .spec 32.5.17 -- despeja incondicionalmente a janela recente de
+     * amostras continuas de PC (ambos os nucleos) no momento exato desta expiracao, capturando os
+     * segundos que a precedem -- so pro TIMER_GROUP1 (s->id==1, o usado pelo Interrupt Watchdog),
+     * nao o TIMER_GROUP0 (WDT principal do sistema, fora do escopo desta investigacao). */
+    if (s->id == 1) {
+        esp32_pc_sampler_capture_window();
+    }
     if (mode == WDT_MODE_INT) {
         uint32_t mask = 1 << TIMG_WDT_INT;
         if (ws->level_int_en) {
@@ -596,6 +628,50 @@ static void esp32_timg_wdt_cb(void *opaque)
 
 static void esp32_timg_realize(DeviceState *dev, Error **errp)
 {
+    Esp32TimgState *s = ESP32_TIMG(dev);
+    const char *execution_mode = getenv("LASECSIMUL_ESP32_EXECUTION_MODE");
+    const bool deterministic =
+        execution_mode && !strcmp(execution_mode, "deterministic");
+    const char *scale_env = getenv("LASECSIMUL_ESP32_WDT_SCALE");
+    const bool explicit_scale = scale_env && *scale_env;
+    unsigned scale = deterministic
+        ? 1 : TIMG_INTERRUPT_WDT_REALTIME_SCALE_DEFAULT;
+
+    if (explicit_scale) {
+        unsigned parsed = 0;
+        if (qemu_strtoui(scale_env, NULL, 10, &parsed) < 0 ||
+            parsed < 1 || parsed > TIMG_INTERRUPT_WDT_SCALE_MAX) {
+            warn_report("LASECSIMUL_ESP32_WDT_SCALE='%s' invalido; usando %u (faixa 1..%u)",
+                        scale_env, scale, TIMG_INTERRUPT_WDT_SCALE_MAX);
+        } else {
+            scale = parsed;
+        }
+    }
+    s->wdt_time_scale = s->id == 1 ? scale : 1;
+    /*
+     * No modo realtime, o relogio do watchdog segue o host enquanto a vCPU emulada pode deixar
+     * de progredir por agendamento, solver eletrico e IPC. Qualquer multiplicador finito apenas
+     * adia o falso positivo (100x ainda falhou em ensaio de 60 s). Desative somente o MWDT do
+     * TIMER_GROUP1, usado pelo Interrupt WDT. TIMER_GROUP0, timers comuns e todos os watchdogs do
+     * modo deterministico continuam literais. Definir LASECSIMUL_ESP32_WDT_SCALE opta
+     * explicitamente por reativar o TG1 com a escala solicitada para diagnostico.
+     */
+    if (s->id == 1 && !deterministic && !explicit_scale) {
+        s->wdt_disable = true;
+    }
+    if (s->id == 1) {
+        if (s->wdt_disable) {
+            fprintf(stderr,
+                    "[LasecSimul] interrupt-wdt disabled (mttcg-realtime; enable:"
+                    " LASECSIMUL_ESP32_WDT_SCALE=1)\n");
+        } else {
+            fprintf(stderr,
+                    "[LasecSimul] interrupt-wdt scale=%u (%s)\n",
+                    s->wdt_time_scale,
+                    deterministic ? "deterministic" : "explicit realtime override");
+        }
+        fflush(stderr);
+    }
 }
 
 static void esp32_timg_timer_init(Esp32TimgState *s, Esp32TimgTimerState *ts, Esp32TimgInterruptType int_type) {
@@ -623,6 +699,7 @@ static void esp32_timg_init(Object *obj)
     s->rtc_slow_freq_hz = 150000;
     s->xtal_freq_hz = 40000000;
     s->apb_freq_hz = 40000000;
+    s->wdt_time_scale = 1;
 
     esp32_timg_timer_init(s, &s->t0, TIMG_T0_INT);
     esp32_timg_timer_init(s, &s->t1, TIMG_T1_INT);
