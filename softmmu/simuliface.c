@@ -291,6 +291,17 @@ QEMUTimer* qtimer;
  * other vCPU while the first callback is waiting for Core.  QEMU correctly
  * rejects that re-entrant access, but the guest then loses a real FIFO/register
  * write.  Acquiring arena first preserves the established lock order.
+ *
+ * Investigated 2026-08-28 (TG0WDT_SYS_RESET investigation): this release-then-reacquire dance
+ * still leaves a narrow window with the BQL released while the originating MemoryRegion's
+ * dispatch (e.g. esp_soc.uart, nested via uart_send_next() -> writeReg()) is still considered
+ * "active" by QEMU's reentrancy guard -- source-confirmed as the mechanism behind observed
+ * "Blocked re-entrant IO" warnings that freeze the guest's virtual-time progress. A fix that kept
+ * the BQL held straight through the arena-lock acquisition (instead of dropping and reacquiring
+ * it) was attempted and reverted: it produced a reproducible ~36-minute hang on the very first
+ * validation run. The lock-order proof for that variant did not account for every real contender
+ * for m_arenaOrderLock while BQL is held continuously; root cause of the hang not yet confirmed.
+ * Do not reattempt that specific variant without first identifying the missing contended path.
  */
 static QemuMutex m_arenaOrderLock;
 static bool m_arenaOrderLockInitialized;
@@ -309,6 +320,12 @@ typedef struct ArenaTransaction {
     bool iothreadLockReacquired;
 } ArenaTransaction;
 
+/* REVERTED 2026-08-28: the "hold BQL through the arena-lock acquisition" variant caused a
+ * reproducible ~36-minute hang on the very first validation run (frozen: 0 further output past
+ * "simulacao iniciada" for the whole window) -- worse than the race it was meant to close. The
+ * lock-order/no-new-cycle proof in the removed comment did not account for every real contender
+ * for m_arenaOrderLock while BQL is held continuously; root cause of the hang not yet confirmed.
+ * Restored to the prior release-then-reacquire behavior pending further investigation. */
 static ArenaTransaction arenaTransactionBegin(bool serializeDeviceMmio)
 {
     ArenaTransaction transaction = {
