@@ -110,6 +110,12 @@ uint32_t esp32_intmatrix_get_raw_status_bits(void *opaque, int start_bit, int co
  * a janela recente do amostrador continuo de PC. */
 void esp32_pc_sampler_capture_window(void);
 
+/* Implementada em softmmu/simuliface.c (investigacao TG0WDT_SYS_RESET, 2026-08-27). Declarada aqui
+ * pelo mesmo motivo das duas acima -- hw/timer/esp32_timg.c precisa chamar isto no momento exato de
+ * uma expiracao SYSRESET do TIMER_GROUP0, despejando incondicionalmente o ring buffer de correlacao
+ * BQL/arena (readReg/publishQueueEntry/i2cBurstTransfer) acumulado ate ali. */
+void bqlCausalDumpWindow(const char *reason);
+
 #define ESP32_DPORT_APPCPU_STALL_GPIO   "appcpu-stall"
 #define ESP32_DPORT_APPCPU_RESET_GPIO   "appcpu-reset"
 #define ESP32_DPORT_CLK_UPDATE_GPIO     "clk-update"

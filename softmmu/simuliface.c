@@ -12,6 +12,11 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <errno.h>
+#include <stdint.h>
+#ifdef _WIN32
+#include <windows.h>
+#endif
 
 #ifdef __linux__
 #include <sys/mman.h>
@@ -42,6 +47,168 @@
 volatile qemuArena_t* m_arena = NULL;
 static volatile qemuArenaDescriptor_t *m_arenaDescriptor;
 static unsigned m_arenaAbiMajor;
+static uint64_t m_sessionExecutionId;
+static uint64_t m_runtimeInstanceId;
+static uint64_t m_launchGeneration;
+static bool m_runtimeIdentityValid;
+static FILE *m_qemuTraceFile;
+static uint8_t *m_qemuTraceMapping;
+static size_t m_qemuTraceMappingSize;
+#ifdef _WIN32
+static HANDLE m_qemuTraceFileHandle, m_qemuTraceMappingHandle;
+#endif
+static uint64_t m_qemuTraceEventSequence;
+static uint64_t m_qemuTraceDropped;
+static const uint64_t m_qemuTraceCapacity = 8192;
+static uint64_t m_qemuTraceQpcFrequency = 1000000000ull;
+static uint64_t m_qemuTraceCalls[64], m_qemuTraceTicks[64], m_qemuTraceMaxTicks[64];
+static bool m_qemuPrevDurationValid;
+static uint16_t m_qemuPrevPhase;
+static uint64_t m_qemuPrevSequence, m_qemuPrevDuration;
+static uint64_t qemuTraceQpc(void) {
+#ifdef _WIN32
+    LARGE_INTEGER v, f;
+    QueryPerformanceCounter(&v); QueryPerformanceFrequency(&f);
+    m_qemuTraceQpcFrequency = (uint64_t)f.QuadPart;
+    return (uint64_t)v.QuadPart;
+#else
+    return get_clock();
+#endif
+}
+static bool m_qemuTraceEnabled;
+
+typedef struct QemuTraceBinaryRecord {
+    uint64_t runId, sessionExecutionId, runtimeInstanceId, launchGeneration;
+    uint64_t transactionSequence, eventSequence, dependencySequence, virtualNs, qpcTicks;
+    uint32_t processId, threadId;
+    uint16_t eventType, phase;
+    uint32_t fifoState, irqState, timerState, waitReason;
+    uint64_t durationQpc;
+    uint32_t sourceId;
+    uint16_t schemaPhase, reserved0;
+} QemuTraceBinaryRecord;
+typedef struct QemuTraceBinaryHeader {
+    char magic[8]; uint32_t version, recordSize; uint64_t runId, qpcFrequency, capacity, written, dropped;
+} QemuTraceBinaryHeader;
+
+static void qemuTraceClose(void) {
+#ifdef _WIN32
+    if (m_qemuTraceMapping) UnmapViewOfFile(m_qemuTraceMapping);
+    if (m_qemuTraceMappingHandle) CloseHandle(m_qemuTraceMappingHandle);
+    if (m_qemuTraceFileHandle && m_qemuTraceFileHandle != INVALID_HANDLE_VALUE) CloseHandle(m_qemuTraceFileHandle);
+#else
+    if (m_qemuTraceMapping) munmap(m_qemuTraceMapping, m_qemuTraceMappingSize);
+#endif
+    m_qemuTraceMapping = NULL;
+}
+
+static void qemuTraceInit(void) {
+    static bool initialized;
+    if (initialized) return;
+    initialized = true;
+    const char *mode = getenv("LASECSIMUL_CAUSAL_TRACE");
+    if (!mode || strcmp(mode, "detailed") != 0) return;
+    const char *configuredPath = getenv("LASECSIMUL_QEMU_TRACE_PATH");
+    (void)qemuTraceQpc();
+    char derivedPath[192];
+    const char *path = configuredPath;
+    if (!path || !path[0]) {
+        snprintf(derivedPath, sizeof(derivedPath), "lasecsimul-qemu-%" PRIu64 "-%" PRIu64 "-%" PRIu64 ".trace",
+                 m_sessionExecutionId, m_runtimeInstanceId, m_launchGeneration);
+        path = derivedPath;
+    }
+#ifdef _WIN32
+    m_qemuTraceFileHandle = CreateFileA(path, GENERIC_READ|GENERIC_WRITE, FILE_SHARE_READ|FILE_SHARE_WRITE, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+    if (m_qemuTraceFileHandle == INVALID_HANDLE_VALUE) return;
+    m_qemuTraceMappingSize = sizeof(QemuTraceBinaryHeader) + m_qemuTraceCapacity * sizeof(QemuTraceBinaryRecord);
+    LARGE_INTEGER sz; sz.QuadPart = (LONGLONG)m_qemuTraceMappingSize;
+    if (!SetFilePointerEx(m_qemuTraceFileHandle, sz, NULL, FILE_BEGIN) || !SetEndOfFile(m_qemuTraceFileHandle)) { qemuTraceClose(); return; }
+    m_qemuTraceMappingHandle = CreateFileMappingA(m_qemuTraceFileHandle, NULL, PAGE_READWRITE, (DWORD)(sz.QuadPart>>32), (DWORD)sz.QuadPart, NULL);
+    if (!m_qemuTraceMappingHandle) { qemuTraceClose(); return; }
+    m_qemuTraceMapping = (uint8_t*)MapViewOfFile(m_qemuTraceMappingHandle, FILE_MAP_ALL_ACCESS, 0, 0, m_qemuTraceMappingSize);
+#else
+    m_qemuTraceFile = fopen(path, "w+b");
+    if (!m_qemuTraceFile) return;
+    m_qemuTraceMappingSize = sizeof(QemuTraceBinaryHeader) + m_qemuTraceCapacity * sizeof(QemuTraceBinaryRecord);
+    int fd = fileno(m_qemuTraceFile); if (ftruncate(fd, (off_t)m_qemuTraceMappingSize) != 0) return;
+    m_qemuTraceMapping = (uint8_t*)mmap(NULL, m_qemuTraceMappingSize, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
+    if (m_qemuTraceMapping == MAP_FAILED) { m_qemuTraceMapping = NULL; return; }
+#endif
+    if (m_qemuTraceMapping) {
+        QemuTraceBinaryHeader *h = (QemuTraceBinaryHeader*)m_qemuTraceMapping;
+        memset(h, 0, sizeof(*h)); memcpy(h->magic, "LSCTRB2", 7); h->version=2; h->recordSize=sizeof(QemuTraceBinaryRecord);
+        h->runId=m_sessionExecutionId; h->qpcFrequency=m_qemuTraceQpcFrequency; h->capacity=m_qemuTraceCapacity; m_qemuTraceEnabled=true;
+    }
+}
+
+static void qemuTraceRecord(uint16_t event, uint64_t sequence, uint64_t virtualNs) {
+    if (!m_qemuTraceEnabled || !m_qemuTraceMapping) return;
+    if (m_qemuTraceEventSequence >= m_qemuTraceCapacity) { ++m_qemuTraceDropped; return; }
+    const uint64_t begin = qemuTraceQpc();
+    const uint64_t eventSequence = ++m_qemuTraceEventSequence;
+    const uint64_t eventQpc = begin;
+    QemuTraceBinaryRecord *r = (QemuTraceBinaryRecord*)(m_qemuTraceMapping + sizeof(QemuTraceBinaryHeader) + (m_qemuTraceEventSequence-1) * sizeof(QemuTraceBinaryRecord));
+    memset(r, 0, sizeof(*r)); r->runId=m_sessionExecutionId; r->sessionExecutionId=m_sessionExecutionId; r->runtimeInstanceId=m_runtimeInstanceId; r->launchGeneration=m_launchGeneration; r->transactionSequence=sequence; r->eventSequence=eventSequence; r->virtualNs=virtualNs; r->qpcTicks=eventQpc; r->eventType=event; r->sourceId=2;
+    if (event < 64) { const uint64_t elapsed = qemuTraceQpc() - begin; ++m_qemuTraceCalls[event]; m_qemuTraceTicks[event] += elapsed; if (elapsed > m_qemuTraceMaxTicks[event]) m_qemuTraceMaxTicks[event] = elapsed; m_qemuPrevDurationValid = true; m_qemuPrevPhase = event; m_qemuPrevSequence = sequence; m_qemuPrevDuration = elapsed; }
+}
+
+typedef enum RuntimeIdentityStartupState {
+    RUNTIME_IDENTITY_NONE = 0,
+    RUNTIME_IDENTITY_COMPLETE_VALID,
+    RUNTIME_IDENTITY_MANAGED_INVALID
+} RuntimeIdentityStartupState;
+
+static bool parseIdentityU64Value(const char *value, uint64_t *out) {
+    if (!value || !value[0]) return false;
+    for (const unsigned char *p = (const unsigned char *)value; *p; ++p) {
+        if (*p < '0' || *p > '9') return false;
+    }
+    errno = 0;
+    char *end = NULL;
+    unsigned long long parsed = strtoull(value, &end, 10);
+    if (errno == ERANGE || end == value || *end != '\0') return false;
+    *out = (uint64_t)parsed;
+    return true;
+}
+
+static RuntimeIdentityStartupState loadRuntimeIdentityFromEnvironment(void) {
+    const char *s = getenv("LASECSIMUL_SESSION_EXECUTION_ID");
+    const char *r = getenv("LASECSIMUL_RUNTIME_INSTANCE_ID");
+    const char *g = getenv("LASECSIMUL_LAUNCH_GENERATION");
+    if (!s && !r && !g) {
+        fprintf(stderr, "Qemu: runtime identity metadata absent (standalone mode)\n");
+        return RUNTIME_IDENTITY_NONE;
+    }
+    if (!parseIdentityU64Value(s, &m_sessionExecutionId) ||
+        !parseIdentityU64Value(r, &m_runtimeInstanceId) ||
+        !parseIdentityU64Value(g, &m_launchGeneration) ||
+        m_sessionExecutionId == 0 || m_launchGeneration == 0) {
+        fprintf(stderr, "Qemu: invalid managed runtime identity metadata; startup rejected\n");
+        return RUNTIME_IDENTITY_MANAGED_INVALID;
+    }
+    m_runtimeIdentityValid = true;
+    qemuTraceInit();
+    return RUNTIME_IDENTITY_COMPLETE_VALID;
+}
+#ifdef _WIN32
+static HANDLE m_pollDoorbell;
+static uint64_t m_doorbellSetAttempts;
+static uint64_t m_doorbellSetSuccesses;
+static uint64_t m_doorbellSetFailures;
+#endif
+
+static void signalPollDoorbell(void)
+{
+#ifdef _WIN32
+    if (!m_pollDoorbell) return;
+    ++m_doorbellSetAttempts;
+    if (SetEvent(m_pollDoorbell)) ++m_doorbellSetSuccesses;
+    else if (++m_doorbellSetFailures <= 3) {
+        fprintf(stderr, "Qemu: SetEvent(I2C doorbell) failed: %lu\n",
+                (unsigned long)GetLastError());
+    }
+#endif
+}
 
 // ------------------------------------------------
 
@@ -118,9 +285,13 @@ QEMUTimer* qtimer;
  * transactions here instead of changing that stable cross-process layout.
  *
  * Lock order is arena -> BQL.  Callers normally arrive holding the BQL, so
- * arenaTransactionBegin() drops it before acquiring this mutex and restores it
- * only after the mutex has been released.  This is essential: reacquiring the
- * BQL while holding m_arenaOrderLock would deadlock against the other vCPU.
+ * arenaTransactionBegin() drops it before acquiring this mutex.  Most arena
+ * operations keep it dropped for concurrency.  A synchronous operation issued
+ * from a device MMIO callback must, however, reacquire the BQL after acquiring
+ * the arena lock: otherwise MTTCG can enter the same MemoryRegion from the
+ * other vCPU while the first callback is waiting for Core.  QEMU correctly
+ * rejects that re-entrant access, but the guest then loses a real FIFO/register
+ * write.  Acquiring arena first preserves the established lock order.
  */
 static QemuMutex m_arenaOrderLock;
 static bool m_arenaOrderLockInitialized;
@@ -136,24 +307,30 @@ static uint64_t m_profileMaxQueueOccupancy;
 
 typedef struct ArenaTransaction {
     bool restoreIothreadLock;
+    bool iothreadLockReacquired;
 } ArenaTransaction;
 
-static ArenaTransaction arenaTransactionBegin(void)
+static ArenaTransaction arenaTransactionBegin(bool serializeDeviceMmio)
 {
     ArenaTransaction transaction = {
         .restoreIothreadLock = qemu_mutex_iothread_locked(),
+        .iothreadLockReacquired = false,
     };
     if (transaction.restoreIothreadLock) {
         qemu_mutex_unlock_iothread();
     }
     qemu_mutex_lock(&m_arenaOrderLock);
+    if (transaction.restoreIothreadLock && serializeDeviceMmio) {
+        qemu_mutex_lock_iothread();
+        transaction.iothreadLockReacquired = true;
+    }
     return transaction;
 }
 
 static void arenaTransactionEnd(ArenaTransaction transaction)
 {
     qemu_mutex_unlock(&m_arenaOrderLock);
-    if (transaction.restoreIothreadLock) {
+    if (transaction.restoreIothreadLock && !transaction.iothreadLockReacquired) {
         qemu_mutex_lock_iothread();
     }
 }
@@ -206,9 +383,126 @@ static void profileMaybeReport(uint64_t virtualNs)
 
 static void pushQueueEntry( uint64_t addr, uint64_t data, uint64_t action, uint64_t simuTimePs );
 
-static void publishQueueEntry( uint64_t addr, uint64_t data, uint64_t action )
+/* TEMPORARY, minimal diagnostic for the 2026-08-27 TG0WDT_SYS_RESET investigation -- correlates
+ * how long each Core-backed arena wait (readReg/publishQueueEntry/i2cBurstTransfer) holds the BQL,
+ * to test whether core-1 I2C/MMIO activity denies core-0 the scheduling opportunities IDLE0/TWDT
+ * needs. Gated, off by default. Records into a bounded in-memory ring (no per-event file I/O on the
+ * hot path -- a prior revision used fprintf+fflush per call here, which risked manufacturing the
+ * exact BQL-hold/starvation pattern under investigation; fixed before any run was analyzed). The
+ * ring is dumped to disk only from hw/timer/esp32_timg.c at a genuine TG0 SYSRESET-mode expiry
+ * (mirrors the existing XTENSA-PC-SAMPLER pattern in hw/xtensa/esp32.c). Remove once the
+ * investigation concludes. */
+#define BQL_CAUSAL_CAPACITY 65536
+#define BQL_CAUSAL_PATH "c:/tmp/lasecsimul_bql_causal"
+
+typedef enum BqlCausalOp {
+    BQL_CAUSAL_OP_READ_REG = 0,
+    BQL_CAUSAL_OP_PUBLISH_QUEUE_ENTRY = 1,
+    BQL_CAUSAL_OP_I2C_BURST = 2,
+} BqlCausalOp;
+
+typedef struct BqlCausalEntry {
+    uint64_t addr;
+    uint64_t virtualNs;
+    uint64_t entryHostNs;
+    uint64_t bqlReacquireHostNs;
+    uint64_t exitHostNs;
+    uint8_t opType;
+    uint8_t cpu;
+    uint8_t bqlHeld;
+    uint8_t backpressureWaited;
+} BqlCausalEntry;
+
+static BqlCausalEntry bqlCausalRing[BQL_CAUSAL_CAPACITY];
+static uint64_t bqlCausalSeq;
+static bool bqlCausalEnabledCached;
+static bool bqlCausalEnabledRead;
+
+static bool bqlCausalEnabled(void)
 {
-    ArenaTransaction transaction = arenaTransactionBegin();
+    if (!bqlCausalEnabledRead) {
+        const char *env = getenv("LASECSIMUL_BQL_CAUSAL_TRACE");
+        bqlCausalEnabledCached = env && env[0] && strcmp(env, "0") != 0;
+        bqlCausalEnabledRead = true;
+    }
+    return bqlCausalEnabledCached;
+}
+
+static void bqlCausalRecord(BqlCausalOp opType, uint64_t addr, uint64_t virtualNs,
+                             uint64_t entryHostNs, uint64_t bqlReacquireHostNs,
+                             uint64_t exitHostNs, bool bqlHeld, bool backpressureWaited)
+{
+    if (!bqlCausalEnabled()) {
+        return;
+    }
+    BqlCausalEntry *e = &bqlCausalRing[bqlCausalSeq % BQL_CAUSAL_CAPACITY];
+    e->addr = addr;
+    e->virtualNs = virtualNs;
+    e->entryHostNs = entryHostNs;
+    e->bqlReacquireHostNs = bqlReacquireHostNs;
+    e->exitHostNs = exitHostNs;
+    e->opType = (uint8_t)opType;
+    e->cpu = current_cpu ? (uint8_t)current_cpu->cpu_index : 0xFF;
+    e->bqlHeld = bqlHeld ? 1 : 0;
+    e->backpressureWaited = backpressureWaited ? 1 : 0;
+    bqlCausalSeq++;
+}
+
+static const char *bqlCausalOpName(uint8_t opType)
+{
+    switch ((BqlCausalOp)opType) {
+        case BQL_CAUSAL_OP_READ_REG: return "readReg";
+        case BQL_CAUSAL_OP_PUBLISH_QUEUE_ENTRY: return "publishQueueEntry";
+        case BQL_CAUSAL_OP_I2C_BURST: return "i2cBurstTransfer";
+    }
+    return "unknown";
+}
+
+/* Called from hw/timer/esp32_timg.c (declared generically in include/hw/misc/esp32_dport.h, same
+ * reasoning already documented there for esp32_pc_sampler_capture_window()) at a genuine TG0
+ * SYSRESET-mode expiry. Dumps the whole ring in one buffered write, not one line per event. */
+void bqlCausalDumpWindow(const char *reason)
+{
+    if (!bqlCausalEnabled() || bqlCausalSeq == 0) {
+        return;
+    }
+    static char path[256];
+    static unsigned dumpCount;
+    snprintf(path, sizeof(path), "%s.%d.%u.log", BQL_CAUSAL_PATH, getpid(), dumpCount++);
+    FILE *f = fopen(path, "w");
+    if (!f) {
+        return;
+    }
+    const uint64_t total = bqlCausalSeq;
+    const uint64_t count = total < BQL_CAUSAL_CAPACITY ? total : BQL_CAUSAL_CAPACITY;
+    const uint64_t start = total - count;
+    fprintf(f, "# [BQL-CAUSAL] %s -- %llu total ops, showing %llu\n",
+            reason, (unsigned long long)total, (unsigned long long)count);
+    for (uint64_t seq = start; seq < total; ++seq) {
+        const BqlCausalEntry *e = &bqlCausalRing[seq % BQL_CAUSAL_CAPACITY];
+        const uint64_t totalNs = e->exitHostNs - e->entryHostNs;
+        const uint64_t bqlHeldNs = e->bqlHeld ? (e->exitHostNs - e->bqlReacquireHostNs) : 0;
+        fprintf(f,
+                "[%08llu] op=%s cpu=%u addr=0x%llx virtual_ns=%llu entry_host_ns=%llu "
+                "exit_host_ns=%llu total_ns=%llu bql_held_ns=%llu bql_held=%u backpressure=%u\n",
+                (unsigned long long)seq, bqlCausalOpName(e->opType), e->cpu,
+                (unsigned long long)e->addr, (unsigned long long)e->virtualNs,
+                (unsigned long long)e->entryHostNs, (unsigned long long)e->exitHostNs,
+                (unsigned long long)totalNs, (unsigned long long)bqlHeldNs,
+                e->bqlHeld, e->backpressureWaited);
+    }
+    fclose(f);
+}
+
+static void publishQueueEntry( uint64_t addr, uint64_t data, uint64_t action,
+                               bool serializeDeviceMmio )
+{
+    const uint64_t entryHostNs = get_clock();
+    const uint64_t entryVirtualNs = simuClockNs();
+    ArenaTransaction transaction = arenaTransactionBegin(serializeDeviceMmio);
+    const uint64_t bqlReacquireHostNs = get_clock();
+    const bool willBackpressureWait = m_arena &&
+        (m_arena->queueWriteIndex - qatomic_load_acquire(&m_arena->queueReadIndex) >= QEMU_ARENA_QUEUE_DEPTH);
     waitForSynch();
     /*
      * Timestamp after acquiring the ordering mutex.  If each vCPU sampled time
@@ -216,7 +510,12 @@ static void publishQueueEntry( uint64_t addr, uint64_t data, uint64_t action )
      * and thread A then append an older event behind it.
      */
     pushQueueEntry(addr, data, action, simuClockNs() * 1000);
+    signalPollDoorbell();
     arenaTransactionEnd(transaction);
+
+    bqlCausalRecord(BQL_CAUSAL_OP_PUBLISH_QUEUE_ENTRY, addr, entryVirtualNs, entryHostNs,
+                    bqlReacquireHostNs, get_clock(), transaction.iothreadLockReacquired,
+                    willBackpressureWait);
 
     if (m_arena->irqNumber) {
         setInterrupt();
@@ -309,7 +608,12 @@ uint64_t readReg( uint64_t addr )
      * então não precisa esperar uma leitura ANTERIOR terminar -- só precisa esperar toda
      * escrita/heartbeat pendente NA FILA já ter sido processada (mesmo papel que waitForSynch()
      * tinha em v2 pro slot único, agora dividido porque escritas não usam mais esse slot). */
-    ArenaTransaction transaction = arenaTransactionBegin();
+    /* Every read is synchronous guest MMIO dispatch.  Keep the originating
+     * MemoryRegion serialized while waiting for Core, matching the protected
+     * I2C burst mailbox path. */
+    const uint64_t entryHostNs = get_clock();
+    ArenaTransaction transaction = arenaTransactionBegin(true);
+    const uint64_t bqlReacquireHostNs = get_clock();
     uint64_t now = simuClockNs();
     ++m_profileReadTransactions;
     m_lastQemuTime = now;
@@ -343,6 +647,9 @@ uint64_t readReg( uint64_t addr )
     const uint64_t regData = m_arena->regData;
     arenaTransactionEnd(transaction);
 
+    bqlCausalRecord(BQL_CAUSAL_OP_READ_REG, addr, now, entryHostNs, bqlReacquireHostNs, get_clock(),
+                    transaction.iothreadLockReacquired, false);
+
     if (timedOut) {
         return 0;
     }
@@ -363,7 +670,7 @@ void writeReg( uint64_t addr, uint64_t value )
         return;
     }
     //printf("Qemu: esp32_gpio_write\n"); fflush( stdout );
-    publishQueueEntry( addr, value, SIM_WRITE );
+    publishQueueEntry( addr, value, SIM_WRITE, true );
 }
 
 void writeSimEvent( uint64_t addr, uint64_t value, uint64_t action )
@@ -371,7 +678,7 @@ void writeSimEvent( uint64_t addr, uint64_t value, uint64_t action )
     if (!m_arena) {
         return;
     }
-    publishQueueEntry(addr, value, action);
+    publishQueueEntry(addr, value, action, true);
 }
 
 static uint64_t m_i2cRequestCounter;
@@ -393,7 +700,13 @@ bool i2cBurstTransfer( uint32_t bus, const I2cBurstRequest* req, I2cBurstRespons
         !(m_arenaDescriptor->negotiatedCapabilities & QEMU_ARENA_CAP_I2C_BURST) ) return false;
     if( req->tx_len > 64 || req->rx_len > 32 ) return false;
 
-    ArenaTransaction transaction = arenaTransactionBegin();
+    /* Called synchronously from esp32.i2c MMIO.  Reacquire the BQL only after
+     * the arena lock so another MTTCG vCPU cannot re-enter this device while
+     * the mailbox request is in flight. */
+    const uint64_t entryHostNs = get_clock();
+    const uint64_t entryVirtualNs = simuClockNs();
+    ArenaTransaction transaction = arenaTransactionBegin(true);
+    const uint64_t bqlReacquireHostNs = get_clock();
 
     /* Mantém ordem total com GPIO-matrix/IOMUX e demais writes já publicados. Sem esta barreira o
      * Core poderia resolver o burst antes de aplicar o roteamento de SDA/SCL que o precedeu. */
@@ -409,7 +722,10 @@ bool i2cBurstTransfer( uint32_t bus, const I2cBurstRequest* req, I2cBurstRespons
 
     const uint64_t seq = ++m_i2cRequestCounter;
     const uint64_t waitStartWallNs = get_clock();
+    qemuTraceRecord(20, seq, simuClockNs()); /* T0: payload ready, before publication */
     qatomic_store_release( &m_arena->i2cRequestSeq, seq );
+    qemuTraceRecord(21, seq, simuClockNs()); /* T1: authoritative request publication */
+    signalPollDoorbell();
 
     uint64_t timeout = 0;
     bool timedOut = false;
@@ -423,6 +739,7 @@ bool i2cBurstTransfer( uint32_t bus, const I2cBurstRequest* req, I2cBurstRespons
         }
     }
 
+    if (!timedOut) qemuTraceRecord(23, seq, simuClockNs()); /* T5: completion observed */
     static const char* s_i2cBurstTrace = NULL;
     static bool s_i2cBurstTraceRead = false;
     if( !s_i2cBurstTraceRead )
@@ -450,6 +767,9 @@ bool i2cBurstTransfer( uint32_t bus, const I2cBurstRequest* req, I2cBurstRespons
             memcpy( rxOut, (const void*)m_arena->i2cRx, resp->rx_len );
     }
     arenaTransactionEnd(transaction);
+
+    bqlCausalRecord(BQL_CAUSAL_OP_I2C_BURST, (uint64_t)bus, entryVirtualNs, entryHostNs,
+                    bqlReacquireHostNs, get_clock(), transaction.iothreadLockReacquired, false);
 
     if( m_arena->irqNumber ) setInterrupt();
 
@@ -535,7 +855,10 @@ static void simu_event( void* opaque )
 
     if( now_ns > m_lastQemuTime )
     {
-        publishQueueEntry( 0, 0, SIM_EVENT ); // heartbeat nao usa regAddr/regData
+        /* Timer heartbeat is not inside a device MMIO dispatch, so holding the
+         * BQL through queue backpressure would add contention without guarding
+         * a MemoryRegion callback. */
+        publishQueueEntry( 0, 0, SIM_EVENT, false ); // heartbeat nao usa regAddr/regData
 
         m_lastQemuTime = now_ns;
     }
@@ -587,10 +910,23 @@ int simuMain( int argc, char** argv )
         return 1;
     }
     arena = MapViewOfFile( hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, shMemSize );
+    if (arena) {
+        const size_t nameLength = strlen(shMemKey) + strlen("-doorbell") + 1;
+        char *doorbellName = g_malloc(nameLength);
+        snprintf(doorbellName, nameLength, "%s-doorbell", shMemKey);
+        m_pollDoorbell = OpenEventA(EVENT_MODIFY_STATE | SYNCHRONIZE, FALSE, doorbellName);
+        if (m_pollDoorbell) printf("Qemu: MCU poll doorbell opened: %s\n", doorbellName);
+        else fprintf(stderr, "Qemu: MCU poll doorbell unavailable (%lu); timed Core fallback active\n",
+                     (unsigned long)GetLastError());
+        g_free(doorbellName);
+    }
 #endif
 
     if( !arena )
     {
+#ifdef _WIN32
+        CloseHandle(hMapFile);
+#endif
         printf("Qemu: Error mapping arena\n"); fflush( stdout );
         return 1;
     }
@@ -608,6 +944,10 @@ int simuMain( int argc, char** argv )
 #ifdef __linux__
             munmap(arena, shMemSize);
 #elif defined(_WIN32)
+            if (m_pollDoorbell) {
+                CloseHandle(m_pollDoorbell);
+                m_pollDoorbell = NULL;
+            }
             UnmapViewOfFile(arena);
             CloseHandle(hMapFile);
 #endif
@@ -622,6 +962,22 @@ int simuMain( int argc, char** argv )
            m_arenaAbiMajor, shMemSize,
            m_arenaDescriptor ? ", capabilities negotiated" : " (rollback)");
     fflush(stdout);
+
+    /* Identidade cross-processa: leitura/parsing uma única vez no startup. */
+    if (loadRuntimeIdentityFromEnvironment() == RUNTIME_IDENTITY_MANAGED_INVALID) {
+#ifdef __linux__
+        munmap(arena, shMemSize);
+#elif defined(_WIN32)
+        if (m_pollDoorbell) {
+            CloseHandle(m_pollDoorbell);
+            m_pollDoorbell = NULL;
+        }
+        UnmapViewOfFile(arena);
+        CloseHandle(hMapFile);
+#endif
+        m_arena = NULL;
+        return 1;
+    }
 
     //------------------------------------------------------------------
 
@@ -719,11 +1075,27 @@ int simuMain( int argc, char** argv )
 #ifdef __linux__
     munmap( arena, shMemSize ); // Un-map shared memory
 #elif defined(_WIN32)
+    if (m_pollDoorbell) {
+        printf("Qemu: doorbell set attempts=%llu successes=%llu failures=%llu\n",
+               (unsigned long long)m_doorbellSetAttempts,
+               (unsigned long long)m_doorbellSetSuccesses,
+               (unsigned long long)m_doorbellSetFailures);
+        CloseHandle(m_pollDoorbell);
+        m_pollDoorbell = NULL;
+    }
     UnmapViewOfFile( arena );
     CloseHandle( hMapFile );
 #endif
 
     printf("Qemu: process finished %i\n", status );fflush( stdout );
 
+    if (m_qemuTraceEnabled) {
+        fprintf(stderr, "Qemu trace recorder: T0 calls=%" PRIu64 " ticks=%" PRIu64 " max=%" PRIu64 "; T1 calls=%" PRIu64 " ticks=%" PRIu64 " max=%" PRIu64 "; T5 calls=%" PRIu64 " ticks=%" PRIu64 " max=%" PRIu64 "\n",
+                m_qemuTraceCalls[20], m_qemuTraceTicks[20], m_qemuTraceMaxTicks[20],
+                m_qemuTraceCalls[21], m_qemuTraceTicks[21], m_qemuTraceMaxTicks[21],
+                m_qemuTraceCalls[23], m_qemuTraceTicks[23], m_qemuTraceMaxTicks[23]);
+        if (m_qemuTraceMapping) { QemuTraceBinaryHeader *h=(QemuTraceBinaryHeader*)m_qemuTraceMapping; h->written=m_qemuTraceEventSequence; h->dropped=m_qemuTraceDropped; }
+        qemuTraceClose(); m_qemuTraceFile = NULL;
+    }
     return 0;
 }

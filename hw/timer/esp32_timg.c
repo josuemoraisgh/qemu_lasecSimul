@@ -534,6 +534,20 @@ static void esp32_timg_wdt_update_config(Esp32TimgWdtState *ws)
 
     TIMG_DEBUG_LOG("%s: TG%d config 0x%08x prescale=0x%08x en=%d fb_en=%d level_int_en=%d\n", __func__, ws->parent->id,
                    ws->config0_reg, ws->prescale, ws->en, ws->flashboot_en, ws->level_int_en);
+    /* TEMPORARY diagnostic, see esp32_timg_wdt_arm's comment above -- same removal note applies. */
+    if (ws->parent->id == 0 && getenv("LASECSIMUL_TG0_WDT_TRACE")) {
+        fprintf(stderr,
+                "[LasecSimul][TG0WDT] config en=%d fb_en=%d prescale=%u apb_hz=%u "
+                "mode0=%d mode1=%d mode2=%d mode3=%d "
+                "timeout0=%u timeout1=%u timeout2=%u timeout3=%u virtual_ns=%llu host_ns=%llu\n",
+                ws->en, ws->flashboot_en, ws->prescale, ws->parent->apb_freq_hz,
+                ws->mode[0], ws->mode[1], ws->mode[2], ws->mode[3],
+                (unsigned)ws->timeout[0], (unsigned)ws->timeout[1],
+                (unsigned)ws->timeout[2], (unsigned)ws->timeout[3],
+                (unsigned long long)ns_now,
+                (unsigned long long)qemu_clock_get_ns(QEMU_CLOCK_HOST));
+        fflush(stderr);
+    }
     esp32_timg_wdt_arm(ws, ns_now);
 }
 
@@ -541,6 +555,13 @@ static void esp32_timg_wdt_feed(Esp32TimgWdtState *ws)
 {
     TIMG_DEBUG_LOG("%s TG%d\n", __func__, ws->parent->id);
     uint64_t ns_now = qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL);
+    /* TEMPORARY diagnostic, see esp32_timg_wdt_arm's comment above -- same removal note applies. */
+    if (ws->parent->id == 0 && getenv("LASECSIMUL_TG0_WDT_TRACE")) {
+        fprintf(stderr, "[LasecSimul][TG0WDT] feed virtual_ns=%llu host_ns=%llu\n",
+                (unsigned long long)ns_now,
+                (unsigned long long)qemu_clock_get_ns(QEMU_CLOCK_HOST));
+        fflush(stderr);
+    }
     ws->cur_stage = 0;
     ws->ns_base = ns_now;
     ws->count_base = 0;
@@ -576,6 +597,19 @@ static void esp32_timg_wdt_arm(Esp32TimgWdtState *ws, uint64_t ns_now)
     }
     TIMG_DEBUG_LOG("%s: TG%d ns=0x%08llx stage %d count=0x%08llx count_to_timeout=0x%08llx ns_to_timeout=0x%08llx\n",
                    __func__, ws->parent->id, ns_now, ws->cur_stage, cur_count, count_to_timeout, ns_to_timeout);
+    /* TEMPORARY, minimal diagnostic for the 2026-08-27 TG0WDT_SYS_RESET investigation -- reports
+     * both virtual (QEMU_CLOCK_VIRTUAL) and host-wall (QEMU_CLOCK_HOST) time so a reset can be
+     * classified as a virtual-time-correct expiry (real firmware/config issue) vs a host-inflated
+     * one (the same class of issue TG1's wdt_time_scale already compensates for, deliberately not
+     * extended to TG0 -- see the comment above this function). Gated, off by default, TG0 only.
+     * Remove once the investigation concludes. */
+    if (ws->parent->id == 0 && getenv("LASECSIMUL_TG0_WDT_TRACE")) {
+        fprintf(stderr,
+                "[LasecSimul][TG0WDT] arm stage=%d ns_to_timeout=%llu virtual_ns=%llu host_ns=%llu\n",
+                ws->cur_stage, (unsigned long long)ns_to_timeout, (unsigned long long)ns_now,
+                (unsigned long long)qemu_clock_get_ns(QEMU_CLOCK_HOST));
+        fflush(stderr);
+    }
     timer_mod_anticipate_ns(&ws->stage_timer, ns_now + ns_to_timeout);
 }
 
@@ -616,6 +650,23 @@ static void esp32_timg_wdt_cb(void *opaque)
         qemu_irq_pulse(s->wdt_cpu_reset_req);
     } else if (mode == WDT_MODE_SYSRESET) {
         qemu_irq_pulse(s->wdt_sys_reset_req);
+    }
+
+    /* TEMPORARY diagnostic, TG0WDT_SYS_RESET investigation (2026-08-27) -- dump the BQL-causal ring
+     * (softmmu/simuliface.c) at the exact moment TG0 fires a genuine SYSRESET, so the recorded
+     * readReg/publishQueueEntry/i2cBurstTransfer timeline can be inspected around it. No-op unless
+     * LASECSIMUL_BQL_CAUSAL_TRACE is set. Remove once the investigation concludes. */
+    if (s->id == 0 && mode == WDT_MODE_SYSRESET) {
+        bqlCausalDumpWindow("TIMER_GROUP0 SYSRESET");
+    }
+
+    /* TEMPORARY diagnostic, see esp32_timg_wdt_arm's comment above -- same removal note applies. */
+    if (s->id == 0 && getenv("LASECSIMUL_TG0_WDT_TRACE")) {
+        fprintf(stderr,
+                "[LasecSimul][TG0WDT] EXPIRE stage=%d mode=%d virtual_ns=%llu host_ns=%llu\n",
+                ws->cur_stage, mode, (unsigned long long)qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL),
+                (unsigned long long)qemu_clock_get_ns(QEMU_CLOCK_HOST));
+        fflush(stderr);
     }
 
     int next_stage = (ws->cur_stage + 1) % ESP32_TIMG_WDT_STAGE_COUNT;
