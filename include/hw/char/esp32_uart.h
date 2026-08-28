@@ -77,6 +77,32 @@ REG32(UART_DATE, 0x78)
 #define UART_REG_CNT (R_UART_DATE + 1)
 
 
+/* [FIX] TG0WDT_SYS_RESET investigation (2026-08-28) -- CLKDIV/CONF0 Core notifications
+ * (writeReg()) used to fire synchronously from inside uart_write(), while TX-byte notifications
+ * are deferred (see tx_effect_bh below); that split allowed a config write issued after a TX byte
+ * but before the byte's own deferred notification to reach Core BEFORE the byte, inverting guest
+ * write order (confirmed: this made TXFIFO_RST a guaranteed no-op against not-yet-notified bytes).
+ * UartConfigSummary/UartTxEffect close that gap: every CLKDIV/CONF0 write merges into a pending
+ * summary instead of notifying immediately; every accepted TX byte snapshots that summary as its
+ * own "configBefore" and resets it, so config effects stay correctly interleaved with the TX byte
+ * they preceded, in guest write order, without an unbounded queue (bounded by the same 128-byte
+ * capacity s->tx_fifo already enforces -- see uart_write()'s A_UART_FIFO case). */
+typedef struct UartConfigSummary {
+    bool clkdivDirty;
+    uint32_t clkdivValue;
+
+    bool conf0StateDirty;
+    uint32_t conf0StateValue;
+
+    bool txFifoReset;
+    bool rxFifoReset;
+} UartConfigSummary;
+
+typedef struct UartTxEffect {
+    uint8_t byte;
+    UartConfigSummary configBefore;
+} UartTxEffect;
+
 typedef struct ESPUARTState {
     SysBusDevice parent_obj;
 
@@ -89,8 +115,23 @@ typedef struct ESPUARTState {
     QEMUTimer tx_timer;
     bool throttle_rx;
     bool rxfifo_tout;
+    /* [FIX] TG0WDT_SYS_RESET investigation -- distinguishes tx_timer's two firings (START a byte
+     * vs FINISH one already in flight) now that the first byte of a burst also goes through this
+     * timer instead of a synchronous call from uart_write(); see uart_send_next()/uart_tx_timer_cb()
+     * in esp32_uart.c. tx_timer/tx_in_flight/frame_time_ns are LOCAL pacing only (guest-visible
+     * FIFO occupancy, UART_STATUS, IRQ) -- they no longer have any role in Core notification
+     * ordering, see tx_effect_bh below. */
+    bool tx_in_flight;
     unsigned baud_rate;
     uint64_t frame_time_ns;
+
+    /* Deferred, ordered Core-notification path -- decoupled from tx_timer/frame_time_ns on
+     * purpose (see comment above UartConfigSummary). Drained back-to-back by tx_effect_bh,
+     * scheduled via QEMU's existing (idempotent) qemu_bh_schedule(), never by a new mechanism. */
+    QEMUBH *tx_effect_bh;
+    UartConfigSummary pending_config;
+    UartTxEffect tx_effects[UART_FIFO_LENGTH];
+    unsigned tx_effect_count;
 
     uint8_t use_apb;
     uint32_t clkdiv;

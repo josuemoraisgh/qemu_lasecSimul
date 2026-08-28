@@ -24,6 +24,7 @@
 #include "hw/qdev-properties-system.h"
 #include "hw/char/esp32_uart.h"
 #include "hw/xtensa/esp32_clk.h"
+#include "qemu/main-loop.h"
 #include "trace.h"
 
 #include "../softmmu/simuliface.h"
@@ -77,20 +78,89 @@ void esp32_uart_set_rx_timeout(ESP32UARTState *s)
 }
 
 
-static uint8_t fifo8_peek(Fifo8 *fifo)
-{
-    if (fifo->num == 0) abort();
-    return fifo->data[fifo->head];
-}
-
+/* [FIX] TG0WDT_SYS_RESET investigation (2026-08-27/28) -- writeReg() used to be a Core-backed
+ * synchronous round-trip called from here. Before this fix, the FIRST byte of a fresh TX burst
+ * called this function synchronously from within uart_write()'s A_UART_FIFO case -- i.e. from
+ * inside an active esp_soc.uart MemoryRegion dispatch. arenaTransactionBegin()'s BQL-release
+ * window (needed to acquire m_arenaOrderLock without violating the arena->BQL lock order, see
+ * softmmu/simuliface.c) then let the OTHER vCPU dispatch into the SAME MemoryRegion (observed: a
+ * UART_STATUS poll) and get rejected -- "Blocked re-entrant IO", a genuine dropped guest register
+ * access, source-confirmed to freeze the guest's virtual-time progress afterward.
+ *
+ * (2026-08-28) Core notification moved out of this function entirely, into tx_effect_bh (see
+ * below), which drains it back-to-back and independently of frame_time_ns -- this function is now
+ * LOCAL pacing only (tx_in_flight/tx_timer govern guest-visible FIFO occupancy/UART_STATUS/IRQ,
+ * nothing Core-facing). */
 static void uart_send_next(void* opaque)
 {
     ESP32UARTState *s = ESP32_UART(opaque);
-    uint8_t b = fifo8_peek( &s->tx_fifo );      // Send next byte
-    //printf("%c",b);
-    writeReg( s->iomem.addr, b );  // UART_FIFO, endereco MMIO completo
-
+    s->tx_in_flight = true;
     timer_mod_ns( &s->tx_timer, getQemu_ns()+s->frame_time_ns);
+}
+
+static void uart_config_summary_clear(UartConfigSummary *cfg)
+{
+    memset(cfg, 0, sizeof(*cfg));
+}
+
+/* Sends, at most, one Core notification per dirty register (CLKDIV, CONF0) for one config
+ * summary snapshot -- never more than that regardless of how many guest writes were coalesced
+ * into it. TXFIFO_RST/RXFIFO_RST are OR-accumulated separately from the raw CONF0 value (see
+ * uart_write()'s A_UART_CONF0 case) and re-applied onto whatever CONF0 value is sent, so a clear
+ * pulse from an earlier write in the same segment is never lost even if a later write in the same
+ * segment doesn't have that bit set.
+ *
+ * Takes the summary BY VALUE on purpose (2026-08-28 fix, see uart_tx_effect_bh()): writeReg()
+ * internally releases the BQL for a bounded window (arenaTransactionBegin() dropping it to
+ * acquire the arena order lock, softmmu/simuliface.c), during which a concurrent uart_write() on
+ * the other vCPU can run to completion. A caller that read live pending fields, called writeReg(),
+ * and only cleared them afterward could have a concurrently-merged contribution wiped out by that
+ * trailing clear without ever sending it. Operating on a value copy (already fully detached from
+ * shared state by the time any writeReg() here can release the BQL) closes that window -- see each
+ * call site for how the copy/clear ordering is arranged. */
+static void uart_apply_config_summary(ESP32UARTState *s, UartConfigSummary cfg)
+{
+    if (cfg.clkdivDirty) {
+        writeReg( s->iomem.addr+A_UART_CLKDIV, cfg.clkdivValue );
+    }
+    if (cfg.conf0StateDirty || cfg.txFifoReset || cfg.rxFifoReset) {
+        uint32_t value = cfg.conf0StateValue;
+        if (cfg.txFifoReset) value |= (1u << 18);
+        if (cfg.rxFifoReset) value |= (1u << 17);
+        writeReg( s->iomem.addr+A_UART_CONF0, value );
+    }
+}
+
+/* Drains tx_effects/pending_config back-to-back, in guest write order, decoupled from
+ * tx_timer/frame_time_ns on purpose (see UartConfigSummary comment in esp32_uart.h): Core's own
+ * TX bit-clock needs zero pacing from QEMU, and pacing this delivery by frame_time_ns would let
+ * Core finish transmitting an earlier byte -- and start the next one -- before a trailing
+ * TXFIFO_RST meant to catch it had even been applied, silently reintroducing the ordering bug
+ * this design closes.
+ *
+ * Only ever invoked by aio_bh_poll() under BQL (same convention as this device's existing
+ * timers); uart_write() only ever runs under BQL too -- but each writeReg() call below releases
+ * the BQL internally for a bounded window (see uart_apply_config_summary() comment), so a
+ * concurrent uart_write() CAN interleave between (and even within) the writeReg() calls made
+ * here. Per-event ev->configBefore is immune to this (a value-copy taken at push time, and the
+ * fixed-size, never-reallocated tx_effects array means a concurrent append at a higher index
+ * can't disturb an index already claimed by this loop) -- but the trailing pending_config is
+ * live, shared state, so it is copied and cleared as two adjacent plain statements (no writeReg()
+ * between them, hence no BQL release in between) before being applied, exactly mirroring how the
+ * per-event snapshot in uart_write()'s A_UART_FIFO case already avoids the same race. */
+static void uart_tx_effect_bh(void *opaque)
+{
+    ESP32UARTState *s = ESP32_UART(opaque);
+    for (unsigned i = 0; i < s->tx_effect_count; i++) {
+        UartTxEffect *ev = &s->tx_effects[i];
+        uart_apply_config_summary(s, ev->configBefore);
+        writeReg( s->iomem.addr, ev->byte );
+    }
+    s->tx_effect_count = 0;
+
+    UartConfigSummary trailing = s->pending_config;
+    uart_config_summary_clear(&s->pending_config);
+    uart_apply_config_summary(s, trailing);
 }
 
 static uint64_t uart_read(void *opaque, hwaddr addr, unsigned int size)
@@ -173,7 +243,12 @@ static void updateBaud( ESP32UARTState *s )
     if( s->baud_rate != baud_rate ){
         s->baud_rate = baud_rate;
         //printf("Qemu: baudrate %i %i %i %lu\n", baud_rate, s->clkdiv, freq, s->frame_time_ns ); fflush( stdout );
-        writeReg( s->iomem.addr+A_UART_CLKDIV, bitTime );
+        /* [FIX] deferred -- see uart_apply_config_summary()/uart_tx_effect_bh(); do not
+         * writeReg() synchronously from inside a guest MMIO dispatch (CLKDIV write, or a CONF0
+         * write that toggles use_apb -- both call into this function). */
+        s->pending_config.clkdivDirty = true;
+        s->pending_config.clkdivValue = bitTime;
+        qemu_bh_schedule( s->tx_effect_bh );
     }
 }
 
@@ -189,7 +264,30 @@ static void uart_write(void *opaque, hwaddr addr, uint64_t value, unsigned int s
         } else {
             //printf("Qemu: uart_write, %lu\n", value ); fflush( stdout );
             fifo8_push( &s->tx_fifo, value );
-            if( fifo8_num_used(&s->tx_fifo) == 1 ) uart_send_next( s );
+            /* [FIX] ordered Core-notification path -- snapshot whatever config accumulated since
+             * the last accepted byte (or since reset) as THIS byte's configBefore, then reset the
+             * pending summary for the next segment. Bounded at UART_FIFO_LENGTH: identical to (in
+             * fact reuses) s->tx_fifo's own 128-byte capacity gate above -- the in-flight byte is
+             * peeked, never double-counted (see uart_send_next()), so no byte is ever outstanding
+             * outside that same 128-entry bound. */
+            if( s->tx_effect_count < UART_FIFO_LENGTH ) {
+                UartTxEffect *ev = &s->tx_effects[s->tx_effect_count++];
+                ev->byte = (uint8_t) value;
+                ev->configBefore = s->pending_config;
+                uart_config_summary_clear( &s->pending_config );
+            }
+            qemu_bh_schedule( s->tx_effect_bh );
+            /* [FIX] TG0WDT_SYS_RESET investigation -- do NOT call uart_send_next()
+             * (Core-backed writeReg()) synchronously from inside this MMIO dispatch; see the
+             * comment on uart_send_next() above. Only arm the existing tx_timer for "now" (fires
+             * on the next main-loop timer pass, outside this dispatch) if the TX pipeline is
+             * genuinely idle -- neither a byte in flight nor a start already scheduled -- so
+             * repeated guest writes while a start is pending don't re-arm redundantly. This timer
+             * is LOCAL pacing only now (FIFO pop/UART_STATUS/IRQ) -- unrelated to Core
+             * notification, which tx_effect_bh handles independently, back-to-back. */
+            if( !s->tx_in_flight && !timer_pending(&s->tx_timer) ) {
+                timer_mod_ns( &s->tx_timer, getQemu_ns() );
+            }
             //uart_transmit(NULL, G_IO_OUT, s);
         }
         break;
@@ -238,7 +336,15 @@ static void uart_write(void *opaque, hwaddr addr, uint64_t value, unsigned int s
             updateBaud( s );
         }
         //printf("Qemu: CONF0 %lu\n", value ); fflush( stdout );
-        writeReg( s->iomem.addr+addr, value );
+        /* [FIX] deferred -- see uart_apply_config_summary()/uart_tx_effect_bh(). State bits
+         * (dataBits/stopBits) last-write-wins via conf0StateValue; TXFIFO_RST/RXFIFO_RST
+         * OR-accumulate separately so a clear pulse from an earlier write in this segment is
+         * never lost even if this write's own value doesn't carry that bit. */
+        s->pending_config.conf0StateDirty = true;
+        s->pending_config.conf0StateValue = value;
+        if( value & (1u << 18) ) s->pending_config.txFifoReset = true;
+        if( value & (1u << 17) ) s->pending_config.rxFifoReset = true;
+        qemu_bh_schedule( s->tx_effect_bh );
         break;
     case A_UART_CONF1:
         s->reg[addr / 4] = value;
@@ -323,7 +429,14 @@ static void uart_tx_timer_cb(void* opaque)
 {
     ESP32UARTState *s = ESP32_UART(opaque);
 
-    fifo8_pop( &s->tx_fifo );
+    /* [FIX] TG0WDT_SYS_RESET investigation -- this callback now services two distinct firings of
+     * the same tx_timer: a FINISH (a byte uart_send_next() started frame_time_ns ago -- pop it,
+     * exactly as before) and a START (armed directly by uart_write(), see A_UART_FIFO case above,
+     * for the first byte of a fresh burst -- nothing to pop yet, tx_in_flight is still false). */
+    if( s->tx_in_flight ) {
+        fifo8_pop( &s->tx_fifo );
+        s->tx_in_flight = false;
+    }
     if( fifo8_num_used( &s->tx_fifo ) ) uart_send_next( s );
     //printf("uart_tx_timer %lu\n", getQemu_ps() );fflush( stdout );
     esp32_uart_update_irq(s);
@@ -377,6 +490,12 @@ static void esp32_uart_reset(DeviceState *dev)
      * fifo que fifo8_reset() acabou de esvaziar -- violando a invariante que fifo8_pop() assume.
      * Corrigido cancelando tx_timer aqui tambem, mesmo padrao ja usado pra throttle_timer. */
     timer_del(&s->tx_timer);
+    s->tx_in_flight = false;
+    /* [FIX] deferred Core-notification state -- cancel any pending drain and discard whatever
+     * was accumulated; matches the tx_timer/tx_in_flight reset immediately above. */
+    qemu_bh_cancel(s->tx_effect_bh);
+    uart_config_summary_clear(&s->pending_config);
+    s->tx_effect_count = 0;
     timer_del(&s->throttle_timer);
     s->throttle_rx = false;
     s->rx_tout_ena = false;
@@ -419,6 +538,7 @@ static void esp32_uart_init(Object *obj)
     timer_init_ns(&s->throttle_timer, QEMU_CLOCK_VIRTUAL, uart_throttle_timer_cb, s);
     timer_init_ns(&s->rx_timeout_timer, QEMU_CLOCK_VIRTUAL, uart_rx_timeout_timer_cb, s);
     timer_init_ns( &s->tx_timer, QEMU_CLOCK_VIRTUAL, uart_tx_timer_cb, s);
+    s->tx_effect_bh = qemu_bh_new( uart_tx_effect_bh, s );
 }
 
 
