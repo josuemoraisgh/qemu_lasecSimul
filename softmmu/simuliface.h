@@ -146,7 +146,7 @@ uint64_t getQemu_ps(void);
 uint64_t getQemu_ns(void);
 
 //bool waitEvent(void);
-void waitForSynch(void);
+bool waitForSynch(void);
 
 uint64_t readReg( uint64_t addr );
 void writeReg( uint64_t addr, uint64_t value );

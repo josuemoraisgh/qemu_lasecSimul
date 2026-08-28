@@ -270,7 +270,6 @@ static bool validateArenaV5Descriptor(
     return true;
 }
 
-uint64_t m_timeout;
 uint64_t m_lastQemuTime;
 
 uint64_t period_ns;
@@ -494,7 +493,17 @@ void bqlCausalDumpWindow(const char *reason)
     fclose(f);
 }
 
-static void publishQueueEntry( uint64_t addr, uint64_t data, uint64_t action,
+/* [FIX] queue-full correctness (2026-08-28): returns false only on a genuine
+ * waitForSynch() HOST PROCESS-HEALTH BACKSTOP timeout (Core has stopped draining the queue for
+ * longer than any legitimate backpressure catch-up could take -- see waitForSynch()). On false,
+ * this function does NOT push an entry, does NOT increment queueWriteIndex, and does NOT signal
+ * the doorbell -- it only unwinds the transaction (arenaTransactionEnd(), exactly once, restoring
+ * the caller's original BQL state) and returns. Callers (writeReg()/writeSimEvent()/simu_event())
+ * treat false as terminal: publication failure must never become a silently dropped guest/device
+ * write. This is what makes `queueWriteIndex - queueReadIndex > 32` structurally unreachable
+ * through this path -- pushQueueEntry() is only ever reached when waitForSynch() has just proven
+ * the queue is not full. */
+static bool publishQueueEntry( uint64_t addr, uint64_t data, uint64_t action,
                                bool serializeDeviceMmio )
 {
     const uint64_t entryHostNs = get_clock();
@@ -503,12 +512,16 @@ static void publishQueueEntry( uint64_t addr, uint64_t data, uint64_t action,
     const uint64_t bqlReacquireHostNs = get_clock();
     const bool willBackpressureWait = m_arena &&
         (m_arena->queueWriteIndex - qatomic_load_acquire(&m_arena->queueReadIndex) >= QEMU_ARENA_QUEUE_DEPTH);
-    waitForSynch();
+    if (!waitForSynch()) {
+        arenaTransactionEnd(transaction);
+        return false;
+    }
     /*
      * Timestamp after acquiring the ordering mutex.  If each vCPU sampled time
      * before serialization, thread B could publish its later timestamp first
      * and thread A then append an older event behind it.
      */
+    g_assert(m_arena->queueWriteIndex - qatomic_load_acquire(&m_arena->queueReadIndex) < QEMU_ARENA_QUEUE_DEPTH);
     pushQueueEntry(addr, data, action, simuClockNs() * 1000);
     signalPollDoorbell();
     arenaTransactionEnd(transaction);
@@ -520,6 +533,7 @@ static void publishQueueEntry( uint64_t addr, uint64_t data, uint64_t action,
     if (m_arena->irqNumber) {
         setInterrupt();
     }
+    return true;
 }
 
 /* v3 (LasecSimul PERF-13): publica uma entrada na fila circular de escritas/heartbeat -- só
@@ -664,13 +678,22 @@ uint64_t readReg( uint64_t addr )
     return regData;
 }
 
+/* [FIX] queue-full correctness (2026-08-28): publishQueueEntry() returning false means Core has
+ * genuinely stopped draining (HOST PROCESS-HEALTH BACKSTOP, not ESP32 timing) -- treat it as
+ * terminal, never as a silently dropped register write. qemu_system_shutdown_request() is safe to
+ * call here regardless of BQL state (it acquires no lock itself; see publishQueueEntry(), which
+ * has already fully unwound arenaTransactionEnd() before returning false) -- it only flags a
+ * request that this fork's own qemu_main_loop() (softmmu/runstate.c) picks up on its next
+ * iteration for an orderly shutdown, not an abrupt exit from inside this callback. */
 void writeReg( uint64_t addr, uint64_t value )
 {
     if (!m_arena) {
         return;
     }
     //printf("Qemu: esp32_gpio_write\n"); fflush( stdout );
-    publishQueueEntry( addr, value, SIM_WRITE, true );
+    if (!publishQueueEntry( addr, value, SIM_WRITE, true )) {
+        qemu_system_shutdown_request(SHUTDOWN_CAUSE_HOST_ERROR);
+    }
 }
 
 void writeSimEvent( uint64_t addr, uint64_t value, uint64_t action )
@@ -678,7 +701,9 @@ void writeSimEvent( uint64_t addr, uint64_t value, uint64_t action )
     if (!m_arena) {
         return;
     }
-    publishQueueEntry(addr, value, action, true);
+    if (!publishQueueEntry(addr, value, action, true)) {
+        qemu_system_shutdown_request(SHUTDOWN_CAUSE_HOST_ERROR);
+    }
 }
 
 static uint64_t m_i2cRequestCounter;
@@ -811,18 +836,30 @@ uint64_t getQemu_ns(void)
     return simuClockNs();
 }
 
-void waitForSynch(void)
+/* [FIX] queue-full correctness (2026-08-28): the fatal bound below is a HOST PROCESS-HEALTH
+ * BACKSTOP, not ESP32/guest timing -- it exists solely to detect a genuinely unresponsive Core
+ * (crashed, wedged) and fail loudly instead of silently corrupting the ring (see the caller,
+ * publishQueueEntry(), for what a `false` return here now prevents). It must never be reached in
+ * healthy operation: derived with a large safety margin over the largest legitimate backpressure
+ * wait observed/documented in this investigation (Scheduler's own pacing wait-loop granularity is
+ * 5ms, McuComponent.cpp documents a real MTTCG boot-burst gap of ~10.8ms, diagnostic runs in this
+ * investigation observed tens-to-a-few-hundred ms) -- ~15-30x that ceiling. Host monotonic time
+ * (get_clock(), already used throughout this file for host-elapsed measurement -- see
+ * bqlCausalRecord/i2cBurstTransfer's waitWallNs above) on purpose, not QEMU_CLOCK_VIRTUAL: virtual
+ * time may not be progressing during exactly this failure mode. */
+#define LASECSIMUL_QUEUE_FULL_FATAL_TIMEOUT_NS (UINT64_C(3) * NANOSECONDS_PER_SECOND)
+
+bool waitForSynch(void)
 {
     if (!m_arena) {
-        return;
+        return true;
     }
     //printf("Qemu: wait for Action at time %lu\n",  m_lastQemuTime ); fflush( stdout );
 
     uint64_t now = simuClockNs();
     m_lastQemuTime = now;
-    if( now == 0 ) return;
+    if( now == 0 ) return true;
 
-    m_timeout = 0;
     /* v3: só espera quando a fila de escritas/heartbeat está CHEIA -- backpressure explícito, não
      * mais um ping-pong completo a cada chamada (protocolo v2 tinha 1 slot só, sempre esperava o
      * anterior confirmar antes de publicar o próximo).
@@ -833,15 +870,18 @@ void waitForSynch(void)
     if( m_arena->queueWriteIndex - qatomic_load_acquire(&m_arena->queueReadIndex) >= QEMU_ARENA_QUEUE_DEPTH )
     {
         ++m_profileQueueWaits;
+        const uint64_t waitStartHostNs = get_clock();
         while( m_arena->queueWriteIndex - qatomic_load_acquire(&m_arena->queueReadIndex) >= QEMU_ARENA_QUEUE_DEPTH )
         {
-            if( m_timeout++ > 2e9 ) // Terminate process if timed out
+            if( get_clock() - waitStartHostNs >= LASECSIMUL_QUEUE_FULL_FATAL_TIMEOUT_NS )
             {
-                printf("Qemu: waitForSynch TIMEOUT (fila cheia) at time %llu\n", (unsigned long long)(now*1000) ); fflush( stdout );
-                return;
+                printf("Qemu: waitForSynch TIMEOUT (fila cheia, HOST PROCESS-HEALTH BACKSTOP) at time %llu\n",
+                       (unsigned long long)(now*1000) ); fflush( stdout );
+                return false;
             }
         }
     }
+    return true;
 }
 
 static void simu_event( void* opaque )
@@ -858,7 +898,11 @@ static void simu_event( void* opaque )
         /* Timer heartbeat is not inside a device MMIO dispatch, so holding the
          * BQL through queue backpressure would add contention without guarding
          * a MemoryRegion callback. */
-        publishQueueEntry( 0, 0, SIM_EVENT, false ); // heartbeat nao usa regAddr/regData
+        // heartbeat nao usa regAddr/regData
+        if (!publishQueueEntry( 0, 0, SIM_EVENT, false )) {
+            /* [FIX] queue-full correctness (2026-08-28) -- see writeReg()/writeSimEvent(). */
+            qemu_system_shutdown_request(SHUTDOWN_CAUSE_HOST_ERROR);
+        }
 
         m_lastQemuTime = now_ns;
     }
