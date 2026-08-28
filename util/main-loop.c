@@ -530,6 +530,10 @@ static int os_host_main_loop_wait(int64_t timeout)
 
     g_poll_ret = qemu_poll_ns(poll_fds, n_poll_fds + w->num, poll_timeout_ns);
 
+    /* A zero-time LasecSimul precision poll must yield while the BQL is still unlocked.  Yielding
+     * after qemu_mutex_lock_iothread() can starve both ESP32 vCPUs and make shutdown appear hung. */
+    if (poll_timeout_ns == 0) SwitchToThread();
+
     replay_mutex_lock();
 
     qemu_mutex_lock_iothread();
@@ -580,7 +584,24 @@ void main_loop_timeout( int64_t timeout_ns )
     /* XXX: separate device handlers from system ones */
     notifier_list_notify( &main_loop_poll_notifiers, &mlpoll );
 
-    int ret = os_host_main_loop_wait( timeout_ns );
+    int64_t host_wait_ns = timeout_ns;
+#ifdef _WIN32
+    /* The LasecSimul MTTCG loop normally asks for a few hundred nanoseconds here.  Windows/GLib
+     * rounds that blocking poll to roughly 1 ms, so a 400 kHz I2C FIFO timer (720 us for 32
+     * bytes) is consistently delivered one or more milliseconds late.  Poll without blocking
+     * for sub-ms deadlines and yield the remainder of this thread's quantum to the vCPU threads.
+     * QEMU_CLOCK_VIRTUAL is still the host-paced clock in MTTCG: this does not fast-forward time,
+     * it merely stops adding the host wait quantum to every device timer. */
+    static int precise_sub_ms = -1;
+    if (precise_sub_ms < 0) {
+        const char *coarse = getenv("LASECSIMUL_QEMU_COARSE_SUBMS_WAIT");
+        precise_sub_ms = !(coarse && coarse[0] && strcmp(coarse, "0"));
+    }
+    const bool cooperative_poll = precise_sub_ms && !icount_enabled() &&
+                                  host_wait_ns >= 0 && host_wait_ns < SCALE_MS;
+    if (cooperative_poll) host_wait_ns = 0;
+#endif
+    int ret = os_host_main_loop_wait( host_wait_ns );
     mlpoll.state = ret < 0 ? MAIN_LOOP_POLL_ERR : MAIN_LOOP_POLL_OK;
 
     notifier_list_notify( &main_loop_poll_notifiers, &mlpoll );
