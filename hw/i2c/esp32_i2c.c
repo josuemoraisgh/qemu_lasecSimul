@@ -29,6 +29,10 @@ static void esp32_i2c_abort_empty_tx(Esp32I2CState *s)
     s->sr_reg &= ~(1 << 4);             /* I2C_BUS_BUSY */
     s->int_raw_reg &= ~(1 << 6);        /* I2C_BYTE_TRANS */
     s->int_raw_reg |= (1 << 10) | (1 << 7); /* ACK_ERR + TRANS_COMPLETE */
+    /* This is a transaction-terminal path, same class as a normal STOP: leaving
+     * burstAddressValid set would let a later, unrelated command-list slice attempt a
+     * continuation burst against this now-finished transaction's address. */
+    s->burstAddressValid = false;
     if (s->lastCMD < ESP32_I2C_CMD_COUNT) {
         s->cmd_reg[s->lastCMD] =
             FIELD_DP32(s->cmd_reg[s->lastCMD], I2C_CMD, DONE, 1);
@@ -251,6 +255,10 @@ static void esp32_i2c_do_transaction( void* opaque )
     {
     case I2C_OPCODE_RSTART:
     {
+        /* A continued burst is valid only after THIS START was accepted by the burst path.
+         * Keeping the address from a previous transaction lets a later FIFO slice switch from
+         * already-scheduled electrical edges to direct delivery, reordering/duplicating bytes. */
+        s->burstAddressValid = false;
         s->bytesTx = 0;
         s->sr_reg |= 1<<4;                // I2C_BUS_BUSY
         s->lastCMD++;
@@ -286,7 +294,12 @@ static void esp32_i2c_do_transaction( void* opaque )
 
     case I2C_OPCODE_WRITE:
     {
-        if (s->bytesTx == 0 && !(cmd & (1u << 16)) && esp32_i2c_try_continuation_burst(s)) return;
+        if (s->bytesTx == 0 && !(cmd & (1u << 16))) {
+            /* burstAddressValid is validated inside esp32_i2c_try_continuation_burst() itself --
+             * a single canonical check, not duplicated here, so the two can't drift apart. */
+            if (esp32_i2c_try_continuation_burst(s)) return;
+            esp32_i2c_trace_rejected_plan(s);
+        }
         if( s->bytesTx == 0 ) s->bytesTx = cmd & 0xFF; //FIELD_EX32( cmd, I2C_CMD, BYTE_NUM );
         if (fifo8_num_used(&s->tx_fifo) == 0) {
             error_report("esp32_i2c: timed write found an empty TX FIFO");
@@ -421,6 +434,7 @@ static void esp32_i2c_event( void* opaque ) // Timer event
     {
         s->int_raw_reg |= 1<<7;            // TRANS_COMPLETE
         s->sr_reg      &= ~(1<<4);         // Clear I2C_BUS_BUSY
+        s->burstAddressValid = false;
     }break;
 
     case I2C_OPCODE_END:
