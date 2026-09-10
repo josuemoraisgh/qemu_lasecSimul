@@ -25,6 +25,7 @@
 #include "qemu/units.h"
 #include "sysemu/block-backend.h"
 #include "hw/block/block.h"
+#include "hw/block/flash.h"
 #include "hw/qdev-properties.h"
 #include "hw/qdev-properties-system.h"
 #include "hw/ssi/ssi.h"
@@ -32,6 +33,8 @@
 #include "qemu/bitops.h"
 #include "qemu/log.h"
 #include "qemu/module.h"
+#include "qemu/main-loop.h"
+#include "qemu/timer.h"
 #include "qemu/error-report.h"
 #include "qapi/error.h"
 #include "trace.h"
@@ -1638,6 +1641,43 @@ static void m25p80_realize(SSIPeripheral *ss, Error **errp)
                             m25p80_write_protect_pin_irq_handler, "WP#", 1);
 }
 
+/* E120 (EVIDENCE.md, 2026-09-05): see include/hw/block/flash.h for the full contract. Added so a
+ * device model that needs a coherent snapshot of the chip's current contents (originally:
+ * hw/misc/esp32_dport.c's cache-fill path) never has to reach past this device's own realized
+ * state into BlockBackend -- reading storage[] directly is both more correct (reflects every
+ * program/erase already applied, with no dependency on async persistence timing) and strictly
+ * cheaper than a synchronous block-layer round trip. */
+bool m25p80_read_array(DeviceState *dev, uint64_t offset, uint64_t bytes,
+                       void *destination, Error **errp)
+{
+    Flash *s = M25P80(dev);
+
+    /* storage[] is mutated by guest SPI command processing (flash_write8()/flash_erase(), both
+     * reached only from this device's own .transfer callback) with no lock of its own beyond the
+     * BQL every such dispatch already runs under -- a caller off that lock could race a
+     * concurrent program/erase mid-copy. */
+    g_assert(qemu_mutex_iothread_locked());
+
+    if (bytes == 0) {
+        return true;
+    }
+    if (!destination) {
+        error_setg(errp, "m25p80_read_array: NULL destination");
+        return false;
+    }
+    /* Overflow-safe: offset+bytes cannot be compared directly (could wrap a 64-bit sum), so bound
+     * bytes by what remains after offset instead. */
+    if (offset > s->size || bytes > (uint64_t)s->size - offset) {
+        error_setg(errp,
+                   "m25p80_read_array: out-of-range read (offset=%" PRIu64
+                   " bytes=%" PRIu64 " flash size=%u)",
+                   offset, bytes, s->size);
+        return false;
+    }
+    memcpy(destination, s->storage + offset, bytes);
+    return true;
+}
+
 static void m25p80_reset(DeviceState *d)
 {
     Flash *s = M25P80(d);
@@ -1839,3 +1879,4 @@ static void m25p80_register_types(void)
 }
 
 type_init(m25p80_register_types)
+

@@ -363,6 +363,11 @@ static void esp32_spi_init(Object *obj)
 
     memory_region_init_io(&s->iomem, obj, &esp32_spi_ops, s,
                           TYPE_ESP32_SPI, ESP32_SPI_REG_SIZE);
+    /* E118-AUDIT-2 (EVIDENCE.md, 2026-09-05): see the matching comment in hw/i2c/esp32_i2c.c --
+     * writeReg()'s VNEXT_WOULD_BLOCK path can cpu_loop_exit_restore() out of this device's own
+     * dispatch, permanently wedging softmmu/memory.c's per-device reentrancy guard otherwise.
+     * Safe here for the same reason: this retry path never drops the BQL. */
+    s->iomem.disable_reentrancy_guard = true;
     sysbus_init_mmio(sbd, &s->iomem);
     sysbus_init_irq(sbd, &s->irq);
 

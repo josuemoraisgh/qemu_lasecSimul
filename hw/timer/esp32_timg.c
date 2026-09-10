@@ -21,11 +21,15 @@
 #include "hw/registerfields.h"
 #include "hw/boards.h"
 #include "hw/timer/esp32_timg.h"
+#include "hw/timer/esp32_timg_pause_math.h"
+#include "hw/timer/esp32_timg_wdt_scale_math.h"
 #include "hw/misc/esp32_dport.h"
 
 #define TIMG_REGFILE_SIZE 0x100
 #define TIMG_INTERRUPT_WDT_REALTIME_SCALE_DEFAULT 100
 #define TIMG_INTERRUPT_WDT_SCALE_MAX 100
+
+static Esp32TimgState *esp32_timg_tg0;
 
 static uint64_t esp32_timg_timer_get_count(Esp32TimgTimerState *s, uint64_t ns_now);
 static uint64_t esp32_timg_timer_count_to_ns(Esp32TimgTimerState *s, uint64_t count);
@@ -35,9 +39,13 @@ static void esp32_timg_timer_reload(Esp32TimgTimerState *ts, uint64_t ns_now);
 static void esp32_timg_do_calibration(Esp32TimgState* s);
 static void esp32_timg_int_update(Esp32TimgState *s);
 static bool esp32_timg_wdt_protected(Esp32TimgWdtState *ws);
+static uint64_t esp32_timg_wdt_get_count(Esp32TimgWdtState *ws, uint64_t ns_now);
 static void esp32_timg_wdt_update_config(Esp32TimgWdtState *ws);
 static void esp32_timg_wdt_feed(Esp32TimgWdtState *ws);
 static void esp32_timg_wdt_arm(Esp32TimgWdtState *ws, uint64_t ns_now);
+static void esp32_timg_transport_pause_bh(void *opaque);
+static void esp32_timg_transport_pause_apply(Esp32TimgState *s,
+                                               uint64_t now_virtual_ns);
 
 
 #define TIMG_DEBUG_LOG(...) // qemu_log(__VA_ARGS__)
@@ -307,6 +315,14 @@ static void esp32_timg_wdt_reset(Esp32TimgWdtState* ws)
 static void esp32_timg_reset(DeviceState *dev)
 {
     Esp32TimgState *s = ESP32_TIMG(dev);
+    qatomic_set(&s->transport_pause_active, false);
+    qatomic_set(&s->transport_pause_pending, false);
+    qatomic_set(&s->transport_pause_start_host_ns, 0);
+    qatomic_set(&s->transport_pause_start_virtual_ns, 0);
+    for (int i = 0; i < ESP32_TIMG_TRANSPORT_PAUSE_MAX_CPUS; i++) {
+        qatomic_set(&s->transport_pause_active_by_cpu[i], false);
+    }
+    qatomic_set(&s->transport_pause_active_count, 0);
     s->rtc_cal_max = 1;
     s->rtc_cal_clk_sel = ESP32_TIMG_CAL_8MD256;
     s->rtc_cal_ready = 0;
@@ -499,6 +515,19 @@ static uint64_t esp32_timg_wdt_get_count(Esp32TimgWdtState *ws, uint64_t ns_now)
     if (!ws->en) {
         return ws->count_base;
     }
+    /* E114 (EVIDENCE.md, 2026-09-04): defensive backstop, NOT the fix -- see
+     * esp32_timg_transport_pause_apply() for the actual source-of-truth correction. If ns_base
+     * is ever ahead of ns_now (should no longer happen after that fix, but this guards against
+     * any other future path that could reintroduce it), `ns_now - ws->ns_base` would underflow
+     * (unsigned) into a value near UINT64_MAX, making esp32_timg_wdt_arm() compute
+     * count_to_timeout=0 and re-arm with an effectively-zero timeout -- this is the exact
+     * E114 reproduction confirmed for the SW_CPU_RESET_REGISTER storm. Returning count_base
+     * (no time elapsed since the anchor, from
+     * this ill-defined anchor's perspective) is the only sane answer when the anchor is in the
+     * future. */
+    if (ns_now <= ws->ns_base) {
+        return ws->count_base;
+    }
     uint64_t ns_from_base = ns_now - ws->ns_base;
     uint64_t ticks_from_base = muldiv64(ns_from_base, ws->parent->apb_freq_hz / 1000000, 1000 * MAX(ws->prescale, 1));
     uint64_t count = ticks_from_base + ws->count_base;
@@ -512,7 +541,6 @@ static void esp32_timg_wdt_update_config(Esp32TimgWdtState *ws)
     uint64_t ns_now = qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL);
     ws->count_base = esp32_timg_wdt_get_count(ws, ns_now);
     ws->ns_base = ns_now;
-
     bool old_en = ws->en;
     ws->en = FIELD_EX32(ws->config0_reg, TIMG_WDTCONFIG0, EN);
     ws->mode[0] = FIELD_EX32(ws->config0_reg, TIMG_WDTCONFIG0, STG0);
@@ -531,23 +559,8 @@ static void esp32_timg_wdt_update_config(Esp32TimgWdtState *ws)
     } else if (!ws->en && old_en) {
         qemu_irq_lower(get_level_irq(s, TIMG_WDT_INT));
     }
-
     TIMG_DEBUG_LOG("%s: TG%d config 0x%08x prescale=0x%08x en=%d fb_en=%d level_int_en=%d\n", __func__, ws->parent->id,
                    ws->config0_reg, ws->prescale, ws->en, ws->flashboot_en, ws->level_int_en);
-    /* TEMPORARY diagnostic, see esp32_timg_wdt_arm's comment above -- same removal note applies. */
-    if (ws->parent->id == 0 && getenv("LASECSIMUL_TG0_WDT_TRACE")) {
-        fprintf(stderr,
-                "[LasecSimul][TG0WDT] config en=%d fb_en=%d prescale=%u apb_hz=%u "
-                "mode0=%d mode1=%d mode2=%d mode3=%d "
-                "timeout0=%u timeout1=%u timeout2=%u timeout3=%u virtual_ns=%llu host_ns=%llu\n",
-                ws->en, ws->flashboot_en, ws->prescale, ws->parent->apb_freq_hz,
-                ws->mode[0], ws->mode[1], ws->mode[2], ws->mode[3],
-                (unsigned)ws->timeout[0], (unsigned)ws->timeout[1],
-                (unsigned)ws->timeout[2], (unsigned)ws->timeout[3],
-                (unsigned long long)ns_now,
-                (unsigned long long)qemu_clock_get_ns(QEMU_CLOCK_HOST));
-        fflush(stderr);
-    }
     esp32_timg_wdt_arm(ws, ns_now);
 }
 
@@ -555,13 +568,6 @@ static void esp32_timg_wdt_feed(Esp32TimgWdtState *ws)
 {
     TIMG_DEBUG_LOG("%s TG%d\n", __func__, ws->parent->id);
     uint64_t ns_now = qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL);
-    /* TEMPORARY diagnostic, see esp32_timg_wdt_arm's comment above -- same removal note applies. */
-    if (ws->parent->id == 0 && getenv("LASECSIMUL_TG0_WDT_TRACE")) {
-        fprintf(stderr, "[LasecSimul][TG0WDT] feed virtual_ns=%llu host_ns=%llu\n",
-                (unsigned long long)ns_now,
-                (unsigned long long)qemu_clock_get_ns(QEMU_CLOCK_HOST));
-        fflush(stderr);
-    }
     ws->cur_stage = 0;
     ws->ns_base = ns_now;
     ws->count_base = 0;
@@ -578,61 +584,128 @@ static void esp32_timg_wdt_arm(Esp32TimgWdtState *ws, uint64_t ns_now)
 
     uint64_t stage_timeout = (uint32_t)ws->timeout[ws->cur_stage];
     uint64_t cur_count = esp32_timg_wdt_get_count(ws, ns_now);
-    uint64_t count_to_timeout =
-        stage_timeout > cur_count ? stage_timeout - cur_count : 0;
-    uint64_t ns_to_timeout = muldiv64(count_to_timeout, 1000 * ws->prescale, ws->parent->apb_freq_hz / 1000000);
+    Esp32TimgWdtDeadlineCalc deadline =
+        esp32_timg_wdt_compute_stage_deadline(ns_now, cur_count,
+                                              (uint32_t)stage_timeout,
+                                              (uint32_t)ws->prescale,
+                                              ws->parent->apb_freq_hz,
+                                              ws->parent->wdt_time_scale);
+    uint64_t ns_to_timeout = deadline.remaining_ns;
     /*
      * Em mttcg-realtime, QEMU_CLOCK_VIRTUAL acompanha o relógio de parede, mas uma vCPU Xtensa
      * emulada não executa as instruções de uma seção crítica na velocidade do ESP32 real. O
-     * Interrupt WDT do TIMER_GROUP1 acabava medindo lentidão/agendamento do host: operações
+     * watchdogs dos TIMER_GROUP0/1 acabavam medindo lentidão/agendamento do host: operações
      * legítimas de flash/cache que levam poucos ms no chip ocupavam 300-700ms aqui e disparavam
-     * "Interrupt wdt timeout" em ~4,5% dos boots (.spec 32.5.22). Dilatar somente esse watchdog
+     * "Interrupt wdt timeout" em ~4,5% dos boots (.spec 32.5.22). Dilatar ambos esses watchdogs
      * preserva millis()/timers/periféricos em tempo real e mantém detecção de deadlock, apenas com
      * o orçamento compatível com a execução emulada. Modo determinístico mantém escala 1 por
      * padrão; LASECSIMUL_ESP32_WDT_SCALE=1 restaura a temporização literal para diagnóstico.
      */
-    if (ws->parent->id == 1 && ws->parent->wdt_time_scale > 1) {
-        ns_to_timeout = ns_to_timeout > UINT64_MAX / ws->parent->wdt_time_scale
-            ? UINT64_MAX : ns_to_timeout * ws->parent->wdt_time_scale;
-    }
     TIMG_DEBUG_LOG("%s: TG%d ns=0x%08llx stage %d count=0x%08llx count_to_timeout=0x%08llx ns_to_timeout=0x%08llx\n",
-                   __func__, ws->parent->id, ns_now, ws->cur_stage, cur_count, count_to_timeout, ns_to_timeout);
-    /* TEMPORARY, minimal diagnostic for the 2026-08-27 TG0WDT_SYS_RESET investigation -- reports
-     * both virtual (QEMU_CLOCK_VIRTUAL) and host-wall (QEMU_CLOCK_HOST) time so a reset can be
-     * classified as a virtual-time-correct expiry (real firmware/config issue) vs a host-inflated
-     * one (the same class of issue TG1's wdt_time_scale already compensates for, deliberately not
-     * extended to TG0 -- see the comment above this function). Gated, off by default, TG0 only.
-     * Remove once the investigation concludes. */
-    if (ws->parent->id == 0 && getenv("LASECSIMUL_TG0_WDT_TRACE")) {
-        fprintf(stderr,
-                "[LasecSimul][TG0WDT] arm stage=%d ns_to_timeout=%llu virtual_ns=%llu host_ns=%llu\n",
-                ws->cur_stage, (unsigned long long)ns_to_timeout, (unsigned long long)ns_now,
-                (unsigned long long)qemu_clock_get_ns(QEMU_CLOCK_HOST));
-        fflush(stderr);
+                   __func__, ws->parent->id, ns_now, ws->cur_stage, cur_count,
+                   deadline.remaining_ticks, ns_to_timeout);
+    timer_mod_anticipate_ns(&ws->stage_timer, (int64_t)deadline.deadline_ns);
+}
+
+static void esp32_timg_transport_pause_apply(Esp32TimgState *s,
+                                               uint64_t now_virtual_ns)
+{
+    uint64_t start = qatomic_read(&s->transport_pause_start_virtual_ns);
+    if (now_virtual_ns <= start) {
+        return;
     }
-    timer_mod_anticipate_ns(&ws->stage_timer, ns_now + ns_to_timeout);
+    /* This function is called only from the timer callback/BH context.
+     *
+     * E114 fix (EVIDENCE.md, 2026-09-04): a FEED landing between PAUSE_OPEN and this apply call
+     * resets ws->ns_base to the feed's own timestamp (esp32_timg_wdt_feed(), unconditionally,
+     * with no knowledge of an open pause) -- ws->ns_base can end up AHEAD of `start` when that
+     * happens. Naively adding the full (now_virtual_ns - start) on top of that already-advanced
+     * anchor double-compensates the pre-feed portion of the pause (the feed already "forgave"
+     * everything up to its own timestamp) and pushes ns_base past now_virtual_ns itself --
+     * confirmed during E114: this was the actual mechanism computing a ~0ns watchdog timeout
+     * and causing the SW_CPU_RESET_REGISTER
+     * storm, independent of which peripheral's lane-0 traffic opened the pause. Compensating only
+     * the portion of [start, now_virtual_ns) still unaccounted for -- starting from whichever is
+     * later, the pause's own start or the current anchor -- never advances ns_base past
+     * now_virtual_ns. esp32_timg_wdt_get_count() also carries a defensive backstop for any other
+     * path that could still produce ns_base > now, but this is the actual source fix.
+     *
+     * The formula itself lives in esp32_timg_transport_pause_compute_delta()
+     * (include/hw/timer/esp32_timg_pause_math.h) -- a pure, dependency-free function, unit-tested
+     * directly in tests/unit/test-esp32-timg-pause.c, so this fix has coverage that does not
+     * depend solely on real-QEMU regressions. */
+    uint64_t delta = esp32_timg_transport_pause_compute_delta(start, s->wdt.ns_base, now_virtual_ns);
+    s->wdt.ns_base += delta;
+    qatomic_set(&s->transport_pause_start_virtual_ns, now_virtual_ns);
+    qatomic_set(&s->transport_pause_start_host_ns,
+                qemu_clock_get_ns(QEMU_CLOCK_HOST));
+}
+
+static void esp32_timg_transport_pause_bh(void *opaque)
+{
+    Esp32TimgState *s = opaque;
+    if (!qatomic_read(&s->transport_pause_pending)) {
+        return;
+    }
+    qatomic_set(&s->transport_pause_pending, false);
+    if (qatomic_read(&s->transport_pause_active)) {
+        return;
+    }
+    esp32_timg_transport_pause_apply(s, qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL));
+    /* A new pause may have been armed while the BH was applying the final
+     * interval.  In that case leave timer ownership to the active-pause path. */
+    if (qatomic_read(&s->transport_pause_active)) {
+        return;
+    }
+    esp32_timg_wdt_arm(&s->wdt, qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL));
+}
+
+void esp32_timg_transport_pause(unsigned cpu_index, bool active)
+{
+    Esp32TimgState *s = esp32_timg_tg0;
+    uint64_t now_host;
+    uint64_t now_virtual;
+
+    if (!s || cpu_index >= ESP32_TIMG_TRANSPORT_PAUSE_MAX_CPUS) {
+        return;
+    }
+    if (active) {
+        if (qatomic_read(&s->transport_pause_active_by_cpu[cpu_index])) {
+            return;
+        }
+        qatomic_set(&s->transport_pause_active_by_cpu[cpu_index], true);
+        now_host = qemu_clock_get_ns(QEMU_CLOCK_HOST);
+        now_virtual = qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL);
+        if (qatomic_inc_fetch(&s->transport_pause_active_count) == 1) {
+            qatomic_set(&s->transport_pause_start_host_ns, now_host);
+            qatomic_set(&s->transport_pause_start_virtual_ns, now_virtual);
+            qatomic_set(&s->transport_pause_active, true);
+        }
+    } else {
+        if (!qatomic_read(&s->transport_pause_active_by_cpu[cpu_index])) {
+            return;
+        }
+        qatomic_set(&s->transport_pause_active_by_cpu[cpu_index], false);
+        if (qatomic_dec_fetch(&s->transport_pause_active_count) == 0) {
+            qatomic_set(&s->transport_pause_active, false);
+        }
+    }
+    qatomic_set(&s->transport_pause_pending, true);
+    qemu_bh_schedule(s->transport_pause_bh);
 }
 
 static void esp32_timg_wdt_cb(void *opaque)
 {
     Esp32TimgWdtState *ws = (Esp32TimgWdtState*) opaque;
     Esp32TimgState *s = ws->parent;
+    if (qatomic_read(&s->transport_pause_active)) {
+        uint64_t now = qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL);
+        esp32_timg_transport_pause_apply(s, now);
+        esp32_timg_wdt_arm(ws, now);
+        return;
+    }
     Esp32TimgWdtStageMode mode = ws->mode[ws->cur_stage];
     TIMG_DEBUG_LOG("%s: TG%d stage %d timeout mode %d\n", __func__, s->id, ws->cur_stage, mode);
-    /* [CACHE-TRACE] ver .spec 32.5.12/32.5.13 -- confirma se o WDT do TIMER_GROUP1 (o usado pelo
-     * Interrupt Watchdog da ESP-IDF real, compartilhando a linha de CPU 26 com o cache-IA neste
-     * build -- achado de 32.5.12) realmente expira nas reproducoes do "Cache error", ou se a linha
-     * 26 e ativada por outro motivo. `s->id`: 0=TIMER_GROUP0 (WDT principal do sistema), 1=TIMER_GROUP1
-     * (Interrupt Watchdog). */
-    esp32_cache_trace_generic_event("timg_wdt_expire", s->id,
-                                     (uint64_t)ws->cur_stage, (uint32_t)mode);
-    /* [XTENSA-PC-SAMPLER] ver .spec 32.5.17 -- despeja incondicionalmente a janela recente de
-     * amostras continuas de PC (ambos os nucleos) no momento exato desta expiracao, capturando os
-     * segundos que a precedem -- so pro TIMER_GROUP1 (s->id==1, o usado pelo Interrupt Watchdog),
-     * nao o TIMER_GROUP0 (WDT principal do sistema, fora do escopo desta investigacao). */
-    if (s->id == 1) {
-        esp32_pc_sampler_capture_window();
-    }
     if (mode == WDT_MODE_INT) {
         uint32_t mask = 1 << TIMG_WDT_INT;
         if (ws->level_int_en) {
@@ -651,24 +724,6 @@ static void esp32_timg_wdt_cb(void *opaque)
     } else if (mode == WDT_MODE_SYSRESET) {
         qemu_irq_pulse(s->wdt_sys_reset_req);
     }
-
-    /* TEMPORARY diagnostic, TG0WDT_SYS_RESET investigation (2026-08-27) -- dump the BQL-causal ring
-     * (softmmu/simuliface.c) at the exact moment TG0 fires a genuine SYSRESET, so the recorded
-     * readReg/publishQueueEntry/i2cBurstTransfer timeline can be inspected around it. No-op unless
-     * LASECSIMUL_BQL_CAUSAL_TRACE is set. Remove once the investigation concludes. */
-    if (s->id == 0 && mode == WDT_MODE_SYSRESET) {
-        bqlCausalDumpWindow("TIMER_GROUP0 SYSRESET");
-    }
-
-    /* TEMPORARY diagnostic, see esp32_timg_wdt_arm's comment above -- same removal note applies. */
-    if (s->id == 0 && getenv("LASECSIMUL_TG0_WDT_TRACE")) {
-        fprintf(stderr,
-                "[LasecSimul][TG0WDT] EXPIRE stage=%d mode=%d virtual_ns=%llu host_ns=%llu\n",
-                ws->cur_stage, mode, (unsigned long long)qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL),
-                (unsigned long long)qemu_clock_get_ns(QEMU_CLOCK_HOST));
-        fflush(stderr);
-    }
-
     int next_stage = (ws->cur_stage + 1) % ESP32_TIMG_WDT_STAGE_COUNT;
     uint64_t ns_now = qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL);
     ws->count_base = 0;
@@ -698,18 +753,19 @@ static void esp32_timg_realize(DeviceState *dev, Error **errp)
             scale = parsed;
         }
     }
-    s->wdt_time_scale = s->id == 1 ? scale : 1;
+    /* In MTTCG realtime both timer-group watchdogs use QEMU_CLOCK_VIRTUAL,
+     * which follows host time while a vCPU can be descheduled. Keep both
+     * watchdogs enabled, but apply the measured emulation-time budget. */
+    s->wdt_time_scale = deterministic ? 1 : scale;
+    if (s->id == 0) {
+        esp32_timg_tg0 = s;
+    }
     /*
      * No modo realtime, o relogio do watchdog segue o host enquanto a vCPU emulada pode deixar
-     * de progredir por agendamento, solver eletrico e IPC. Qualquer multiplicador finito apenas
-     * adia o falso positivo (100x ainda falhou em ensaio de 60 s). Desative somente o MWDT do
-     * TIMER_GROUP1, usado pelo Interrupt WDT. TIMER_GROUP0, timers comuns e todos os watchdogs do
-     * modo deterministico continuam literais. Definir LASECSIMUL_ESP32_WDT_SCALE opta
-     * explicitamente por reativar o TG1 com a escala solicitada para diagnostico.
+     * de progredir por agendamento, solver eletrico e IPC. O mesmo orçamento escalado agora se
+     * aplica aos dois MWDTs; eles continuam ativos e LASECSIMUL_ESP32_WDT_SCALE permite o valor
+     * explícito para diagnostico.
      */
-    if (s->id == 1 && !deterministic && !explicit_scale) {
-        s->wdt_disable = true;
-    }
     if (s->id == 1) {
         if (s->wdt_disable) {
             fprintf(stderr,
@@ -758,6 +814,7 @@ static void esp32_timg_init(Object *obj)
 
     s->wdt.parent = s;
     timer_init_ns(&s->wdt.stage_timer, QEMU_CLOCK_VIRTUAL, esp32_timg_wdt_cb, &s->wdt);
+    s->transport_pause_bh = qemu_bh_new(esp32_timg_transport_pause_bh, s);
     qdev_init_gpio_out_named(DEVICE(sbd), &s->wdt_cpu_reset_req, ESP32_TIMG_WDT_CPU_RESET_GPIO, 1);
     qdev_init_gpio_out_named(DEVICE(sbd), &s->wdt_sys_reset_req, ESP32_TIMG_WDT_SYS_RESET_GPIO, 1);
 }

@@ -7,6 +7,42 @@
 #include "hw/xtensa/esp32_clk.h"
 
 #include "../softmmu/simuliface.h"
+#include "../softmmu/vnext_b.h"
+
+static Esp32I2CState *vnext_i2c_instances[2];
+
+void esp32_i2c_vnext_bind(Esp32I2CState *s) {
+    if (s && s->busIndex < 2) vnext_i2c_instances[s->busIndex] = s;
+}
+
+static void esp32_i2c_do_transaction(void *opaque);
+
+/* E118-AUDIT (EVIDENCE.md, 2026-09-05): see the struct comment on vnextContinuationBacklogged in
+ * esp32_i2c.h. Called from vnext_b.c's vnext_resume() sweep once lane 0 regains credit -- never a
+ * poll loop of its own, and this continuation only ever runs with current_cpu==NULL, so retrying
+ * it directly here never touches a CPU. */
+void esp32_i2c_vnext_credit_available(void) {
+    for (unsigned bus = 0; bus < 2; ++bus) {
+        Esp32I2CState *s = vnext_i2c_instances[bus];
+        if (!s || !s->vnextContinuationBacklogged) continue;
+        s->vnextContinuationBacklogged = false;
+        esp32_i2c_do_transaction(s);
+    }
+}
+
+void esp32_i2c_vnext_complete(uint32_t bus, uint32_t status, uint32_t first_nack,
+                              uint64_t stretch_ns, const uint8_t *rx, uint32_t rx_len) {
+    if (bus >= 2 || !vnext_i2c_instances[bus]) return;
+    Esp32I2CState *s = vnext_i2c_instances[bus];
+    s->burstAddressAck = (status & 2u) != 0;
+    s->burstFirstNack = first_nack;
+    s->burstRxLen = rx_len > 32 ? 32 : rx_len;
+    if (s->burstRxLen && rx) memcpy(s->burstRxBuf, rx, s->burstRxLen);
+    const uint64_t duration = s->period_ns +
+        (uint64_t)(s->burstWriteCmdCount + s->burstReadCmdCount) * (9 * s->period_ns) +
+        (s->burstReadCmdCount ? 0 : s->period_ns) + stretch_ns;
+    timer_mod(&s->event_timer, getQemu_ns() + duration);
+}
 
 
 static uint8_t fifo8_peek(Fifo8 *fifo)
@@ -39,8 +75,6 @@ static void esp32_i2c_abort_empty_tx(Esp32I2CState *s)
     }
     esp32_i2c_update_irq(s);
 }
-
-static void esp32_i2c_do_transaction(void *opaque);
 
 /* Plano de burst: varre cmd_reg a partir do comando logo apos o RSTART ja' consumido pelo
  * chamador, juntando (a) uma corrida contigua de WRITE (o primeiro byte dela e' o endereco+RW,
@@ -93,7 +127,7 @@ static bool esp32_i2c_plan_burst(Esp32I2CState *s, Esp32I2cBurstPlan *plan)
     if (idx >= ESP32_I2C_CMD_COUNT) return false;
     {
         uint8_t opcode = FIELD_EX32(s->cmd_reg[idx], I2C_CMD, OPCODE);
-        if (opcode != I2C_OPCODE_STOP && opcode != I2C_OPCODE_END) return false;
+        if (opcode != I2C_OPCODE_STOP && opcode != I2C_OPCODE_END && opcode != I2C_OPCODE_RSTART) return false;
         plan->stop = (opcode == I2C_OPCODE_STOP);
     }
 
@@ -123,12 +157,46 @@ static bool esp32_i2c_try_burst(Esp32I2CState *s)
      * Listas artesanais/inconsistentes devem conservar exatamente o comportamento elétrico. */
     if ((bool)(txbuf[0] & 1u) != (plan.rxBytes > 0)) return false;
 
+    /* The ESP32 command engine reports END_DETECT rather than STOP, but the
+     * Core-side device model needs a transaction boundary to commit a write
+     * (notably SSD1306 command/data streams).  Keep the guest-visible opcode
+     * unchanged while advertising that boundary in the mailbox. */
+    const uint8_t terminalOpcode = FIELD_EX32(s->cmd_reg[s->lastCMD +
+                                                          plan.writeCmdCount + plan.readCmdCount],
+                                               I2C_CMD, OPCODE);
+    const bool logicalStop = plan.stop || terminalOpcode == I2C_OPCODE_END;
+
     I2cBurstRequest req = {0};
-    req.flags = 1u /* START */ | (plan.rxBytes ? 4u /* READ */ : 0u) | (plan.stop ? 2u /* STOP */ : 0u);
+    req.flags = 1u /* START */ | (plan.rxBytes ? 4u /* READ */ : 0u) | (logicalStop ? 2u : 0u);
     req.period_ns = s->period_ns;
     req.tx = txbuf;
     req.tx_len = plan.txBytes;
     req.rx_len = plan.rxBytes;
+
+    if (vnext_b_active()) {
+        if (!vnext_b_i2c_submit(s->busIndex, 1u | (plan.rxBytes ? 4u : 0u) |
+                                (logicalStop ? 2u : 0u), s->period_ns, txbuf,
+                                plan.txBytes, plan.rxBytes)) return false;
+        s->burstAddressByte = txbuf[0];
+        /* A write-only address probe is complete in this command list; it is
+         * not a permission to reinterpret the next list as a continuation. */
+        /* Even an address-only WRITE establishes the selected target for the
+         * following END/WRITE slice.  ESP-IDF commonly publishes the address
+         * and payload as separate command lists; clearing this latch here
+         * forces the payload back through the byte-at-a-time path and leaves
+         * the guest waiting forever for the probe sequence to complete. */
+        s->burstAddressValid = (plan.txBytes > 0 || plan.rxBytes > 0);
+        for (uint32_t i = 0; i < plan.txBytes; ++i) fifo8_pop(&s->tx_fifo);
+        s->burstActive = true;
+        s->burstPartial = false;
+        s->burstStop = logicalStop;
+        s->burstAddressAck = false;
+        s->burstFirstNack = UINT32_MAX;
+        s->burstRxLen = 0;
+        s->burstWriteCmdCount = plan.writeCmdCount;
+        s->burstReadCmdCount = plan.readCmdCount;
+        return true;
+    }
 
     I2cBurstResponse resp;
     if (!i2cBurstTransfer(s->busIndex, &req, &resp, s->burstRxBuf)) {
@@ -141,6 +209,8 @@ static bool esp32_i2c_try_burst(Esp32I2CState *s)
     for (uint32_t i = 0; i < plan.txBytes; ++i) fifo8_pop(&s->tx_fifo);
 
     s->burstActive = true;
+    s->burstPartial = false;
+    s->burstStop = logicalStop;
     s->burstAddressAck = resp.address_ack;
     /* Simplificacao deliberada: ESP-IDF sempre gera ACK_CHECK_EN=1/ACK_EXP=0 pro byte de
      * endereco e pros bytes de dado de escrita -- nao ha' granularidade por-byte de ACK_EXP no
@@ -164,6 +234,36 @@ static bool esp32_i2c_try_burst(Esp32I2CState *s)
     return true;
 }
 
+/* The ESP32 HAL also emits a compact read-only command list: the device
+ * address is placed in the TX FIFO and cmd[0] is READ, followed by END.  It
+ * does not pass through the RSTART/WRITE planner above, but it has the same
+ * causal BATCH semantics. */
+static bool esp32_i2c_try_read_burst(Esp32I2CState *s)
+{
+    if (s->lastCMD >= ESP32_I2C_CMD_COUNT ||
+        FIELD_EX32(s->cmd_reg[s->lastCMD], I2C_CMD, OPCODE) != I2C_OPCODE_READ) return false;
+    const uint32_t rxBytes = s->cmd_reg[s->lastCMD] & 0xffu;
+    if (!rxBytes || rxBytes > ESP32_I2C_FIFO_LENGTH || s->lastCMD + 1 >= ESP32_I2C_CMD_COUNT) return false;
+    const uint32_t nextOpcode = FIELD_EX32(s->cmd_reg[s->lastCMD + 1], I2C_CMD, OPCODE);
+    if (nextOpcode != I2C_OPCODE_STOP && !(nextOpcode == I2C_OPCODE_END && rxBytes == 1)) return false;
+    uint8_t address = fifo8_num_used(&s->tx_fifo) ? fifo8_peek(&s->tx_fifo) :
+                      (uint8_t)(s->burstAddressByte | 1u);
+    if (!(address & 1u) || !vnext_b_active()) return false;
+    if (!vnext_b_i2c_submit(s->busIndex, 1u | 2u | 4u, s->period_ns,
+                            &address, 1, rxBytes)) return false;
+    if (fifo8_num_used(&s->tx_fifo)) fifo8_pop(&s->tx_fifo);
+    s->burstActive = true;
+    s->burstPartial = false;
+    s->burstStop = true;
+    s->burstAddressByte = address;
+    s->burstAddressAck = false;
+    s->burstFirstNack = UINT32_MAX;
+    s->burstRxLen = 0;
+    s->burstWriteCmdCount = 0;
+    s->burstReadCmdCount = 1;
+    return true;
+}
+
 /* O driver ESP-IDF pode encerrar uma fatia da command-list com END, reencher o FIFO e iniciar a
  * próxima fatia com WRITE direto, sem novo RSTART. O endereço continua selecionado no barramento.
  * Inclua-o apenas como metadado no mailbox (START fica desligado), permitindo ao Core localizar o
@@ -171,34 +271,91 @@ static bool esp32_i2c_try_burst(Esp32I2CState *s)
 static bool esp32_i2c_try_continuation_burst(Esp32I2CState *s)
 {
     Esp32I2cBurstPlan plan;
-    if (!s->burstAddressValid || !esp32_i2c_plan_burst(s, &plan) || plan.txBytes + 1 > 64) return false;
+    if (!s->burstAddressValid || !esp32_i2c_plan_burst(s, &plan)) {
+        return false;
+    }
+    /* The VNEXT-B mailbox carries at most 32 bytes total, including the
+     * address byte prepended below.  A 32-byte guest WRITE therefore needs a
+     * single split (31 bytes, then the final byte).  Keep the command at the
+     * same slot until the partial burst completes; this preserves the guest
+     * DONE/END ordering while retaining the selected I2C target. */
+    const bool partial = plan.txBytes + 1 > 32;
+    if (partial && (plan.writeCmdCount != 1 || plan.readCmdCount != 0 || plan.txBytes != 32))
+        return false;
+    const uint32_t payloadBytes = partial ? 31u : plan.txBytes;
 
-    uint8_t txbuf[64];
+    uint8_t txbuf[ESP32_I2C_FIFO_LENGTH + 1];
     txbuf[0] = s->burstAddressByte;
-    for (uint32_t i = 0; i < plan.txBytes; ++i) {
+    for (uint32_t i = 0; i < payloadBytes; ++i) {
         txbuf[i + 1] = s->tx_fifo.data[(s->tx_fifo.head + i) % s->tx_fifo.capacity];
     }
-    I2cBurstRequest req = {0};
-    req.flags = (plan.rxBytes ? 4u : 0u) | (plan.stop ? 2u : 0u);
-    req.period_ns = s->period_ns;
-    req.tx = txbuf;
-    req.tx_len = plan.txBytes + 1;
-    req.rx_len = plan.rxBytes;
+    const uint32_t terminalIndex = s->lastCMD + plan.writeCmdCount + plan.readCmdCount;
+    const uint8_t terminalOpcode = FIELD_EX32(s->cmd_reg[terminalIndex], I2C_CMD, OPCODE);
+    const bool logicalStop = !partial && (plan.stop || terminalOpcode == I2C_OPCODE_END);
 
-    I2cBurstResponse resp;
-    if (!i2cBurstTransfer(s->busIndex, &req, &resp, s->burstRxBuf)) return false;
-    for (uint32_t i = 0; i < plan.txBytes; ++i) fifo8_pop(&s->tx_fifo);
+    if (vnext_b_active()) {
+        const bool submitted = vnext_b_i2c_submit(s->busIndex, (plan.rxBytes ? 4u : 0u) |
+                                                   (logicalStop ? 2u : 0u), s->period_ns, txbuf,
+                                                   payloadBytes + 1, plan.rxBytes);
+        if (!submitted) return false;
+        if (partial) {
+            s->cmd_reg[s->lastCMD] = (s->cmd_reg[s->lastCMD] & ~0xffu) | 1u;
+        }
+    } else {
+        I2cBurstRequest req = {0};
+        req.flags = (plan.rxBytes ? 4u : 0u) | (logicalStop ? 2u : 0u);
+        req.period_ns = s->period_ns;
+        req.tx = txbuf;
+        req.tx_len = payloadBytes + 1;
+        req.rx_len = plan.rxBytes;
+        I2cBurstResponse resp;
+        if (!i2cBurstTransfer(s->busIndex, &req, &resp, s->burstRxBuf)) return false;
+        s->burstAddressAck = resp.address_ack;
+        s->burstFirstNack = resp.first_nack;
+        s->burstRxLen = resp.rx_len;
+        s->burstWriteCmdCount = plan.writeCmdCount;
+        s->burstReadCmdCount = plan.readCmdCount;
+        s->burstActive = true;
+        timer_mod(&s->event_timer, getQemu_ns() +
+                  (uint64_t)(plan.txBytes + plan.rxBytes) * (9 * s->period_ns) +
+                  (logicalStop ? s->period_ns : 0) + resp.stretch_ns);
+        for (uint32_t i = 0; i < payloadBytes; ++i) fifo8_pop(&s->tx_fifo);
+        return true;
+    }
 
+    for (uint32_t i = 0; i < payloadBytes; ++i) fifo8_pop(&s->tx_fifo);
+    if (partial) {
+        /* Leave the command pending with exactly the one byte still in the
+         * FIFO.  The next continuation will mark it DONE normally. */
+        s->cmd_reg[s->lastCMD] = (s->cmd_reg[s->lastCMD] & ~0xffu) | 1u;
+    }
     s->burstActive = true;
-    s->burstAddressAck = resp.address_ack;
-    s->burstFirstNack = resp.first_nack;
-    s->burstRxLen = resp.rx_len;
-    s->burstWriteCmdCount = plan.writeCmdCount;
+    s->burstPartial = partial;
+    s->burstStop = logicalStop;
+    s->burstAddressAck = false;
+    s->burstFirstNack = UINT32_MAX;
+    s->burstRxLen = 0;
+    s->burstWriteCmdCount = partial ? 0u : plan.writeCmdCount;
     s->burstReadCmdCount = plan.readCmdCount;
-    uint64_t time = (uint64_t)(plan.txBytes + plan.rxBytes) * (9 * s->period_ns) +
-                    (plan.stop ? s->period_ns : 0) + resp.stretch_ns;
-    timer_mod(&s->event_timer, getQemu_ns() + time);
     return true;
+}
+
+/* Opt-in gate for the per-operation I2C diagnostics below.  DECISION-003
+ * requires per-operation I2C diagnostic output to be off by default; the two
+ * ackERR sites had been reported as fixed but were still unconditional, and
+ * emitted 22,930 lines in one 60 s 16-session run (E103).  Diagnostic-only:
+ * no I2C, transport, watchdog or reset semantics depend on these writes. */
+static bool esp32_i2c_trace_enabled(void)
+{
+    static gsize initialized;
+    static bool enabled;
+
+    if (g_once_init_enter(&initialized)) {
+        const char *value = getenv("LASECSIMUL_VNEXT_TRACE");
+        enabled = value && value[0] && strcmp(value, "0") != 0;
+        g_once_init_leave(&initialized, 1);
+    }
+    return enabled;
 }
 
 static void esp32_i2c_trace_rejected_plan(Esp32I2CState *s)
@@ -223,7 +380,9 @@ static void esp32_i2c_finish_burst(Esp32I2CState *s)
     s->sr_reg |= ackERR ? 1u : 0u; // I2C_ACK_REC: 0=ACK, 1=NACK do último resultado
     if (ackERR) {
         s->int_raw_reg |= 1 << 10;      // ACK_ERR
-        printf("Qemu: esp32_i2c_finish_burst ackERR\n"); fflush(stdout);
+        if (esp32_i2c_trace_enabled()) {
+            printf("Qemu: esp32_i2c_finish_burst ackERR\n"); fflush(stdout);
+        }
     } else {
         s->int_raw_reg &= ~(1 << 10);
     }
@@ -232,11 +391,24 @@ static void esp32_i2c_finish_burst(Esp32I2CState *s)
 
     const uint32_t consumed = s->burstWriteCmdCount + s->burstReadCmdCount;
     uint32_t idx = s->lastCMD;
-    for (uint32_t i = 0; i < consumed && idx < ESP32_I2C_CMD_COUNT; ++i, ++idx) {
-        s->cmd_reg[idx] = FIELD_DP32(s->cmd_reg[idx], I2C_CMD, DONE, 1);
+    if (!s->burstPartial) {
+        for (uint32_t i = 0; i < consumed && idx < ESP32_I2C_CMD_COUNT; ++i, ++idx) {
+            s->cmd_reg[idx] = FIELD_DP32(s->cmd_reg[idx], I2C_CMD, DONE, 1);
+        }
+        s->lastCMD = idx;
     }
-    s->lastCMD = idx;
 
+    if (s->burstPartial) {
+        /* The first half of a 32-byte continuation was delivered.  Keep the
+         * command pending; its low byte was reduced to the one remaining
+         * payload byte by the submitter. */
+        s->burstPartial = false;
+    }
+
+    /* Do not consume the terminal opcode here.  The electrical executor's
+     * do_transaction() owns END_DETECT/STOP completion and the guest driver
+     * distinguishes those interrupts.  Calling it below preserves that
+     * contract for burst requests as well. */
     esp32_i2c_do_transaction(s);
 }
 
@@ -250,6 +422,8 @@ static void esp32_i2c_do_transaction( void* opaque )
     //printf("Qemu: esp32_i2c_do_transaction %i\n", s->lastOpcode); fflush( stdout );
 
     uint64_t time = 0;
+
+    if (s->lastOpcode == I2C_OPCODE_READ && esp32_i2c_try_read_burst(s)) return;
 
     switch( s->lastOpcode )
     {
@@ -279,7 +453,20 @@ static void esp32_i2c_do_transaction( void* opaque )
         // na arena e o START real (inclusive um REPEATED START no meio de uma transacao, ex:
         // i2c_master_write_read_device()) nunca acontecia no barramento eletrico de verdade -- so'
         // no proprio QEMU, que sempre "via" a transacao completar.
-        writeReg( s->iomem.addr+A_I2C_CMD, s->cmd_reg[s->lastCMD - 1] );
+        {
+            const VnextPublishResult rstartResult =
+                writeReg( s->iomem.addr+A_I2C_CMD, s->cmd_reg[s->lastCMD - 1] );
+            if (rstartResult == VNEXT_WOULD_BLOCK) {
+                /* E118-AUDIT: nothing else in this case has taken effect yet except lastCMD++
+                 * above -- revert exactly that (idempotent to redo: burstAddressValid/bytesTx/
+                 * sr_reg are all safely re-set to the same values on retry) and retry the whole
+                 * RSTART step later, never falling through to WRITE on an unpublished mirror. */
+                s->lastCMD--;
+                s->vnextContinuationBacklogged = true;
+                vnext_b_note_nonvcpu_backlog(0);
+                return;
+            }
+        }
         s->ackSamplePending = true;
         /*
          * O motor eletrico do Core executa cinco meias-fases antes do primeiro bit. A sexta
@@ -308,7 +495,18 @@ static void esp32_i2c_do_transaction( void* opaque )
         }
         uint8_t data = fifo8_peek( &s->tx_fifo );
         //printf("Qemu: esp32_i2c CMD write %i %i\n", s->bytesTx, data ); fflush( stdout );
-        writeReg( s->iomem.addr+A_I2C_CMD, (cmd & ~0xFF) | data);
+        /* E118-AUDIT: tx_fifo is only ever PEEKED here, never popped -- the actual pop/decrement
+         * happens later in esp32_i2c_event() when the timer armed below fires. So a WOULD_BLOCK
+         * here needs no revert at all: bytesTx was already idempotently (re-)initialized above,
+         * the byte is still sitting in tx_fifo untouched, and simply not arming the timer (by
+         * returning before `time` is set, matching every other branch below) means the byte is
+         * re-peeked and re-offered unchanged on retry. int_raw_reg/I2C_BYTE_TRANS must NOT be set
+         * before confirming the mirror actually published, unlike the pre-E118-AUDIT code. */
+        if (writeReg( s->iomem.addr+A_I2C_CMD, (cmd & ~0xFF) | data) == VNEXT_WOULD_BLOCK) {
+            s->vnextContinuationBacklogged = true;
+            vnext_b_note_nonvcpu_backlog(0);
+            return;
+        }
         s->int_raw_reg |= 1<<6;          // I2C_BYTE_TRANS
         /* Guarda de um meio-periodo: o ACK precisa estar assentado no Core antes do timer. */
         time += (20*s->period_ns)/2;
@@ -323,7 +521,13 @@ static void esp32_i2c_do_transaction( void* opaque )
         // depois que o timer abaixo disparar esp32_i2c_event() (mesmo pacing de um WRITE: um byte
         // "no barramento" real dura o mesmo tempo em qualquer direcao).
         if( s->bytesTx == 0 ) s->bytesTx = cmd & 0xFF;
-        writeReg( s->iomem.addr+A_I2C_CMD, cmd );
+        /* E118-AUDIT: same reasoning as WRITE -- nothing else here is stateful before the timer
+         * arms, so WOULD_BLOCK just needs to skip arming it and retry later. */
+        if (writeReg( s->iomem.addr+A_I2C_CMD, cmd ) == VNEXT_WOULD_BLOCK) {
+            s->vnextContinuationBacklogged = true;
+            vnext_b_note_nonvcpu_backlog(0);
+            return;
+        }
         /* Mesma guarda do WRITE para byte/ACK eletrico. */
         time += (20*s->period_ns)/2;
     }break;
@@ -331,7 +535,11 @@ static void esp32_i2c_do_transaction( void* opaque )
     case I2C_OPCODE_STOP:
     {
         //printf("Qemu: esp32_i2c CMD stop \n" ); fflush( stdout );
-        writeReg( s->iomem.addr+A_I2C_CMD, cmd );
+        if (writeReg( s->iomem.addr+A_I2C_CMD, cmd ) == VNEXT_WOULD_BLOCK) {
+            s->vnextContinuationBacklogged = true;
+            vnext_b_note_nonvcpu_backlog(0);
+            return;
+        }
         time = (3*s->period_ns)/2;
     }break;
 
@@ -411,7 +619,9 @@ static void esp32_i2c_event( void* opaque ) // Timer event
         if( ackERR ){
             s->int_raw_reg |= 1<<10;          // Set ACK_ERR
 
-            printf("Qemu: esp32_i2c_event ackERR\n"); fflush( stdout );
+            if (esp32_i2c_trace_enabled()) {
+                printf("Qemu: esp32_i2c_event ackERR\n"); fflush( stdout );
+            }
             //return;
         }
         else s->int_raw_reg &= ~(1<<10);      // Clear ACK_ERR
@@ -511,7 +721,13 @@ static uint64_t esp32_i2c_read(void * opaque, hwaddr addr, unsigned int size)
     case A_I2C_TIMEOUT:      return s->timeout_reg;
     case A_I2C_FIFO_DATA: {
         if( fifo8_num_used(&s->rx_fifo) == 0) {
-            error_report("esp32_i2c: read I2C FIFO while it is empty");
+            /* Bounded, not silenced: 20,154 of these in one 60 s 16-session run
+             * (E103) is a signal worth keeping, but an unbounded per-read report
+             * floods the Core log buffer and evicts the reset records needed to
+             * classify failures. */
+            static unsigned empty_fifo_reports;
+            if (esp32_i2c_trace_enabled() && empty_fifo_reports++ < 16)
+                error_report("esp32_i2c: read I2C FIFO while it is empty");
             return 0xee;
         }
         uint8_t res = fifo8_pop(&s->rx_fifo);
@@ -550,6 +766,8 @@ static void esp32_i2c_write(void * opaque, hwaddr addr, uint64_t value, unsigned
             s->bytesTx = 0;
             s->ackSamplePending = false;
             s->burstActive = false;
+            s->burstPartial = false;
+            s->burstStop = false;
             s->burstAddressValid = false;
             s->sr_reg &= ~(1 << 4);      /* I2C_BUS_BUSY */
             s->int_raw_reg &= ~(1 << 6); /* I2C_BYTE_TRANS */
@@ -657,7 +875,12 @@ static void esp32_i2c_reset(DeviceState * dev)
     fifo8_reset(&s->tx_fifo);
     s->period_ns = 0;
     s->ackSamplePending = false;
+    /* E118-AUDIT: cancel any pending current_cpu==NULL continuation retry -- see the struct
+     * comment on vnextContinuationBacklogged in esp32_i2c.h. No vCPU is ever parked for this
+     * (unlike UART's tx_backlog_waiter[]), so there is nothing to wake, only to forget safely. */
+    s->vnextContinuationBacklogged = false;
     s->burstActive = false;
+    s->burstStop = false;
     s->burstAddressValid = false;
     s->trans_ongoing = false;
     s->ctr_reg = 0;
@@ -690,6 +913,25 @@ static void esp32_i2c_init(Object * obj)
     SysBusDevice *sbd = SYS_BUS_DEVICE(obj);
 
     memory_region_init_io(&s->iomem, obj, &esp32_i2c_ops, s, TYPE_ESP32_I2C, ESP32_I2C_MEM_SIZE);
+    /* E118-AUDIT-2 (EVIDENCE.md, 2026-09-05): softmmu/memory.c's generic per-device reentrancy
+     * guard (mr->dev->mem_reentrancy_guard.engaged_in_io) is set true on entry to this device's
+     * dispatch and only cleared by a NORMAL return from that dispatch (memory.c:573-575, a plain
+     * post-call statement with no unwind-safety). vnext_b_gpio_write() -- reached from
+     * esp32_i2c_write_CTR()'s writeReg() call, itself reached from THIS device's own .write
+     * callback -- can respond to VNEXT_WOULD_BLOCK with cpu_stop_current() +
+     * cpu_loop_exit_restore(), a siglongjmp back into cpu_exec() that skips every intervening
+     * return, this cleanup included. Root-caused via the "Blocked re-entrant IO on MemoryRegion:
+     * esp32.i2c" warning immediately preceding the E118-AUDIT gate's reset storm: the guard got
+     * stuck true forever after the first such retry, permanently rejecting every later I2C access
+     * (MEMTX_ACCESS_ERROR) for the rest of the process, which is what actually drove the guest's
+     * own repeated watchdog-reset recovery cycle -- not a transport/backpressure timing issue.
+     * Disabling the guard here is the same idiom already used by hw/intc/apic.c, hw/scsi/
+     * lsi53c895a.c, hw/misc/bcm2835_property.c, hw/ppc/pnv_lpc.c and hw/intc/loongarch_ipi.c for
+     * comparable cases. Safe specifically because vnext_b_gpio_write()'s retry path never drops
+     * the BQL -- the actual hazard this guard defends against (a second vCPU dispatching into the
+     * same device during a BQL-released window, e.g. the LEGACY arena's arenaTransactionBegin())
+     * cannot occur through VNEXT_B's synchronous, BQL-held call chain. */
+    s->iomem.disable_reentrancy_guard = true;
     sysbus_init_mmio(sbd, &s->iomem);
     sysbus_init_irq(sbd, &s->irq);
 

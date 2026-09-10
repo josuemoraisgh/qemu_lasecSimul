@@ -74,6 +74,7 @@ typedef struct Esp32RtcCntlState {
     uint32_t scratch_reg[ESP32_RTC_CNTL_SCRATCH_REG_COUNT];
     Esp32ResetCause reset_cause[ESP32_CPU_COUNT];
     bool stat_vector_sel[ESP32_CPU_COUNT];
+    uint64_t cpu0_boot_epoch;
 } Esp32RtcCntlState;
 
 REG32(RTC_CNTL_OPTIONS0, 0x00)

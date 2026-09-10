@@ -45,6 +45,7 @@
 #include "sysemu/whpx.h"
 #include "hw/boards.h"
 #include "hw/hw.h"
+#include "qemu/timer.h"
 #include "trace.h"
 
 #ifdef CONFIG_LINUX

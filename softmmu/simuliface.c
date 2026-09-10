@@ -26,6 +26,7 @@
 #endif
 
 #include "simuliface.h"
+#include "vnext_b.h"
 
 #include "qemu/osdep.h"
 #include "qemu-main.h"
@@ -399,116 +400,6 @@ static void profileMaybeReport(uint64_t virtualNs)
 
 static void pushQueueEntry( uint64_t addr, uint64_t data, uint64_t action, uint64_t simuTimePs );
 
-/* TEMPORARY, minimal diagnostic for the 2026-08-27 TG0WDT_SYS_RESET investigation -- correlates
- * how long each Core-backed arena wait (readReg/publishQueueEntry/i2cBurstTransfer) holds the BQL,
- * to test whether core-1 I2C/MMIO activity denies core-0 the scheduling opportunities IDLE0/TWDT
- * needs. Gated, off by default. Records into a bounded in-memory ring (no per-event file I/O on the
- * hot path -- a prior revision used fprintf+fflush per call here, which risked manufacturing the
- * exact BQL-hold/starvation pattern under investigation; fixed before any run was analyzed). The
- * ring is dumped to disk only from hw/timer/esp32_timg.c at a genuine TG0 SYSRESET-mode expiry
- * (mirrors the existing XTENSA-PC-SAMPLER pattern in hw/xtensa/esp32.c). Remove once the
- * investigation concludes. */
-#define BQL_CAUSAL_CAPACITY 65536
-#define BQL_CAUSAL_PATH "c:/tmp/lasecsimul_bql_causal"
-
-typedef enum BqlCausalOp {
-    BQL_CAUSAL_OP_READ_REG = 0,
-    BQL_CAUSAL_OP_PUBLISH_QUEUE_ENTRY = 1,
-    BQL_CAUSAL_OP_I2C_BURST = 2,
-} BqlCausalOp;
-
-typedef struct BqlCausalEntry {
-    uint64_t addr;
-    uint64_t virtualNs;
-    uint64_t entryHostNs;
-    uint64_t bqlReacquireHostNs;
-    uint64_t exitHostNs;
-    uint8_t opType;
-    uint8_t cpu;
-    uint8_t bqlHeld;
-    uint8_t backpressureWaited;
-} BqlCausalEntry;
-
-static BqlCausalEntry bqlCausalRing[BQL_CAUSAL_CAPACITY];
-static uint64_t bqlCausalSeq;
-static bool bqlCausalEnabledCached;
-static bool bqlCausalEnabledRead;
-
-static bool bqlCausalEnabled(void)
-{
-    if (!bqlCausalEnabledRead) {
-        const char *env = getenv("LASECSIMUL_BQL_CAUSAL_TRACE");
-        bqlCausalEnabledCached = env && env[0] && strcmp(env, "0") != 0;
-        bqlCausalEnabledRead = true;
-    }
-    return bqlCausalEnabledCached;
-}
-
-static void bqlCausalRecord(BqlCausalOp opType, uint64_t addr, uint64_t virtualNs,
-                             uint64_t entryHostNs, uint64_t bqlReacquireHostNs,
-                             uint64_t exitHostNs, bool bqlHeld, bool backpressureWaited)
-{
-    if (!bqlCausalEnabled()) {
-        return;
-    }
-    BqlCausalEntry *e = &bqlCausalRing[bqlCausalSeq % BQL_CAUSAL_CAPACITY];
-    e->addr = addr;
-    e->virtualNs = virtualNs;
-    e->entryHostNs = entryHostNs;
-    e->bqlReacquireHostNs = bqlReacquireHostNs;
-    e->exitHostNs = exitHostNs;
-    e->opType = (uint8_t)opType;
-    e->cpu = current_cpu ? (uint8_t)current_cpu->cpu_index : 0xFF;
-    e->bqlHeld = bqlHeld ? 1 : 0;
-    e->backpressureWaited = backpressureWaited ? 1 : 0;
-    bqlCausalSeq++;
-}
-
-static const char *bqlCausalOpName(uint8_t opType)
-{
-    switch ((BqlCausalOp)opType) {
-        case BQL_CAUSAL_OP_READ_REG: return "readReg";
-        case BQL_CAUSAL_OP_PUBLISH_QUEUE_ENTRY: return "publishQueueEntry";
-        case BQL_CAUSAL_OP_I2C_BURST: return "i2cBurstTransfer";
-    }
-    return "unknown";
-}
-
-/* Called from hw/timer/esp32_timg.c (declared generically in include/hw/misc/esp32_dport.h, same
- * reasoning already documented there for esp32_pc_sampler_capture_window()) at a genuine TG0
- * SYSRESET-mode expiry. Dumps the whole ring in one buffered write, not one line per event. */
-void bqlCausalDumpWindow(const char *reason)
-{
-    if (!bqlCausalEnabled() || bqlCausalSeq == 0) {
-        return;
-    }
-    static char path[256];
-    static unsigned dumpCount;
-    snprintf(path, sizeof(path), "%s.%d.%u.log", BQL_CAUSAL_PATH, getpid(), dumpCount++);
-    FILE *f = fopen(path, "w");
-    if (!f) {
-        return;
-    }
-    const uint64_t total = bqlCausalSeq;
-    const uint64_t count = total < BQL_CAUSAL_CAPACITY ? total : BQL_CAUSAL_CAPACITY;
-    const uint64_t start = total - count;
-    fprintf(f, "# [BQL-CAUSAL] %s -- %llu total ops, showing %llu\n",
-            reason, (unsigned long long)total, (unsigned long long)count);
-    for (uint64_t seq = start; seq < total; ++seq) {
-        const BqlCausalEntry *e = &bqlCausalRing[seq % BQL_CAUSAL_CAPACITY];
-        const uint64_t totalNs = e->exitHostNs - e->entryHostNs;
-        const uint64_t bqlHeldNs = e->bqlHeld ? (e->exitHostNs - e->bqlReacquireHostNs) : 0;
-        fprintf(f,
-                "[%08llu] op=%s cpu=%u addr=0x%llx virtual_ns=%llu entry_host_ns=%llu "
-                "exit_host_ns=%llu total_ns=%llu bql_held_ns=%llu bql_held=%u backpressure=%u\n",
-                (unsigned long long)seq, bqlCausalOpName(e->opType), e->cpu,
-                (unsigned long long)e->addr, (unsigned long long)e->virtualNs,
-                (unsigned long long)e->entryHostNs, (unsigned long long)e->exitHostNs,
-                (unsigned long long)totalNs, (unsigned long long)bqlHeldNs,
-                e->bqlHeld, e->backpressureWaited);
-    }
-    fclose(f);
-}
 
 /* [FIX] queue-full correctness (2026-08-28): returns false only on a genuine
  * waitForSynch() HOST PROCESS-HEALTH BACKSTOP timeout (Core has stopped draining the queue for
@@ -542,10 +433,6 @@ static bool publishQueueEntry( uint64_t addr, uint64_t data, uint64_t action,
     pushQueueEntry(addr, data, action, simuClockNs() * 1000);
     signalPollDoorbell();
     arenaTransactionEnd(transaction);
-
-    bqlCausalRecord(BQL_CAUSAL_OP_PUBLISH_QUEUE_ENTRY, addr, entryVirtualNs, entryHostNs,
-                    bqlReacquireHostNs, get_clock(), transaction.iothreadLockReacquired,
-                    willBackpressureWait);
 
     if (m_arena->irqNumber) {
         setInterrupt();
@@ -627,6 +514,9 @@ static void waitForQueueDrain( void )
 
 uint64_t readReg( uint64_t addr )
 {
+    if (vnext_b_active()) {
+        return vnext_b_register_read(addr);
+    }
     /* Standard QEMU mode has no SimulIDE shared-memory arena.  MMIO hooks must
      * remain harmless there instead of dereferencing NULL (0xC0000005 on
      * Windows as soon as Arduino touches GPIO). */
@@ -678,9 +568,6 @@ uint64_t readReg( uint64_t addr )
     const uint64_t regData = m_arena->regData;
     arenaTransactionEnd(transaction);
 
-    bqlCausalRecord(BQL_CAUSAL_OP_READ_REG, addr, now, entryHostNs, bqlReacquireHostNs, get_clock(),
-                    transaction.iothreadLockReacquired, false);
-
     if (timedOut) {
         return 0;
     }
@@ -702,15 +589,19 @@ uint64_t readReg( uint64_t addr )
  * has already fully unwound arenaTransactionEnd() before returning false) -- it only flags a
  * request that this fork's own qemu_main_loop() (softmmu/runstate.c) picks up on its next
  * iteration for an orderly shutdown, not an abrupt exit from inside this callback. */
-void writeReg( uint64_t addr, uint64_t value )
+VnextPublishResult writeReg( uint64_t addr, uint64_t value )
 {
+    if (vnext_b_active()) {
+        return vnext_b_gpio_write(addr, value);
+    }
     if (!m_arena) {
-        return;
+        return VNEXT_PUBLISHED;
     }
     //printf("Qemu: esp32_gpio_write\n"); fflush( stdout );
     if (!publishQueueEntry( addr, value, SIM_WRITE, true )) {
         qemu_system_shutdown_request(SHUTDOWN_CAUSE_HOST_ERROR);
     }
+    return VNEXT_PUBLISHED;
 }
 
 void writeSimEvent( uint64_t addr, uint64_t value, uint64_t action )
@@ -809,9 +700,6 @@ bool i2cBurstTransfer( uint32_t bus, const I2cBurstRequest* req, I2cBurstRespons
             memcpy( rxOut, (const void*)m_arena->i2cRx, resp->rx_len );
     }
     arenaTransactionEnd(transaction);
-
-    bqlCausalRecord(BQL_CAUSAL_OP_I2C_BURST, (uint64_t)bus, entryVirtualNs, entryHostNs,
-                    bqlReacquireHostNs, get_clock(), transaction.iothreadLockReacquired, false);
 
     if( m_arena->irqNumber ) setInterrupt();
 
@@ -933,6 +821,10 @@ static void simu_event( void* opaque )
 
 int simuMain( int argc, char** argv )
 {
+    if (getenv("LASECSIMUL_TRANSPORT") &&
+        strcmp(getenv("LASECSIMUL_TRANSPORT"), "VNEXT_B") == 0) {
+        return vnext_b_main(argc, argv);
+    }
     const int arenaAbiMajor = configuredArenaAbiMajor();
     if (arenaAbiMajor < 0) {
         return 1;

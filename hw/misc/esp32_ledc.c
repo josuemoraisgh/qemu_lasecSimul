@@ -179,6 +179,8 @@ static void esp32_ledc_init(Object *obj)
     qdev_init_gpio_out_named(DEVICE(s), s->ledc_sync, ESP32_LEDC_SYNC, 1);
     memory_region_init_io(&s->iomem, obj, &esp32_ledc_ops, s,
                           TYPE_ESP32_LEDC, ESP32_LEDC_REGS_SIZE);
+    /* E118-AUDIT-2 (EVIDENCE.md, 2026-09-05): see the matching comment in hw/i2c/esp32_i2c.c. */
+    s->iomem.disable_reentrancy_guard = true;
     sysbus_init_mmio(sbd, &s->iomem);
     for (int i = 0; i < ESP32_LEDC_CHANNEL_CNT; i++) {
         object_initialize_child(obj, g_strdup_printf("led%d", i + 1), &s->led[i], TYPE_LED);

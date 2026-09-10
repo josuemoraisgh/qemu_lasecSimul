@@ -6,12 +6,21 @@
 #include "hw/misc/esp32_reg.h"
 #include "sysemu/block-backend.h"
 #include "hw/misc/esp32_flash_enc.h"
+#include "hw/misc/esp32_cache_race_stall.h"
 
 typedef struct Esp32DportState Esp32DportState;
 typedef struct Esp32CacheState Esp32CacheState;
 
 #define TYPE_ESP32_DPORT "misc.esp32.dport"
 #define ESP32_DPORT(obj) OBJECT_CHECK(Esp32DportState, (obj), TYPE_ESP32_DPORT)
+
+/* E125/E129 (EVIDENCE.md, 2026-09-05): bits shared by Esp32DportState::
+ * appcpu_cache_externally_disabled_mask AND appcpu_cache_wait_mask -- same bits
+ * esp32_cache_race_stall_gain()/_release()/esp32_cache_access_should_wait()/_wait_release()
+ * (hw/misc/esp32_cache_race_stall.h) use; aliased here rather than redefined so there is exactly
+ * one definition to keep in sync. */
+#define ESP32_CACHE_RACE_STALL_DROM0 ESP32_CACHE_RACE_STALL_DROM0_BIT
+#define ESP32_CACHE_RACE_STALL_IRAM0 ESP32_CACHE_RACE_STALL_IRAM0_BIT
 
 #define ESP32_CACHE_PAGE_SIZE           0x10000
 #define ESP32_CACHE_PAGES_PER_REGION    64
@@ -60,6 +69,16 @@ typedef struct Esp32DportState {
     int cpu_count;
     Esp32CacheState cache_state[ESP32_CPU_COUNT];
     BlockBackend *flash_blk;
+    /* E120 (EVIDENCE.md, 2026-09-05): the realized m25p80 (or subtype) DeviceState* wired up by
+     * esp32_dport_set_flash_device() -- see that function and hw/misc/esp32_dport.c's
+     * esp32_cache_data_sync() for why this replaced reading flash_blk directly via blk_pread()
+     * from inside this device's own MMIO dispatch. NULL in any configuration without a flash
+     * chip, exactly like flash_blk. Lifetime: parented onto the SPI bus of the same
+     * always-alive, embedded-for-the-machine's-lifetime SoC this DPORT instance itself belongs
+     * to (hw/xtensa/esp32.c) -- never unparented or finalized before the whole machine is, so no
+     * additional refcounting is taken here, matching every other cross-device pointer this
+     * struct already stores the same way (flash_blk above, intmatrix_opaque below). */
+    DeviceState *flash_dev;
     qemu_irq appcpu_stall_req;
     qemu_irq appcpu_reset_req;
     qemu_irq clk_update_req;
@@ -71,6 +90,46 @@ typedef struct Esp32DportState {
     bool appcpu_reset_pending;
     bool appcpu_stall_state;
     bool appcpu_clkgate_state;
+    /* E124/E125/E129 (EVIDENCE.md, 2026-09-05): tracks, per APP-owned cache region, whether a
+     * DIFFERENT core (not APP CPU itself) is the one currently holding it disabled -- see
+     * ESP32_CACHE_RACE_STALL_DROM0/IRAM0 below. See esp32_cache_state_update()'s own doc-comment
+     * for the exact race this exists for (real ESP-IDF's own spi_flash_disable_interrupts_caches_
+     * and_other_cpu() early-boot fast path assumes "APP CPU is either in reset or spinning inside
+     * call_start_cpu1, which is IRAM-only" whenever xTaskGetSchedulerState()==
+     * taskSCHEDULER_NOT_STARTED -- an assumption this fork's MTTCG timing can violate once APP CPU
+     * has passed s_resume_cores but the scheduler still hasn't started).
+     *
+     * E125 replaced a single bool (E124's original shape) with this per-region mask specifically
+     * because the bool's own release condition ("both regions fully enabled") could never fire,
+     * and APP CPU would stall forever, whenever DROM0 or IRAM0 was ALREADY legitimately masked
+     * (via CACHE_CTRL1's own MASK_DROM0/MASK_IRAM0 bits) independent of this stall's own cause --
+     * a region that was never accessible in the first place must never gate the release. Each bit
+     * here is set ONLY on a true enabled-by-this-region's-own-history -> disabled-by-a-different-
+     * core transition (esp32_cache_state_update() compares old vs. new `mem.enabled`, not just
+     * the new value), and cleared the instant THAT SAME region is observed enabled again,
+     * regardless of who re-enabled it.
+     *
+     * E129: renamed from E124/E125's own `appcpu_cache_race_stall_mask` and reduced to PURE
+     * bookkeeping -- proven (EVIDENCE.md E128) that turning this mask directly into a blanket
+     * `xtensa_runstall()` of APP CPU (E124/E125's original design, via the now-removed
+     * `appcpu_cache_race_stall` bool) deadlocks APP CPU permanently if the bit happens to be set
+     * while APP CPU is mid-interrupt-return inside unrelated, IRAM-resident code that never
+     * touches the disabled region. This mask no longer feeds `esp32_dport_update_appcpu_stall()`/
+     * `appcpu_stall_req` at all -- see `appcpu_cache_wait_mask` below for what actually suspends
+     * APP CPU now (only the specific access that lands on a disabled region, via
+     * `esp32_cache_ill_read()`'s own `cpu_stop_current()`/`cpu_loop_exit_restore()`, not the whole
+     * CPU). */
+    uint32_t appcpu_cache_externally_disabled_mask;
+    /* E129: set only when APP CPU's OWN load/fetch actually lands on a region currently in
+     * appcpu_cache_externally_disabled_mask (hw/misc/esp32_dport.c's esp32_cache_ill_read()) --
+     * i.e. APP CPU is suspended (cpu_stop_current(), not xtensa_runstall()) waiting specifically
+     * for THAT region, not merely because it exists in a disabled state APP CPU may never actually
+     * touch. Cleared, and APP CPU resumed via cpu_resume(), the instant the specific region it is
+     * waiting on is re-enabled (esp32_cache_wait_release(), include/hw/misc/
+     * esp32_cache_race_stall.h) -- deliberately a SEPARATE mask from the one above so a region
+     * APP CPU never tried to touch can never spuriously suspend it, and so a still-pending wait on
+     * a sibling region is never released early. */
+    uint32_t appcpu_cache_wait_mask;
     uint32_t appcpu_boot_addr;
     uint32_t cpuperiod_sel;
     uint32_t cache_ill_trap_en_reg;
@@ -85,16 +144,16 @@ typedef struct Esp32DportState {
 } Esp32DportState;
 
 void esp32_dport_clear_ill_trap_state(Esp32DportState* s);
+void esp32_dport_clear_appcpu_cache_wait_on_reset(Esp32DportState *s);
 
-/* [CACHE-TRACE] instrumentacao temporaria, ver esp32_dport.c e .spec secao 32.5.7 -- registra um
- * evento de reset por-nucleo no mesmo ring buffer usado pelos eventos de cache/DPORT, para
- * correlacionar timestamps entre os dois arquivos. `core` usa -1 para eventos que nao pertencem a
- * um nucleo especifico (reset digital completo). */
-void esp32_cache_trace_reset_event(Esp32DportState* s, const char *tag, int core, uint32_t cause);
-
-/* Ver esp32_dport.c e .spec 32.5.8 -- generico, sem precisar de Esp32DportState (usado por
- * hw/misc/esp32_crosscore_int.c pra rastrear o handshake completo do IPC cross-core). */
-void esp32_cache_trace_generic_event(const char *tag, int core, uint64_t vaddr, uint32_t val);
+/* E120 (EVIDENCE.md, 2026-09-05): links this DPORT instance to its machine's realized flash chip
+ * (hw/xtensa/esp32.c's esp32_machine_init_spi_flash(), called after DPORT itself is realized, so
+ * this cannot happen any earlier than a dedicated post-realize setter call). Must be called
+ * before any vCPU starts executing -- machine init always completes before the first cpu_exec(),
+ * so calling this from esp32_machine_init() right after the flash chip is realized satisfies
+ * that trivially. `flash_dev` must be a realized "m25p80-generic" (or subtype) device; passing
+ * NULL is valid and matches "no flash chip configured" (see flash_blk's own NULL handling). */
+void esp32_dport_set_flash_device(Esp32DportState* s, DeviceState *flash_dev);
 
 /* Implementada em hw/xtensa/esp32_intc.c (ver .spec 32.5.16). Declarada aqui (nao em
  * hw/xtensa/esp32_intc.h) porque esp32_dport.c e codigo "common" e esp32_intc.h inclui
@@ -103,18 +162,6 @@ void esp32_cache_trace_generic_event(const char *tag, int core, uint64_t vaddr, 
  * Esp32DportState::intmatrix_opaque; retorna os bits [start_bit, start_bit+count) do estado bruto
  * (`irq_raw[]`) da matriz de interrupcao, empacotados a partir do bit 0 do valor retornado. */
 uint32_t esp32_intmatrix_get_raw_status_bits(void *opaque, int start_bit, int count);
-
-/* Implementada em hw/xtensa/esp32.c (ver .spec 32.5.17). Declarada aqui pelo mesmo motivo de
- * esp32_intmatrix_get_raw_status_bits() acima -- hw/timer/esp32_timg.c (codigo "common") precisa
- * chamar isto no momento exato de uma expiracao do WDT do TIMER_GROUP1, despejando incondicionalmente
- * a janela recente do amostrador continuo de PC. */
-void esp32_pc_sampler_capture_window(void);
-
-/* Implementada em softmmu/simuliface.c (investigacao TG0WDT_SYS_RESET, 2026-08-27). Declarada aqui
- * pelo mesmo motivo das duas acima -- hw/timer/esp32_timg.c precisa chamar isto no momento exato de
- * uma expiracao SYSRESET do TIMER_GROUP0, despejando incondicionalmente o ring buffer de correlacao
- * BQL/arena (readReg/publishQueueEntry/i2cBurstTransfer) acumulado ate ali. */
-void bqlCausalDumpWindow(const char *reason);
 
 #define ESP32_DPORT_APPCPU_STALL_GPIO   "appcpu-stall"
 #define ESP32_DPORT_APPCPU_RESET_GPIO   "appcpu-reset"

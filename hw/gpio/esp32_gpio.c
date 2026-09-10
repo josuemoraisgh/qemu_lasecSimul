@@ -260,6 +260,14 @@ static void esp32_gpio_init( Object *obj )
     object_property_set_int( obj, "strap_mode", ESP32_STRAP_MODE_FLASH_BOOT, &error_fatal );
 
     memory_region_init_io( &gpioS->iomem, obj, &uart_ops, gpioS, TYPE_ESP32_GPIO, 0x1000 );
+    /* E118-AUDIT-2 (EVIDENCE.md, 2026-09-05): see the matching comment in hw/i2c/esp32_i2c.c --
+     * writeReg() can call vnext_b_gpio_write(), which on VNEXT_WOULD_BLOCK uses
+     * cpu_loop_exit_restore() to abandon/replay this device's own dispatch. That siglongjmp skips
+     * softmmu/memory.c's normal-return clear of mem_reentrancy_guard.engaged_in_io, permanently
+     * wedging every later access to this device with "Blocked re-entrant IO" otherwise. Safe to
+     * disable: this retry path never drops the BQL, so the cross-vCPU race this guard exists for
+     * cannot occur here. */
+    gpioS->iomem.disable_reentrancy_guard = true;
     sysbus_init_mmio( sbd, &gpioS->iomem );
     sysbus_init_irq( sbd, &gpioS->irq );
 

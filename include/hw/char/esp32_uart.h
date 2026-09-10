@@ -132,6 +132,14 @@ typedef struct ESPUARTState {
     UartConfigSummary pending_config;
     UartTxEffect tx_effects[UART_FIFO_LENGTH];
     unsigned tx_effect_count;
+    /* E118-AUDIT (EVIDENCE.md, 2026-09-05): post-E118, tx_effect_bh() can leave a genuine backlog
+     * (VNEXT_B lane 0 under WOULD_BLOCK) instead of always fully draining every call -- tx_fifo
+     * keeps draining independently, at its own baud-rate pace, regardless of that backlog, so
+     * tx_effect_count reaching UART_FIFO_LENGTH no longer implies tx_fifo is also full. Indexed by
+     * cpu->cpu_index (0/1): the real vCPU blocked in uart_write()'s A_UART_FIFO case, waiting for a
+     * backlog slot (NOT for VNEXT_B ring credit -- a different resource, see esp32_uart.c). NULL
+     * when that core is not waiting. */
+    struct CPUState *tx_backlog_waiter[2];
 
     uint8_t use_apb;
     uint32_t clkdiv;
@@ -173,3 +181,13 @@ void esp32_uart_set_rx_timeout(ESP32UARTState *s);
  * the configured threshold.
  */
 void esp32_uart_update_irq(ESP32UARTState *s);
+
+/* C2A delivery hook: the transport consumer injects an already framed byte into
+ * the guest-visible RX FIFO.  It does not perform a Core wait or a register read. */
+void esp32_uart_vnext_rx_byte(uint32_t uart_index, uint8_t byte);
+
+/* E118 (EVIDENCE.md, 2026-09-05): called from vnext_b.c's vnext_resume() sweep once lane 0
+ * regains credit after this UART's TX BH observed VNEXT_WOULD_BLOCK there. Reschedules the BH
+ * (qemu_bh_schedule) for every bound instance that actually has a backlog (tx_effect_count > 0);
+ * a no-op otherwise. Never touches any CPU, never blocks. */
+void esp32_uart_vnext_credit_available(void);

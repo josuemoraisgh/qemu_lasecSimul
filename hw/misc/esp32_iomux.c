@@ -113,6 +113,8 @@ static void esp32_iomux_init( Object *obj )
     SysBusDevice *sbd = SYS_BUS_DEVICE(obj);
 
     memory_region_init_io( &s->iomem, obj, &iomux_ops, s, TYPE_ESP32_IOMUX, 0x1000 );
+    /* E118-AUDIT-2 (EVIDENCE.md, 2026-09-05): see the matching comment in hw/i2c/esp32_i2c.c. */
+    s->iomem.disable_reentrancy_guard = true;
     sysbus_init_mmio( sbd, &s->iomem );
 
     for( int i=0; i<40; i++ ) s->muxgpios[i] = 0x800;

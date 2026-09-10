@@ -1136,42 +1136,6 @@ static void gen_ibreak_check(CPUXtensaState *env, DisasContext *dc)
     }
 }
 
-/* [XTENSA-PC-WATCH] ver .spec 32.5.10/32.5.11 -- escalada explicitamente autorizada pelo usuario.
- * Observador NAO-intrusivo: ao contrario de gen_ibreak_check() acima, NAO chama gen_debug_exception
- * (nao levanta excecao, nao desvia PC, nao termina a TB) -- so emite uma chamada de helper comum
- * que grava o evento num side-channel e retorna, exatamente como qualquer outra instrucao gerada.
- * Enderecos ESPECIFICOS do build do firmware usado nesta investigacao (obtidos via `nm` no ELF
- * real, os mesmos valores usados em target/xtensa/exc_helper.c) -- nao genericos. */
-#define XTENSA_PC_WATCH_CACHE_ERR_GET_CPUID   0x400e2170u
-#define XTENSA_PC_WATCH_PANIC_PSEUDO_CAUSE    0x4016ec54u
-/* Adicionado em 32.5.14 -- ver comentario completo em target/xtensa/exc_helper.c. */
-#define XTENSA_PC_WATCH_HANDLE_LIVELOCK_INT   0x4008214cu
-/* Adicionado em 32.5.15 -- ver comentario completo em target/xtensa/exc_helper.c. */
-#define XTENSA_PC_WATCH_PANIC_RESTART          0x400e1b40u
-
-static void gen_pc_watch_check(DisasContext *dc)
-{
-    uint32_t wp_id;
-
-    switch (dc->pc) {
-    case XTENSA_PC_WATCH_CACHE_ERR_GET_CPUID:
-        wp_id = 0;
-        break;
-    case XTENSA_PC_WATCH_HANDLE_LIVELOCK_INT:
-        wp_id = 2;
-        break;
-    case XTENSA_PC_WATCH_PANIC_RESTART:
-        wp_id = 3;
-        break;
-    case XTENSA_PC_WATCH_PANIC_PSEUDO_CAUSE:
-        wp_id = 1;
-        break;
-    default:
-        return;
-    }
-    gen_helper_trace_watched_pc(cpu_env, tcg_constant_i32(dc->pc), tcg_constant_i32(wp_id));
-}
-
 static void xtensa_tr_init_disas_context(DisasContextBase *dcbase,
                                          CPUState *cpu)
 {
@@ -1244,11 +1208,6 @@ static void xtensa_tr_translate_insn(DisasContextBase *dcbase, CPUState *cpu)
     if (dc->debug) {
         gen_ibreak_check(env, dc);
     }
-
-    /* [XTENSA-PC-WATCH] ver .spec 32.5.10/32.5.11 -- deliberadamente incondicional (nao gated por
-     * dc->debug, ao contrario de gen_ibreak_check acima): precisa observar TODA entrada nestas
-     * funcoes, independente do estado de debug arquitetural do guest. */
-    gen_pc_watch_check(dc);
 
     disas_xtensa_insn(env, dc);
 

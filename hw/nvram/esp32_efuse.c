@@ -25,7 +25,8 @@
 static void esp32_efuse_read_op(Esp32EfuseState *s);
 static void esp32_efuse_program_op(Esp32EfuseState *s);
 static void esp32_efuse_update_irq(Esp32EfuseState *s);
-static void esp32_efuse_op_timer_start(Esp32EfuseState *s);
+static void esp32_efuse_op_timer_start(Esp32EfuseState *s, uint32_t command);
+static void esp32_efuse_op_complete(Esp32EfuseState *s, uint32_t command);
 
 static uint64_t esp32_efuse_read(void *opaque, hwaddr addr, unsigned int size)
 {
@@ -68,7 +69,14 @@ static uint64_t esp32_efuse_read(void *opaque, hwaddr addr, unsigned int size)
         r = s->conf_reg;
         break;
     case A_EFUSE_CMD:
-        r = s->cmd_reg;
+        {
+            uint32_t completed_command = 0;
+            r = esp32_efuse_operation_read_cmd(&s->operation, s->cmd_reg,
+                                               &completed_command);
+            if (completed_command != 0) {
+                esp32_efuse_op_complete(s, completed_command);
+            }
+        }
         break;
     case A_EFUSE_STATUS:
         r = 0;
@@ -153,7 +161,6 @@ static void esp32_efuse_write(void *opaque, hwaddr addr,
 
 static void esp32_efuse_read_op(Esp32EfuseState *s)
 {
-    s->cmd_reg = EFUSE_READ;
     if (s->blk != NULL) {
         int ret = blk_pread(s->blk, 0, sizeof(s->efuse_rd), &s->efuse_rd, 0);
         if (ret < 0) {
@@ -183,14 +190,12 @@ static void esp32_efuse_read_op(Esp32EfuseState *s)
 
     /* Other wr_dis bits are not emulated, but can be handled here if necessary */
 
-    esp32_efuse_op_timer_start(s);
+    esp32_efuse_op_timer_start(s, EFUSE_READ);
     qemu_irq_pulse(s->efuse_update_gpio);
 }
 
 static void esp32_efuse_program_op(Esp32EfuseState *s)
 {
-    s->cmd_reg = EFUSE_PGM;
-
     Esp32EfuseRegs result;
     uint32_t* dst = (uint32_t*) &result;
     uint32_t* rd = (uint32_t*) &s->efuse_rd;
@@ -210,7 +215,7 @@ static void esp32_efuse_program_op(Esp32EfuseState *s)
         }
     }
 
-    esp32_efuse_op_timer_start(s);
+    esp32_efuse_op_timer_start(s, EFUSE_PGM);
 }
 
 static void esp32_efuse_update_irq(Esp32EfuseState *s)
@@ -220,20 +225,41 @@ static void esp32_efuse_update_irq(Esp32EfuseState *s)
     qemu_set_irq(s->irq, level);
 }
 
-static void esp32_efuse_op_timer_start(Esp32EfuseState *s)
+static void esp32_efuse_op_timer_start(Esp32EfuseState *s, uint32_t command)
 {
-    uint64_t ns_now = qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL);
-    uint64_t interval_ns = 100000000; /* 10 ms, make this depend on EFUSE_CLK register */
-    timer_mod_anticipate_ns(&s->op_timer, ns_now + interval_ns);
+    int64_t ns_now = qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL);
+    int64_t interval_ns = 100000000; /* 100 ms; TODO: derive from EFUSE_CLK / validated ESP32 timing source. */
+    int64_t deadline_ns = ns_now + interval_ns;
+    s->cmd_reg = command;
+    esp32_efuse_operation_begin(&s->operation, command, deadline_ns);
+    /* E121 (EVIDENCE.md, 2026-09-05): was timer_mod_anticipate_ns(), whose "only ever move the
+     * deadline EARLIER, never later" semantics (util/qemu-timer.c) means a SECOND trigger of this
+     * same op (esp32_efuse_reset() and the guest's own EFUSE_CMD write both call
+     * esp32_efuse_read_op(), which calls this) arriving while a PRIOR timer from an earlier
+     * trigger is still pending gets silently ignored, leaving cmd_reg's clear scheduled against
+     * the FIRST trigger's deadline rather than a fresh interval_ns from THIS one -- a stale,
+     * cross-trigger dependency this device's actual hardware model has no reason to carry (each
+     * operation is logically independent; nothing here needs "never delay a pending deadline"
+     * semantics). Plain timer_mod() always (re)schedules a fresh, single-source-of-truth deadline
+     * exactly interval_ns from THIS call, removing that cross-trigger coupling entirely. */
+    timer_mod(&s->op_timer, deadline_ns);
+}
+
+static void esp32_efuse_op_complete(Esp32EfuseState *s, uint32_t command)
+{
+    s->cmd_reg = 0;
+    s->int_raw_reg |= command;
+    esp32_efuse_update_irq(s);
 }
 
 static void esp32_efuse_timer_cb(void *opaque)
 {
     Esp32EfuseState *s = ESP32_EFUSE(opaque);
-    uint32_t cmd = s->cmd_reg;
-    s->cmd_reg = 0;
-    s->int_raw_reg |= cmd;
-    esp32_efuse_update_irq(s);
+    uint32_t completed_command = 0;
+    if (esp32_efuse_operation_timer_expired(&s->operation,
+                                            &completed_command)) {
+        esp32_efuse_op_complete(s, completed_command);
+    }
 }
 
 static const MemoryRegionOps esp32_efuse_ops = {
@@ -245,6 +271,12 @@ static const MemoryRegionOps esp32_efuse_ops = {
 static void esp32_efuse_reset(DeviceState *dev)
 {
     Esp32EfuseState *s = ESP32_EFUSE(dev);
+    timer_del(&s->op_timer);
+    esp32_efuse_operation_reset(&s->operation);
+    s->cmd_reg = 0;
+    s->int_raw_reg = 0;
+    s->int_st_reg = 0;
+    esp32_efuse_update_irq(s);
     esp32_efuse_read_op(s);
 }
 
@@ -280,6 +312,7 @@ static void esp32_efuse_init(Object *obj)
 
     memset(&s->efuse_rd, 0, sizeof(s->efuse_rd));
     memset(&s->efuse_wr, 0, sizeof(s->efuse_wr));
+    esp32_efuse_operation_reset(&s->operation);
 }
 
 static Property esp32_efuse_properties[] = {

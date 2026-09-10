@@ -121,6 +121,8 @@ static void esp32_sens_init(Object *obj)
 
     memory_region_init_io(&s->iomem, obj, &esp32_sens_ops, s,
                           TYPE_ESP32_SENS, 0x400);
+    /* E118-AUDIT-2 (EVIDENCE.md, 2026-09-05): see the matching comment in hw/i2c/esp32_i2c.c. */
+    s->iomem.disable_reentrancy_guard = true;
     sysbus_init_mmio(sbd, &s->iomem);
 
     memset(s->touch_sensor, 0, sizeof(s->touch_sensor));

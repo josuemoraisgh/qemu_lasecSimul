@@ -10,6 +10,7 @@
 #include <stdbool.h>
 
 #include "qemu/typedefs.h"
+#include "vnext_b.h"
 
 // ------------------------------------------------
 // -------- ARENA ---------------------------------
@@ -20,17 +21,18 @@
 #define QEMU_ARENA_QUEUE_DEPTH 32
 #define QEMU_ARENA_ABI_MAGIC UINT64_C(0x4c53444e51415235) /* "LSDNQAR5" */
 #define QEMU_ARENA_ABI_MAJOR 5
-#define QEMU_ARENA_ABI_MINOR 0
+#define QEMU_ARENA_ABI_MINOR 1
 
 #define QEMU_ARENA_CAP_WRITE_QUEUE          (UINT64_C(1) << 0)
 #define QEMU_ARENA_CAP_ORDERED_EVENTS       (UINT64_C(1) << 1)
 #define QEMU_ARENA_CAP_SYNC_READ            (UINT64_C(1) << 2)
 #define QEMU_ARENA_CAP_MTTCG_MPSC_SERIALIZED (UINT64_C(1) << 3)
 #define QEMU_ARENA_CAP_I2C_BURST             (UINT64_C(1) << 4)
+#define QEMU_ARENA_CAP_CORE_PROGRESS         (UINT64_C(1) << 5)
 #define QEMU_ARENA_CAPABILITIES                                                \
     (QEMU_ARENA_CAP_WRITE_QUEUE | QEMU_ARENA_CAP_ORDERED_EVENTS |             \
      QEMU_ARENA_CAP_SYNC_READ | QEMU_ARENA_CAP_MTTCG_MPSC_SERIALIZED |        \
-     QEMU_ARENA_CAP_I2C_BURST)
+     QEMU_ARENA_CAP_I2C_BURST | QEMU_ARENA_CAP_CORE_PROGRESS)
 #define QEMU_ARENA_REQUIRED_CAPABILITIES QEMU_ARENA_CAPABILITIES
 
 typedef struct qemuQueueEntry{
@@ -74,6 +76,7 @@ typedef struct qemuArena{
     uint32_t i2cStatus;      /* bit0 handled, bit1 address ACK */
     uint32_t i2cFirstNack;   /* UINT32_MAX quando todos os payloads deram ACK */
     uint64_t i2cStretchNs;
+    uint64_t coreProgressNs;
 } qemuArena_t;
 
 typedef struct qemuArenaDescriptor {
@@ -98,11 +101,11 @@ typedef struct qemuArenaV5Mapping {
 
 _Static_assert(sizeof(qemuQueueEntry_t) == 32,
                "QEMU arena queue entry ABI changed");
-_Static_assert(sizeof(qemuArena_t) == 1288,
+_Static_assert(sizeof(qemuArena_t) == 1296,
                "QEMU arena v5 payload ABI changed");
 _Static_assert(sizeof(qemuArenaDescriptor_t) == 88,
                "QEMU arena descriptor ABI changed");
-_Static_assert(sizeof(qemuArenaV5Mapping_t) == 1376,
+_Static_assert(sizeof(qemuArenaV5Mapping_t) == 1384,
                "QEMU arena v5 mapping ABI changed");
 
 enum esp32Actions{
@@ -149,7 +152,16 @@ uint64_t getQemu_ns(void);
 bool waitForSynch(void);
 
 uint64_t readReg( uint64_t addr );
-void writeReg( uint64_t addr, uint64_t value );
+/* E118 (EVIDENCE.md, 2026-09-05): return value distinguishes accepted (VNEXT_PUBLISHED) from
+ * ordinary backpressure (VNEXT_WOULD_BLOCK, never fatal) from a real invariant violation
+ * (VNEXT_FATAL) -- see vnext_b.h. Only meaningful for the VNEXT_B transport; the LEGACY arena path
+ * always returns VNEXT_PUBLISHED (it has its own synchronous, blocking backpressure via
+ * waitForSynch(), unaffected by this). Existing callers that ignore the return value keep their
+ * prior behavior unchanged: a real vCPU caller never actually observes VNEXT_WOULD_BLOCK (see
+ * vnext_b_gpio_write()), so ignoring the result there is exactly as safe as before. Callers that
+ * CAN be invoked with current_cpu==NULL (a BH or timer callback) MUST check it -- see
+ * esp32_uart.c's uart_tx_effect_bh() for the reference implementation. */
+VnextPublishResult writeReg( uint64_t addr, uint64_t value );
 void writeSimEvent( uint64_t addr, uint64_t value, uint64_t action );
 
 /* Mailbox de burst I2C (ABI 5) -- um pedido cobre um trecho inteiro do FIFO/lista de comandos

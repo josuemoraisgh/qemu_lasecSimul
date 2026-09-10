@@ -76,6 +76,9 @@ typedef struct Esp32SocState {
     MemoryRegion cpu_specific_mem[ESP32_CPU_COUNT];
 
     uint32_t requested_reset;
+    const char *requested_reset_source;
+    bool elf_boot;
+    uint32_t elf_entry;
 
     uint32_t apb_clk_freq;
     uint32_t cpu_clk_freq;
@@ -85,5 +88,4 @@ typedef struct Esp32SocState {
      * parado (spin-wait) numa janela silenciosa qualquer, em vez de depender de um unico instantaneo
      * no momento de um evento (achado de 32.5.16: um instantaneo unico nao distingue "parado" de
      * "so passando por ali"). */
-    QEMUTimer *pc_sampler_timer;
 } Esp32SocState;

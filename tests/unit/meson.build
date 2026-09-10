@@ -27,6 +27,12 @@ tests = {
   'test-div128': [],
   'test-shift128': [],
   'test-mul64': [],
+  'test-esp32-timg-pause': [],
+  'test-esp32-timg-wdt-scale': [],
+  'test-vnext-b-classify': [],
+  'test-vnext-b-uart-backlog': [],
+  'test-esp32-dport-cache-race-stall': [],
+  'test-esp32-efuse-op-state': [],
   # all code tested by test-int128 is inside int128.h
   'test-int128': [],
   'rcutorture': [],

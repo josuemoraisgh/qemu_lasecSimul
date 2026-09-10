@@ -16,6 +16,8 @@
 #include "qapi/error.h"
 #include "qemu/error-report.h"
 #include "sysemu/sysemu.h"
+#include "sysemu/cpus.h"
+#include "hw/core/cpu.h"
 #include "chardev/char-fe.h"
 #include "hw/registerfields.h"
 #include "hw/sysbus.h"
@@ -23,11 +25,80 @@
 #include "hw/qdev-properties.h"
 #include "hw/qdev-properties-system.h"
 #include "hw/char/esp32_uart.h"
+
+/* E118-AUDIT (EVIDENCE.md, 2026-09-05): same ad-hoc extern declaration vnext_b.c already uses --
+ * no header exposes this without pulling in exec/exec-all.h's much larger dependency surface into
+ * common device code. */
+G_NORETURN void cpu_loop_exit_restore(CPUState *cpu, uintptr_t pc);
+
+static ESP32UARTState *vnext_uart_instances[3];
+static unsigned vnext_uart_instance_count;
+
+/* E147-G (EVIDENCE.md, 2026-09-10): bounded, opt-in (LASECSIMUL_SETTLE_PROVENANCE=1 -- same gate
+ * vnext_b.c's own provenance counters use; a plain local getenv() check here rather than a
+ * cross-file dependency, to keep this device model's own instrumentation self-contained). Proves
+ * or refutes H147-G's lost-wake hypothesis directly on the real UART config-publish path:
+ * CLKDIV/CONF0/byte publish attempts and outcomes, and the FINAL state of tx_effect_count/
+ * pending_config at process exit -- a non-zero pending count at exit is the smoking gun (work
+ * that was queued but never delivered because nothing ever rescheduled the BH again). */
+static uint64_t vnext_uart_clkdiv_attempts, vnext_uart_clkdiv_published;
+static uint64_t vnext_uart_conf0_attempts, vnext_uart_conf0_published;
+static uint64_t vnext_uart_byte_attempts, vnext_uart_byte_published;
+static uint64_t vnext_uart_would_block_total;
+static uint64_t vnext_uart_config_would_block;
+static uint64_t vnext_uart_byte_would_block;
+static uint64_t vnext_uart_bh_entries;
+static uint64_t vnext_uart_credit_available_calls;
+static uint64_t vnext_uart_backlog_full_stops;
+static uint64_t vnext_uart_backlog_wakes;
+static bool vnext_uart_provenance_checked, vnext_uart_provenance_enabled_cached;
+
+static bool vnext_uart_is_power_of_two(uint64_t value) {
+    return value != 0 && (value & (value - 1)) == 0;
+}
+
+static void vnext_uart_provenance_print_summary(void);
+
+static bool vnext_uart_provenance_enabled(void) {
+    if (!vnext_uart_provenance_checked) {
+        vnext_uart_provenance_checked = true;
+        const char *v = getenv("LASECSIMUL_SETTLE_PROVENANCE");
+        vnext_uart_provenance_enabled_cached = v && *v && v[0] != '0';
+        if (vnext_uart_provenance_enabled_cached) atexit(vnext_uart_provenance_print_summary);
+    }
+    return vnext_uart_provenance_enabled_cached;
+}
+
+static void vnext_uart_provenance_print_summary(void) {
+    fprintf(stderr, "[SETTLE_PROVENANCE_UART] clkdivAttempts=%llu clkdivPublished=%llu "
+            "conf0Attempts=%llu conf0Published=%llu byteAttempts=%llu bytePublished=%llu "
+            "wouldBlockTotal=%llu configWouldBlock=%llu byteWouldBlock=%llu "
+            "bhEntries=%llu creditAvailableCalls=%llu backlogFullStops=%llu backlogWakes=%llu\n",
+            (unsigned long long)vnext_uart_clkdiv_attempts, (unsigned long long)vnext_uart_clkdiv_published,
+            (unsigned long long)vnext_uart_conf0_attempts, (unsigned long long)vnext_uart_conf0_published,
+            (unsigned long long)vnext_uart_byte_attempts, (unsigned long long)vnext_uart_byte_published,
+            (unsigned long long)vnext_uart_would_block_total,
+            (unsigned long long)vnext_uart_config_would_block,
+            (unsigned long long)vnext_uart_byte_would_block,
+            (unsigned long long)vnext_uart_bh_entries,
+            (unsigned long long)vnext_uart_credit_available_calls,
+            (unsigned long long)vnext_uart_backlog_full_stops,
+            (unsigned long long)vnext_uart_backlog_wakes);
+    for (unsigned i = 0; i < vnext_uart_instance_count; ++i) {
+        ESP32UARTState *s = vnext_uart_instances[i];
+        if (!s) continue;
+        fprintf(stderr, "[SETTLE_PROVENANCE_UART] instance=%u tx_effect_count(final)=%u "
+                "pending.clkdivDirty=%d pending.conf0StateDirty=%d\n",
+                i, s->tx_effect_count, (int)s->pending_config.clkdivDirty,
+                (int)s->pending_config.conf0StateDirty);
+    }
+}
 #include "hw/xtensa/esp32_clk.h"
 #include "qemu/main-loop.h"
 #include "trace.h"
 
 #include "../softmmu/simuliface.h"
+#include "../softmmu/vnext_b.h"
 
 
 //static gboolean uart_transmit(void *do_not_use, GIOCondition cond, void *opaque);
@@ -118,17 +189,36 @@ static void uart_config_summary_clear(UartConfigSummary *cfg)
  * trailing clear without ever sending it. Operating on a value copy (already fully detached from
  * shared state by the time any writeReg() here can release the BQL) closes that window -- see each
  * call site for how the copy/clear ordering is arranged. */
-static void uart_apply_config_summary(ESP32UARTState *s, UartConfigSummary cfg)
+/* E118 (EVIDENCE.md, 2026-09-05): returns VNEXT_WOULD_BLOCK if either register write could not be
+ * accepted, so the caller can retry the WHOLE summary later instead of silently dropping half of
+ * it. Re-sending an already-accepted half on retry is harmless: both CLKDIV and CONF0 are plain
+ * idempotent register forwards (identical value, no side effect from being observed twice) --
+ * same property this file's electrical-path callers already rely on elsewhere. */
+static VnextPublishResult uart_apply_config_summary(ESP32UARTState *s, UartConfigSummary cfg)
 {
+    const bool trace = vnext_uart_provenance_enabled();
     if (cfg.clkdivDirty) {
-        writeReg( s->iomem.addr+A_UART_CLKDIV, cfg.clkdivValue );
+        if (trace) vnext_uart_clkdiv_attempts++;
+        const VnextPublishResult r = writeReg( s->iomem.addr+A_UART_CLKDIV, cfg.clkdivValue );
+        if (r == VNEXT_WOULD_BLOCK) {
+            if (trace) { vnext_uart_would_block_total++; vnext_uart_config_would_block++; }
+            return VNEXT_WOULD_BLOCK;
+        }
+        if (trace) vnext_uart_clkdiv_published++;
     }
     if (cfg.conf0StateDirty || cfg.txFifoReset || cfg.rxFifoReset) {
         uint32_t value = cfg.conf0StateValue;
         if (cfg.txFifoReset) value |= (1u << 18);
         if (cfg.rxFifoReset) value |= (1u << 17);
-        writeReg( s->iomem.addr+A_UART_CONF0, value );
+        if (trace) vnext_uart_conf0_attempts++;
+        const VnextPublishResult r = writeReg( s->iomem.addr+A_UART_CONF0, value );
+        if (r == VNEXT_WOULD_BLOCK) {
+            if (trace) { vnext_uart_would_block_total++; vnext_uart_config_would_block++; }
+            return VNEXT_WOULD_BLOCK;
+        }
+        if (trace) vnext_uart_conf0_published++;
     }
+    return VNEXT_PUBLISHED;
 }
 
 /* Drains tx_effects/pending_config back-to-back, in guest write order, decoupled from
@@ -148,19 +238,101 @@ static void uart_apply_config_summary(ESP32UARTState *s, UartConfigSummary cfg)
  * live, shared state, so it is copied and cleared as two adjacent plain statements (no writeReg()
  * between them, hence no BQL release in between) before being applied, exactly mirroring how the
  * per-event snapshot in uart_write()'s A_UART_FIFO case already avoids the same race. */
+/* E118-AUDIT (EVIDENCE.md, 2026-09-05): wakes any real vCPU parked in uart_write()'s A_UART_FIFO
+ * case waiting for backlog space (tx_backlog_waiter[], NOT VNEXT_B ring credit -- see that call
+ * site). Called only when at least one backlog slot was actually freed this pass. Each waiter is
+ * resumed exactly once and cleared immediately, so a slower-draining BH pass cannot double-resume
+ * the same CPUState. Safe to call with zero waiters (both slots NULL): a no-op. */
+static void uart_wake_backlog_waiters(ESP32UARTState *s)
+{
+    for (unsigned i = 0; i < 2; ++i) {
+        CPUState *waiter = s->tx_backlog_waiter[i];
+        if (!waiter) continue;
+        s->tx_backlog_waiter[i] = NULL;
+        if (vnext_uart_provenance_enabled()) vnext_uart_backlog_wakes++;
+        cpu_resume(waiter);
+    }
+}
+
+
+/* E118 (EVIDENCE.md, 2026-09-05): stops at the first VNEXT_WOULD_BLOCK instead of treating "ring
+ * full" as fatal or silently dropping the rest of the batch. Unsent tx_effects are compacted to
+ * the front and left in place -- this BH does NOT reschedule itself (that would busy-loop with no
+ * credit); vnext_b.c's vnext_resume() sweep calls esp32_uart_vnext_credit_available() once lane 0
+ * regains credit, which reschedules exactly the peripherals that actually have a backlog. This
+ * function never touches any CPU and never blocks on the BQL waiting for Core -- current_cpu is
+ * NULL here (main-loop BH), so there is no vCPU to block in the first place (the ONE exception is
+ * uart_wake_backlog_waiters() below, which only ever calls cpu_resume() -- never cpu_stop -- on a
+ * vCPU that is not this thread). */
 static void uart_tx_effect_bh(void *opaque)
 {
     ESP32UARTState *s = ESP32_UART(opaque);
-    for (unsigned i = 0; i < s->tx_effect_count; i++) {
-        UartTxEffect *ev = &s->tx_effects[i];
-        uart_apply_config_summary(s, ev->configBefore);
-        writeReg( s->iomem.addr, ev->byte );
+    const bool trace = vnext_uart_provenance_enabled();
+    if (trace) {
+        vnext_uart_bh_entries++;
+        if (vnext_uart_is_power_of_two(vnext_uart_bh_entries)) vnext_uart_provenance_print_summary();
+    }
+    unsigned sent = 0;
+    for (; sent < s->tx_effect_count; sent++) {
+        UartTxEffect *ev = &s->tx_effects[sent];
+        if (uart_apply_config_summary(s, ev->configBefore) == VNEXT_WOULD_BLOCK) break;
+        if (trace) vnext_uart_byte_attempts++;
+        const VnextPublishResult byteResult = writeReg( s->iomem.addr, ev->byte );
+        if (byteResult == VNEXT_WOULD_BLOCK) {
+            if (trace) { vnext_uart_would_block_total++; vnext_uart_byte_would_block++; }
+            break;
+        }
+        if (trace) vnext_uart_byte_published++;
+    }
+    if (sent < s->tx_effect_count) {
+        const unsigned remaining = s->tx_effect_count - sent;
+        memmove(s->tx_effects, s->tx_effects + sent, remaining * sizeof(UartTxEffect));
+        s->tx_effect_count = remaining;
+        /* E118-AUDIT: even a partial drain (sent > 0) freed backlog slots at the front -- wake
+         * any waiter now so a blocked vCPU does not sit parked until the backlog fully clears. */
+        if (sent > 0) uart_wake_backlog_waiters(s);
+        vnext_b_note_nonvcpu_backlog(0);
+        return;
     }
     s->tx_effect_count = 0;
+    uart_wake_backlog_waiters(s);
 
     UartConfigSummary trailing = s->pending_config;
     uart_config_summary_clear(&s->pending_config);
-    uart_apply_config_summary(s, trailing);
+    if (uart_apply_config_summary(s, trailing) == VNEXT_WOULD_BLOCK) {
+        /* The byte backlog drained cleanly but the trailing config summary itself blocked --
+         * put it back so the next drain (triggered by the credit-available notify) applies it
+         * instead of losing a CLKDIV/CONF0 change. */
+        s->pending_config = trailing;
+        vnext_b_note_nonvcpu_backlog(0);
+    }
+}
+
+/* E118 (EVIDENCE.md, 2026-09-05): called from vnext_b.c once lane 0 regains credit after this (or
+ * any) UART instance observed VNEXT_WOULD_BLOCK there. Reschedules exactly the instances that
+ * actually have something queued (a backlogged tx_effect_count, or a pending trailing config with
+ * nothing else to carry it) -- never all of them unconditionally, and never a bare poll/retry loop
+ * of its own; qemu_bh_schedule() itself is a single, cheap "run once on the next main-loop pass"
+ * request, not a busy-loop. */
+static void esp32_uart_vnext_credit_available_impl(void);
+
+void esp32_uart_vnext_credit_available(void)
+{
+    if (vnext_uart_provenance_enabled()) vnext_uart_credit_available_calls++;
+    esp32_uart_vnext_credit_available_impl();
+}
+
+static void esp32_uart_vnext_credit_available_impl(void)
+{
+    for (unsigned i = 0; i < vnext_uart_instance_count; ++i) {
+        ESP32UARTState *s = vnext_uart_instances[i];
+        if (!s || !s->tx_effect_bh) continue;
+        if (s->tx_effect_count > 0 || s->pending_config.clkdivDirty ||
+            s->pending_config.conf0StateDirty || s->pending_config.txFifoReset ||
+            s->pending_config.rxFifoReset) {
+            qemu_bh_schedule(s->tx_effect_bh);
+        }
+    }
 }
 
 static uint64_t uart_read(void *opaque, hwaddr addr, unsigned int size)
@@ -261,16 +433,34 @@ static void uart_write(void *opaque, hwaddr addr, uint64_t value, unsigned int s
     case A_UART_FIFO:
         if (fifo8_num_free(&s->tx_fifo) == 0) {
             error_report("esp_uart: write to UART FIFO while it is full");
+        } else if (s->tx_effect_count >= UART_FIFO_LENGTH) {
+            /* E118-AUDIT (EVIDENCE.md, 2026-09-05): the backlog (tx_effects[]/tx_effect_count) can
+             * now genuinely stay at capacity while tx_fifo keeps draining independently at its own
+             * baud-rate pace (see the struct comment on tx_backlog_waiter[] in esp32_uart.h) --
+             * tx_fifo having room is no longer proof the backlog does too. Block the calling vCPU
+             * BEFORE fifo8_push() (nothing guest-visible has happened yet for this byte) and replay
+             * the whole write once tx_effect_bh() frees a backlog slot, instead of accepting the
+             * byte into tx_fifo and silently never recording its effect. This is backlog capacity,
+             * NOT VNEXT_B ring credit -- a different resource; see uart_tx_effect_bh(). */
+            CPUState *cpu = current_cpu;
+            if (cpu && cpu->cpu_index < 2) {
+                if (vnext_uart_provenance_enabled()) vnext_uart_backlog_full_stops++;
+                s->tx_backlog_waiter[cpu->cpu_index] = cpu;
+                cpu_stop_current();
+                cpu_loop_exit_restore(cpu, cpu->mem_io_pc);
+            }
+            /* No real vCPU to block (should not happen for a genuine guest MMIO write) -- fall
+             * back to the pre-existing, honest error report rather than silently dropping. */
+            error_report("esp_uart: TX backlog full with no vCPU to block (current_cpu=NULL)");
         } else {
             //printf("Qemu: uart_write, %lu\n", value ); fflush( stdout );
             fifo8_push( &s->tx_fifo, value );
             /* [FIX] ordered Core-notification path -- snapshot whatever config accumulated since
              * the last accepted byte (or since reset) as THIS byte's configBefore, then reset the
-             * pending summary for the next segment. Bounded at UART_FIFO_LENGTH: identical to (in
-             * fact reuses) s->tx_fifo's own 128-byte capacity gate above -- the in-flight byte is
-             * peeked, never double-counted (see uart_send_next()), so no byte is ever outstanding
-             * outside that same 128-entry bound. */
-            if( s->tx_effect_count < UART_FIFO_LENGTH ) {
+             * pending summary for the next segment. Bounded at UART_FIFO_LENGTH via the backlog
+             * capacity check above (E118-AUDIT) -- no longer identical to tx_fifo's own gate, see
+             * that check's comment. */
+            {
                 UartTxEffect *ev = &s->tx_effects[s->tx_effect_count++];
                 ev->byte = (uint8_t) value;
                 ev->configBefore = s->pending_config;
@@ -411,6 +601,16 @@ void uart_receive(void *opaque, const uint8_t *buf, int size)
     esp32_uart_update_irq(s);
 }
 
+void esp32_uart_vnext_rx_byte(uint32_t uart_index, uint8_t byte)
+{
+    if (uart_index >= 3 || !vnext_uart_instances[uart_index]) return;
+    ESP32UARTState *s = vnext_uart_instances[uart_index];
+    if (fifo8_num_free(&s->rx_fifo) == 0) return;
+    fifo8_push(&s->rx_fifo, byte);
+    esp32_uart_set_rx_timeout(s);
+    esp32_uart_update_irq(s);
+}
+
 int uart_can_receive(void *opaque)
 {
     ESP32UARTState *s = ESP32_UART(opaque);
@@ -496,6 +696,13 @@ static void esp32_uart_reset(DeviceState *dev)
     qemu_bh_cancel(s->tx_effect_bh);
     uart_config_summary_clear(&s->pending_config);
     s->tx_effect_count = 0;
+    /* E118-AUDIT (EVIDENCE.md, 2026-09-05): a vCPU can be parked in uart_write() waiting for
+     * backlog space (see tx_backlog_waiter[] in esp32_uart.h) at the exact moment of a reset.
+     * Discarding the backlog without waking it would leave that vCPU stopped forever -- resume it
+     * now (the reset above already guarantees the retry will find space) rather than merely
+     * forgetting the pointer. This reset discards only this device generation's own pending
+     * events; the resumed vCPU replays its write against the post-reset state, not stale data. */
+    uart_wake_backlog_waiters(s);
     timer_del(&s->throttle_timer);
     s->throttle_rx = false;
     s->rx_tout_ena = false;
@@ -520,6 +727,8 @@ static void esp32_uart_realize(DeviceState *dev, Error **errp)
 static void esp32_uart_init(Object *obj)
 {
     ESP32UARTState *s = ESP32_UART(obj);
+    if (vnext_uart_instance_count < 3)
+        vnext_uart_instances[vnext_uart_instance_count++] = s;
     SysBusDevice *sbd = SYS_BUS_DEVICE(obj);
     ESP32UARTClass *class = ESP32_UART_GET_CLASS(obj);
 
@@ -531,6 +740,15 @@ static void esp32_uart_init(Object *obj)
 
     memory_region_init_io(&s->iomem, obj, &s->uart_ops, s,
                           TYPE_ESP32_UART, UART_REG_CNT * sizeof(uint32_t));
+    /* E118-AUDIT-2 (EVIDENCE.md, 2026-09-05): the E118-AUDIT backlog fix in uart_write()'s
+     * A_UART_FIFO case calls cpu_stop_current() + cpu_loop_exit_restore() DIRECTLY from within
+     * THIS device's own .write callback when the backlog is full. That siglongjmp skips
+     * softmmu/memory.c's normal-return clear of mem_reentrancy_guard.engaged_in_io (set on entry
+     * to this dispatch), permanently wedging every later access to this UART with "Blocked
+     * re-entrant IO" -- root-caused via that exact warning preceding the E118-AUDIT gate's storm.
+     * Same reasoning as hw/i2c/esp32_i2c.c's matching comment: safe to disable because this retry
+     * path never drops the BQL. */
+    s->iomem.disable_reentrancy_guard = true;
     sysbus_init_mmio(sbd, &s->iomem);
     sysbus_init_irq(sbd, &s->irq);
     fifo8_create(&s->tx_fifo, UART_FIFO_LENGTH);

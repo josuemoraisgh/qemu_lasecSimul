@@ -29,7 +29,8 @@ system_ss.add(files(
   'runstate.c',
   'tpm-hmp-cmds.c',
   'vl.c',
-  'simuliface.c'
+  'simuliface.c',
+  'vnext_b.c'
 ), sdl, libpmem, libdaxctl)
 
 if have_tpm

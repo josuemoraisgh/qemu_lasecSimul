@@ -20,6 +20,8 @@
 #include "hw/qdev-properties.h"
 #include "hw/misc/esp32_reg.h"
 #include "hw/misc/esp32_rtc_cntl.h"
+#include "hw/nvram/esp32_efuse.h"
+
 
 static void esp32_rtc_update_cpu_stall(Esp32RtcCntlState* s);
 static void esp32_rtc_update_clk(Esp32RtcCntlState* s);
@@ -242,3 +244,5 @@ static void esp32_rtc_cntl_register_types(void)
 }
 
 type_init(esp32_rtc_cntl_register_types)
+
+

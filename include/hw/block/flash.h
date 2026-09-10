@@ -6,6 +6,36 @@
 #include "exec/hwaddr.h"
 #include "qom/object.h"
 
+/* m25p80.c */
+
+/* E120 (EVIDENCE.md, 2026-09-05): reads `bytes` bytes starting at `offset` out of the flash
+ * chip's own coherent, operational RAM copy (`Flash::storage` -- the same array
+ * flash_write8()/flash_erase() mutate directly and synchronously; BlockBackend I/O is only the
+ * asynchronous, fire-and-forget persistence path behind it, never awaited here). Bytes reflect
+ * every program/erase already applied by the guest, with no dependency on whether that async
+ * persistence has reached the backing file yet.
+ *
+ * `dev` must be a realized device of type "m25p80-generic" or a registered subtype (e.g.
+ * "gd25q32", the model this fork actually instantiates for ESP32 -- see
+ * hw/xtensa/esp32.c:esp32_machine_init_spi_flash()). The `Flash` struct itself stays private to
+ * m25p80.c; callers only ever see this DeviceState* handle.
+ *
+ * Bytes are copied into `destination` (caller-owned, at least `bytes` long) rather than handing
+ * back a pointer into `Flash::storage` -- `Flash::storage` can be reallocated by nothing in this
+ * device model today, but a raw pointer would still carry an implicit, undocumented lifetime
+ * contract this API deliberately avoids.
+ *
+ * Must be called with the BQL held (asserted internally) -- `Flash::storage` is mutated by guest
+ * SPI command processing under the same lock, with no additional synchronization of its own.
+ *
+ * Returns false and sets `*errp` on an invalid range (offset+bytes overflow, or exceeding the
+ * flash's own configured size) instead of silently truncating or reading out of bounds. Callers
+ * that already validated MMU-derived offsets against a known-good cache layout may pass errp=NULL
+ * only if they treat a false return as a caller bug they still must not read from `destination`
+ * after (this function never partially fills `destination` on failure). */
+bool m25p80_read_array(DeviceState *dev, uint64_t offset, uint64_t bytes,
+                       void *destination, Error **errp);
+
 /* pflash_cfi01.c */
 
 #define TYPE_PFLASH_CFI01 "cfi.pflash01"
@@ -77,3 +107,4 @@ void ecc_reset(ECCState *s);
 extern const VMStateDescription vmstate_ecc_state;
 
 #endif
+

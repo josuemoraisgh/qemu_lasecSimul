@@ -4,6 +4,7 @@
 #include "hw/registerfields.h"
 #include "hw/sysbus.h"
 #include "hw/misc/esp32_reg.h"
+#include "hw/nvram/esp32_efuse_op_state.h"
 #include "sysemu/block-backend.h"
 
 #define TYPE_ESP32_EFUSE "nvram.esp32.efuse"
@@ -120,6 +121,7 @@ typedef struct Esp32EfuseState {
     uint32_t int_st_reg;
     uint32_t int_ena_reg;
     uint32_t dac_conf_reg;
+    Esp32EfuseOperationState operation;
 } Esp32EfuseState;
 
 /* returns NULL unless there is exactly one device */

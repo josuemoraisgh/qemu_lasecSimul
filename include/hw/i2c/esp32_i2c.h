@@ -42,6 +42,8 @@ typedef struct Esp32I2CState {
     bool burstActive;
     bool burstAddressAck;
     bool burstAddressValid;
+    bool burstPartial;
+    bool burstStop;
     uint8_t burstAddressByte;
     uint32_t burstFirstNack;
     uint32_t burstWriteCmdCount;
@@ -64,7 +66,26 @@ typedef struct Esp32I2CState {
     uint32_t stop_hold_reg;
     uint32_t stop_setup_reg;
     uint32_t cmd_reg[ESP32_I2C_CMD_COUNT];
+    /* E118-AUDIT (EVIDENCE.md, 2026-09-05): true when esp32_i2c_do_transaction()'s electrical-path
+     * writeReg() observed VNEXT_WOULD_BLOCK on a current_cpu==NULL continuation step (reached via
+     * esp32_i2c_event()'s timer, not synchronously from a guest MMIO write -- see esp32_i2c_event()
+     * for when that happens). No lastCMD/bytesTx/time/interrupt/ACK state is advanced while this is
+     * set; esp32_i2c_vnext_credit_available() retries the exact same step once lane 0 regains
+     * credit. Cleared by esp32_i2c_reset() (via timer_del(&event_timer), which already cancels any
+     * pending step) so a reset device is never woken by a stale continuation -- single-threaded
+     * under the BQL, so a plain bool (no generation counter) is sufficient: nothing can observe
+     * this flag as true again after reset without a fresh do_transaction() call setting it. */
+    bool vnextContinuationBacklogged;
 } Esp32I2CState;
+
+void esp32_i2c_vnext_bind(Esp32I2CState *s);
+void esp32_i2c_vnext_complete(uint32_t bus, uint32_t status, uint32_t first_nack,
+                              uint64_t stretch_ns, const uint8_t *rx, uint32_t rx_len);
+/* E118-AUDIT (EVIDENCE.md, 2026-09-05): called from vnext_b.c's vnext_resume() backlog-notify
+ * sweep once lane 0 regains credit. Retries esp32_i2c_do_transaction() for exactly the bound
+ * instances with vnextContinuationBacklogged set; a no-op otherwise. Never touches a CPU (this
+ * continuation only ever runs with current_cpu==NULL in the first place). */
+void esp32_i2c_vnext_credit_available(void);
 
 
 REG32(I2C_CTR, 0x04);

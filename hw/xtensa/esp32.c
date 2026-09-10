@@ -51,7 +51,6 @@
 static Esp32SocState *esp32_soc;
 static uint64_t esp32_reset_count;
 
-
 enum {
     ESP32_MEMREGION_IROM,
     ESP32_MEMREGION_DROM,
@@ -123,111 +122,26 @@ static void remove_cpu_watchpoints(XtensaCPU* xcs)
     }
 }
 
-/* ===== [XTENSA-PC-SAMPLER] instrumentacao temporaria, ver .spec secao 32.5.17 =====
- * Achado de 32.5.16: uma janela de ~1,3s completamente silenciosa (nenhum registro rastreado por
- * este fork muda de estado) precede toda expiracao genuina do watchdog do TIMER_GROUP1. Um unico
- * instantaneo do PC no momento do evento nao distingue "nucleo genuinamente parado num spin-wait"
- * de "nucleo so passando por ali" -- ja levou a uma hipotese (ADC) levantada e corretamente
- * refutada em 32.5.16. Este timer, DISPARADO PERIODICAMENTE por tempo VIRTUAL (nao ligado a
- * nenhuma escrita/leitura/excecao do guest), amostra o PC dos dois nucleos continuamente, pra
- * decidir de vez entre as duas hipoteses. Sera revertido apos a causa raiz ser confirmada. */
-#define ESP32_PC_SAMPLER_INTERVAL_NS (2 * 1000 * 1000) /* 2ms de tempo virtual */
-#define ESP32_PC_SAMPLER_CAPACITY 8192  /* 8192 * 2ms = ~16s de historico, mais que suficiente */
-#define ESP32_PC_SAMPLER_WINDOW   2048  /* ultimos ~4s despejados na captura */
-#define ESP32_PC_SAMPLER_PATH "c:/tmp/lasecsimul_xtensa_pcsampler"
-
-typedef struct Esp32PcSamplerEntry {
-    int64_t virt_ns;
-    int64_t host_ns;
-    uint32_t pc0;
-    uint32_t pc1;
-} Esp32PcSamplerEntry;
-
-static Esp32PcSamplerEntry esp32_pc_sampler_ring[ESP32_PC_SAMPLER_CAPACITY];
-static uint64_t esp32_pc_sampler_seq;
-static bool esp32_pc_sampler_first_captured;
-
-static const char *esp32_pc_sampler_pid_path(const char *base)
-{
-    static char path[256];
-    snprintf(path, sizeof(path), "%s.%" PRId64 ".log", base, (int64_t)getpid());
-    return path;
-}
-
-static void esp32_pc_sampler_write_window(const char *path_base, const char *reason)
-{
-    if (esp32_pc_sampler_seq == 0) {
-        return;
-    }
-    FILE *f = fopen(esp32_pc_sampler_pid_path(path_base), "w");
-    if (!f) {
-        return;
-    }
-    const uint64_t total = esp32_pc_sampler_seq;
-    const uint64_t ring_count = total < ESP32_PC_SAMPLER_CAPACITY ? total : ESP32_PC_SAMPLER_CAPACITY;
-    const uint64_t window = total < ESP32_PC_SAMPLER_WINDOW ? total : ESP32_PC_SAMPLER_WINDOW;
-    const uint64_t available = window < ring_count ? window : ring_count;
-    const uint64_t start = total - available;
-    fprintf(f, "# [XTENSA-PC-SAMPLER] %s -- %" PRIu64 " amostras totais (mostrando as ultimas %"
-               PRIu64 ", intervalo=%dms virtuais)\n", reason, total, available,
-               ESP32_PC_SAMPLER_INTERVAL_NS / 1000000);
-    for (uint64_t seq = start; seq < total; ++seq) {
-        const Esp32PcSamplerEntry *ev = &esp32_pc_sampler_ring[seq % ESP32_PC_SAMPLER_CAPACITY];
-        fprintf(f, "[%06" PRIu64 "] virt_ns=%" PRId64 " host_ns=%" PRId64 " pc0=0x%08x pc1=0x%08x\n",
-                seq, ev->virt_ns, ev->host_ns, ev->pc0, ev->pc1);
-    }
-    fclose(f);
-}
-
-/* Chamada de fora deste arquivo (hw/timer/esp32_timg.c, codigo "common") no momento exato de uma
- * expiracao do WDT -- despeja a janela recente incondicionalmente, capturando exatamente os
- * segundos que precedem o evento. Declarada em include/hw/misc/esp32_dport.h (generica, sem tipos
- * de target) pelo mesmo motivo ja documentado pra esp32_intmatrix_get_raw_status_bits(). */
-void esp32_pc_sampler_capture_window(void)
-{
-    esp32_pc_sampler_write_window(ESP32_PC_SAMPLER_PATH "_WDT", "expiracao do TIMER_GROUP1 WDT");
-}
-
-static void esp32_pc_sampler_cb(void *opaque)
-{
-    Esp32SocState *s = (Esp32SocState *)opaque;
-    Esp32PcSamplerEntry *ev = &esp32_pc_sampler_ring[esp32_pc_sampler_seq % ESP32_PC_SAMPLER_CAPACITY];
-    ev->virt_ns = qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL);
-    ev->host_ns = get_clock();
-    ev->pc0 = (uint32_t)s->cpu[0].env.pc;
-    ev->pc1 = (uint32_t)s->cpu[1].env.pc;
-    esp32_pc_sampler_seq++;
-
-    if (!esp32_pc_sampler_first_captured && esp32_pc_sampler_seq >= ESP32_PC_SAMPLER_WINDOW) {
-        esp32_pc_sampler_first_captured = true;
-        esp32_pc_sampler_write_window(ESP32_PC_SAMPLER_PATH, "primeira janela completa (diagnostico)");
-    }
-
-    timer_mod(s->pc_sampler_timer, ev->virt_ns + ESP32_PC_SAMPLER_INTERVAL_NS);
-}
-/* ===== fim [XTENSA-PC-SAMPLER] ===== */
 
 static void esp32_cpu_stall(void *opaque, int n, int level);
 
-static void esp32_log_reset(Esp32SocState *s, uint32_t reset_mask)
+static void esp32_log_reset(Esp32SocState *s, uint32_t reset_mask, const char *source)
 {
     ++esp32_reset_count;
     const bool expected_app_cpu_boot_reset =
         esp32_reset_count == 2 && reset_mask == ESP32_SOC_RESET_APPCPU &&
         s->rtc_cntl.reset_cause[1] == ESP32_SW_CPU_RESET;
-    /* [CACHE-TRACE] ver .spec 32.5.13 -- pid= adicionado temporariamente a esta linha JA existente
-     * (nao uma nova instrumentacao) so pra permitir correlacionar qual arquivo de trace por-PID
-     * pertence a qual ciclo da bateria, ja que esta linha ja aparece em "Logs QEMU do ciclo N" do
-     * harness pra ciclos que falham. Sera revertido junto com o resto da instrumentacao. */
     fprintf(stderr,
             "[LasecSimul][ESP32 reset] count=%" PRIu64
             " mask=0x%02x cause0=%u cause1=%u pc0=0x%08x pc1=0x%08x"
-            " wdt0_enabled=%u wdt1_enabled=%u network=%s expected=%s pid=%" PRId64 "\n",
+            " wdt0_enabled=%u wdt1_enabled=%u network=%s expected=%s source=%s boot_epoch=%" PRIu64 " pid=%" PRId64 "\n",
             esp32_reset_count, reset_mask, s->rtc_cntl.reset_cause[0],
             s->rtc_cntl.reset_cause[1], (uint32_t)s->cpu[0].env.pc,
             (uint32_t)s->cpu[1].env.pc, s->timg[0].wdt.en, s->timg[1].wdt.en,
             (s->eth || s->wifi_dev) ? "enabled" : "disabled",
             expected_app_cpu_boot_reset ? "app-cpu-startup" : "no",
+            source ? source : "OTHER",
+            s->rtc_cntl.cpu0_boot_epoch,
             (int64_t)getpid());
     fflush(stderr);
 }
@@ -235,15 +149,32 @@ static void esp32_log_reset(Esp32SocState *s, uint32_t reset_mask)
 static void esp32_app_cpu_reset_async(CPUState *cs, run_on_cpu_data data)
 {
     Esp32SocState *s = data.host_ptr;
-
     g_assert(cs == CPU(&s->cpu[1]));
-    esp32_cache_trace_reset_event(&s->dport, "reset_app_cpu_async", 1, ESP32_SOC_RESET_APPCPU);
-    esp32_log_reset(s, ESP32_SOC_RESET_APPCPU);
+    esp32_log_reset(s, ESP32_SOC_RESET_APPCPU,
+                    s->requested_reset_source ? s->requested_reset_source : "APP_CPU_CONTROL");
     xtensa_select_static_vectors(&s->cpu[1].env,
                                  s->rtc_cntl.stat_vector_sel[1]);
     remove_cpu_watchpoints(&s->cpu[1]);
     cpu_reset(cs);
+    esp32_dport_clear_appcpu_cache_wait_on_reset(&s->dport);
     s->dport.appcpu_reset_pending = false;
+    /* E130 (EVIDENCE.md, 2026-09-05): this per-CPU reset path (SW_CPU_RESET_REGISTER,
+     * MWDT_CPU_STAGE) deliberately does NOT go through qemu_system_reset_request(), so it never
+     * gets resume_all_vcpus()'s unconditional cpu_resume() for free the way esp32_dig_reset()/
+     * esp32_timg_sys_reset()'s full-system-reset path does. cpu_reset()/cpu_common_reset_hold()
+     * (hw/core/cpu-common.c) resets registers/PC/halted but never touches cpu->stop/cpu->stopped
+     * -- those are QEMU's own runtime-pause bits, orthogonal to CPU/device reset state. Without
+     * this call, a CPU1 that happened to be parked via cpu_stop_current() when this reset landed
+     * (VNEXT_B backpressure, or the E129 cache-wait interlock in esp32_dport.c's
+     * esp32_cache_ill_read()) would have its registers reset to the boot vector but remain
+     * permanently asleep in qemu_wait_io_event()'s cond_wait -- a zombie CPU, reset but never
+     * actually resuming. Whatever it was waiting for is moot now (the CPU is restarting from
+     * scratch), so waking it unconditionally here exactly mirrors resume_all_vcpus()'s own
+     * per-cpu unconditional cpu_resume() call, and is safe for the same reason: cpu_resume() on an
+     * already-running CPU is a no-op, and RUNSTALL (esp32_cpu_stall() below, the actual mechanism
+     * that holds APP CPU from making progress during controlled startup) is completely orthogonal
+     * to cpu->stop/stopped -- unstalling here does not bypass it. */
+    cpu_resume(cs);
     esp32_cpu_stall(s, 1, 0);
 }
 
@@ -251,10 +182,9 @@ static void esp32_dig_reset(void *opaque, int n, int level)
 {
     if( !level ) return;
     Esp32SocState *s = ESP32_SOC(opaque);
-
-    esp32_cache_trace_reset_event(&s->dport, "reset_dig", -1, ESP32_SOC_RESET_DIG);
     esp32_dport_clear_ill_trap_state(&s->dport);
     s->requested_reset = ESP32_SOC_RESET_DIG;
+    s->requested_reset_source = "RTC_RESET";
     qemu_system_reset_request(SHUTDOWN_CAUSE_GUEST_RESET);
 }
 
@@ -262,9 +192,8 @@ static void esp32_cpu_reset(void* opaque, int n, int level)
 {
     if( !level ) return;
     Esp32SocState *s = ESP32_SOC(opaque);
-
-    esp32_cache_trace_reset_event(&s->dport, "reset_cpu_sw", n, ESP32_SW_CPU_RESET);
     s->rtc_cntl.reset_cause[n] = ESP32_SW_CPU_RESET;
+    s->requested_reset_source = "SW_CPU_RESET_REGISTER";
     if (n == 1) {
         /*
          * A per-CPU reset is not a machine reset.  Routing APP CPU startup
@@ -290,9 +219,8 @@ static void esp32_timg_cpu_reset(void* opaque, int n, int level)
 {
     if( !level ) return;
     Esp32SocState *s = ESP32_SOC(opaque);
-
-    esp32_cache_trace_reset_event(&s->dport, "reset_timg_cpu", n, ESP32_TGWDT_CPU_RESET);
     s->rtc_cntl.reset_cause[n] = ESP32_TGWDT_CPU_RESET;
+    s->requested_reset_source = "MWDT_CPU_STAGE";
     if (n == 1) {
         async_run_on_cpu(CPU(&s->cpu[1]), esp32_app_cpu_reset_async,
                          RUN_ON_CPU_HOST_PTR(s));
@@ -311,10 +239,9 @@ static void esp32_timg_sys_reset(void* opaque, int n, int level)
 {
     if( !level ) return;
     Esp32SocState *s = ESP32_SOC(opaque);
-
-    esp32_cache_trace_reset_event(&s->dport, "reset_timg_sys", n, ESP32_SOC_RESET_DIG);
     esp32_dport_clear_ill_trap_state(&s->dport);
     s->requested_reset = ESP32_SOC_RESET_DIG;
+    s->requested_reset_source = "MWDT_SYS_STAGE";
     for( int i=0; i<ESP32_CPU_COUNT; ++i) {
         s->rtc_cntl.reset_cause[i] = ESP32_TG0WDT_SYS_RESET + n;
     }
@@ -334,7 +261,12 @@ static void esp32_soc_reset(DeviceState *dev)
 
     if( s->requested_reset == 0 ) s->requested_reset = ESP32_SOC_RESET_ALL;
 
-    esp32_log_reset(s, s->requested_reset);
+    if (s->requested_reset & ESP32_SOC_RESET_PROCPU) {
+        ++s->rtc_cntl.cpu0_boot_epoch;
+    }
+
+    esp32_log_reset(s, s->requested_reset,
+                    s->requested_reset_source ? s->requested_reset_source : "OTHER");
 
     if( s->requested_reset & ESP32_SOC_RESET_RTC ) device_cold_reset( DEVICE(&s->rtc_cntl) );
 
@@ -369,6 +301,9 @@ static void esp32_soc_reset(DeviceState *dev)
         xtensa_select_static_vectors(&s->cpu[0].env, s->rtc_cntl.stat_vector_sel[0]);
         remove_cpu_watchpoints(&s->cpu[0]);
         cpu_reset(CPU(&s->cpu[0]));
+        if (s->elf_boot) {
+            cpu_set_pc(CPU(&s->cpu[0]), s->elf_entry);
+        }
     }
     if (s->requested_reset & ESP32_SOC_RESET_APPCPU)
     {
@@ -377,6 +312,7 @@ static void esp32_soc_reset(DeviceState *dev)
         cpu_reset(CPU(&s->cpu[1]));
     }
     s->requested_reset = 0;
+    s->requested_reset_source = NULL;
 }
 
 static void esp32_cpu_stall(void* opaque, int n, int level)
@@ -392,8 +328,14 @@ static void esp32_cpu_stall(void* opaque, int n, int level)
               || !s->dport.appcpu_clkgate_state
               ||  s->dport.appcpu_reset_state
               ||  s->dport.appcpu_reset_pending;
+              /* E124/E129 (EVIDENCE.md, 2026-09-05): a fifth OR-term used to live here
+               * (appcpu_cache_race_stall) -- proven (E128) to deadlock APP CPU when this blanket
+               * xtensa_runstall() happened to engage while APP CPU was mid-interrupt-return inside
+               * unrelated IRAM-resident code. Removed: that reason now suspends only the specific
+               * access that actually lands on a disabled region (hw/misc/esp32_dport.c's
+               * esp32_cache_ill_read(), via cpu_stop_current()/cpu_resume(), never xtensa_runstall())
+               * and deliberately never reaches this function at all any more. */
     }
-
     if( stall != s->cpu[n].env.runstall)
         xtensa_runstall(&s->cpu[n].env, stall);
 }
@@ -703,6 +645,7 @@ static void esp32_soc_realize( DeviceState *dev, Error **errp )
         esp32_soc_add_periph_device( sys_mem, &s->i2c[i], i2c_base[i]);
         sysbus_connect_irq( SYS_BUS_DEVICE(&s->i2c[i]), 0, qdev_get_gpio_in(intmatrix_dev, ETS_I2C_EXT0_INTR_SOURCE + i));
         s->i2c[i].busIndex = (uint8_t)i;
+        esp32_i2c_vnext_bind(&s->i2c[i]);
     }
 
     qdev_realize( DEVICE(&s->rng), &s->periph_bus, &error_fatal);
@@ -764,12 +707,6 @@ static void esp32_soc_realize( DeviceState *dev, Error **errp )
     memory_region_add_subregion( sys_mem, apb_ctrl_date_reg, apbctrl_mem);
     uint32_t apb_ctrl_date_reg_val = 0x16042000 | 0x80000000;  /* MSB indicates ECO3 silicon revision */
     cpu_physical_memory_write( apb_ctrl_date_reg, &apb_ctrl_date_reg_val, 4 );
-
-    /* [XTENSA-PC-SAMPLER] ver .spec 32.5.17 -- arma o timer periodico de amostragem de PC assim que
-     * os dois nucleos ja existem. Primeiro disparo logo no inicio (ev->virt_ns=0 na pratica, ja que
-     * o clock virtual comeca do zero) -- amostra desde o boot. */
-    s->pc_sampler_timer = timer_new_ns(QEMU_CLOCK_VIRTUAL, esp32_pc_sampler_cb, s);
-    timer_mod(s->pc_sampler_timer, qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL));
 
     qemu_register_reset( (QEMUResetHandler*) esp32_soc_reset, dev );
 }
@@ -900,8 +837,17 @@ type_init(esp32_soc_register_types)
 static uint64_t translate_phys_addr( void *opaque, uint64_t addr )
 {
     XtensaCPU *cpu = opaque;
+    uint64_t page = cpu_get_phys_page_debug(CPU(cpu), addr);
 
-    return cpu_get_phys_page_debug(CPU(cpu), addr);
+    /* ELF loading occurs before firmware has enabled the ESP32 MMU/cache.
+     * The ELF produced for this machine uses the architectural physical
+     * aliases for IRAM/DRAM/IROM.  The debug MMU lookup therefore returns no
+     * translation at this point; preserve the ELF physical address instead
+     * of silently loading the segment at an invalid address. */
+    if (page == (uint64_t)-1) {
+        return addr;
+    }
+    return page + (addr & ~TARGET_PAGE_MASK);
 }
 
 struct Esp32MachineState {
@@ -916,7 +862,11 @@ struct Esp32MachineState {
 OBJECT_DECLARE_SIMPLE_TYPE(Esp32MachineState, ESP32_MACHINE)
 
 
-static void esp32_machine_init_spi_flash( Esp32SocState *ss, BlockBackend* blk )
+/* E120 (EVIDENCE.md, 2026-09-05): now returns the realized flash DeviceState* (NULL if the image
+ * size was unsupported and no chip was created) so the caller can hand it to
+ * esp32_dport_set_flash_device() -- see that function's own comment for why DPORT needs this
+ * handle and the lifetime argument for holding onto it. */
+static DeviceState *esp32_machine_init_spi_flash( Esp32SocState *ss, BlockBackend* blk )
 {
     /* "main" flash chip is attached to SPI1, CS0 */
     DeviceState *spi_master = DEVICE( &ss->spi[1] );
@@ -930,7 +880,7 @@ static void esp32_machine_init_spi_flash( Esp32SocState *ss, BlockBackend* blk )
         case  4 * 1024 * 1024: flash_chip_model = "gd25q32"; break;
         case  8 * 1024 * 1024: flash_chip_model = "gd25q64"; break;
         case 16 * 1024 * 1024: flash_chip_model = "is25lp128"; break;
-        default: error_report("Error: only 2, 4, 8, 16 MB flash images are supported"); return;
+        default: error_report("Error: only 2, 4, 8, 16 MB flash images are supported"); return NULL;
     }
     printf("Qemu: initializing SPI Flash '%s' %" PRId64 " MB\n",
            flash_chip_model, image_size / (1024 * 1024));
@@ -939,6 +889,7 @@ static void esp32_machine_init_spi_flash( Esp32SocState *ss, BlockBackend* blk )
     qdev_realize_and_unref(flash_dev, spi_bus, &error_fatal);
     qdev_connect_gpio_out_named(spi_master, SSI_GPIO_CS, 0,
                                 qdev_get_gpio_in_named(flash_dev, SSI_GPIO_CS, 0));
+    return flash_dev;
 }
 
 static void esp32_machine_init_psram( Esp32SocState *ss, uint32_t size_mbytes )
@@ -1058,7 +1009,15 @@ static void esp32_machine_init(MachineState *machine)
 
     qdev_realize( DEVICE(ss), NULL, &error_fatal );
 
-    if( blk ) esp32_machine_init_spi_flash( ss, blk );
+    /* E120 (EVIDENCE.md, 2026-09-05): DPORT is realized above (as part of the whole SoC), before
+     * the flash chip exists -- esp32_dport_set_flash_device() below is the earliest point this
+     * link can be made, but it still completes well before qemu_init()'s caller ever resumes any
+     * vCPU (machine init runs entirely before the first cpu_exec()), matching the same "no vCPU
+     * running yet" requirement DPORT's own flash_blk assignment above already relies on. */
+    if( blk ) {
+        ms->flash_dev = esp32_machine_init_spi_flash( ss, blk );
+        if( ms->flash_dev ) esp32_dport_set_flash_device( &ss->dport, ms->flash_dev );
+    }
 
     if( machine->ram_size > 0 )
         esp32_machine_init_psram( ss, (uint32_t) (machine->ram_size / MiB) );
@@ -1095,23 +1054,20 @@ static void esp32_machine_init(MachineState *machine)
         printf("Qemu: loading ELF file '%s'\n", load_elf_filename );
 
         if( elf_entry != XCHAL_RESET_VECTOR_PADDR ) {
-            // Since ROM is empty when loading elf file AND
-            // PC value is 0x40000400 after reset
-            // need to jump to elf entry point to run a programm
-            uint8_t p[4];
-            memcpy(p, &elf_entry, 4);
-            uint8_t boot[] = {
-                0x06, 0x01, 0x00,       /* j    1 */
-                0x00,                   /* .literal_position */
-                p[0], p[1], p[2], p[3], /* .literal elf_entry */
-                                        /* 1: */
-                0x01, 0xff, 0xff,       /* l32r a0, elf_entry */
-                0xa0, 0x00, 0x00,       /* jx   a0 */
-            };
-            // Write boot function to reset-vector address (0x40000400) of the CPU 0
-            rom_add_blob_fixed_as("boot", boot, sizeof(boot), XCHAL_RESET_VECTOR_PADDR, CPU(&ss->cpu[0])->as);
-            ss->cpu[0].env.pc = XCHAL_RESET_VECTOR_PADDR;
+            /* -kernel is an ELF loader path, not a flash/ROM boot path.  Set
+             * the architectural entry point directly after loading all
+             * segments.  The former hand-written reset-vector stub occupied
+             * the ROM alias and did not reliably transfer control on this
+             * Xtensa configuration. */
+            ss->elf_boot = true;
+            ss->elf_entry = (uint32_t)elf_entry;
+            cpu_set_pc(CPU(&ss->cpu[0]), elf_entry);
         }
+        /* The generic ELF loader registers segments as ROM blobs.  This
+         * machine loads them after its initial CPU reset, so perform the
+         * normal QEMU reset pass once more to materialize the blobs and flush
+         * the instruction cache before the vCPUs are released. */
+        qemu_system_reset(SHUTDOWN_CAUSE_NONE);
     } else if (!qtest_enabled()) {
         char *rom_binary = qemu_find_file(QEMU_FILE_TYPE_BIOS, "esp32-v3-rom.bin");
         if( rom_binary == NULL) {
@@ -1196,3 +1152,5 @@ static void esp32_machine_type_init(void)
 }
 
 type_init(esp32_machine_type_init);
+
+

@@ -2,11 +2,13 @@
 
 #include "hw/hw.h"
 #include "hw/registerfields.h"
+#include "qemu/main-loop.h"
 
 #define TYPE_ESP32_TIMG "timer.esp32.timg"
 #define ESP32_TIMG(obj) OBJECT_CHECK(Esp32TimgState, (obj), TYPE_ESP32_TIMG)
 
 #define ESP32_TIMG_WDT_STAGE_COUNT 4
+#define ESP32_TIMG_TRANSPORT_PAUSE_MAX_CPUS 2
 
 typedef enum Esp32TimgCalClkSel {
     ESP32_TIMG_CAL_RTC_MUX = 0,
@@ -65,6 +67,7 @@ typedef struct Esp32TimgWdtState {
     uint64_t ns_base;
     int cur_stage;
     uint32_t protect_reg;
+
     QEMUTimer stage_timer;
 } Esp32TimgWdtState;
 
@@ -96,6 +99,17 @@ typedef struct Esp32TimgState {
      * instruções na velocidade do silício; sem compensação, seções críticas legítimas de poucos
      * ms no ESP32 podem ocupar centenas de ms no host e disparar falsamente o watchdog. */
     uint32_t wdt_time_scale;
+    /* Bounded host-artifact pause facts.  Only the vCPU-facing fields are
+     * atomic; MWDT/timer state remains owned by the AioContext callback. */
+    QEMUBH *transport_pause_bh;
+    bool transport_pause_active;
+    bool transport_pause_pending;
+    uint64_t transport_pause_start_host_ns;
+    uint64_t transport_pause_start_virtual_ns;
+    /* The shared pause window is the union of all participating CPU lanes.
+     * Each lane writes only its own slot; the count is updated atomically. */
+    bool transport_pause_active_by_cpu[ESP32_TIMG_TRANSPORT_PAUSE_MAX_CPUS];
+    int transport_pause_active_count;
 
     bool rtc_cal_start;
     bool rtc_cal_ready;
@@ -103,6 +117,9 @@ typedef struct Esp32TimgState {
     uint32_t rtc_cal_max;
     uint32_t rtc_cal_value;
 } Esp32TimgState;
+
+void esp32_timg_transport_pause(unsigned cpu_index, bool active);
+
 
 #define ESP32_TIMG_WDT_CPU_RESET_GPIO   "mwdt-cpu-reset"
 #define ESP32_TIMG_WDT_SYS_RESET_GPIO   "mwdt-sys-reset"
