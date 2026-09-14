@@ -92,6 +92,9 @@ typedef struct ESPUARTState {
     unsigned baud_rate;
     uint64_t frame_time_ns;
 
+    uint8_t use_apb;
+    uint32_t clkdiv;
+
     Fifo8 rx_fifo;
     Fifo8 tx_fifo;
     guint tx_watch_handle;

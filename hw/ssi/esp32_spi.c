@@ -56,13 +56,13 @@ static void esp32_spi_event( void* opaque ) // Timer event
     //s->data_reg[s->bytesDone] = readReg( (s->iomem.addr & 0x000FFFFF)+0x80 ); //SPI Data buffer
     s->bytesDone++;
 
-    int bits = 8*2;
+    int bits = 8;
     if( s->dataBytes )
     {
         writeReg( (s->iomem.addr & 0x000FFFFF)+0x80, s->data_reg[s->bytesDone] );
-        timer_mod_ns( &s->event_timer, getQemu_ns()+s->period*bits);
+        timer_mod_ns( &s->event_timer, getQemu_ns()+s->period*bits );
     }
-    else               s->do_command = 0;
+    else s->do_command = 0;
 
     //printf("esp32_spi_event %i %i %i %lu\n", s->number, s->bytesDone, s->dataBytes, getQemu_ps() ); fflush( stdout );
 }
@@ -71,11 +71,13 @@ static void write_clk_reg( Esp32SpiState* s, uint64_t value )
 {
     uint32_t CLKDIV_PRE = (value & 0x7FFC0000) >> 18; // bits 18 to 30
     uint32_t CLKCNT_N   = (value & 0x0003F000) >> 12; // bits 12 to 17
-    uint32_t period_ns = CLKDIV_PRE + CLKCNT_N;
-    if( period_ns == 0 ) return;
+    uint32_t divider = (CLKDIV_PRE+1)*(CLKCNT_N+1);
+    //if( period_ns == 0 ) return;
 
     uint32_t apb_freq = esp32_soc_get_apb_freq();
-    period_ns = period_ns*1e9/apb_freq;
+    uint32_t spi_freq = esp32_soc_get_apb_freq()/divider;
+
+    uint32_t period_ns = 1e9/spi_freq;
     //if( period_ns < 500 ) period_ns = 500;
 
     if( s->period == period_ns ) return;
@@ -310,7 +312,7 @@ static void esp32_spi_do_command( Esp32SpiState* s, uint32_t cmd_reg )
 
         s->bytesDone = 0;
         writeReg( (s->iomem.addr & 0x000FFFFF)+0x80, s->data_reg[0] );
-        int bits = 8*2;
+        int bits = 8;
         timer_mod_ns( &s->event_timer, getQemu_ns()+s->period*bits);
     }
 }

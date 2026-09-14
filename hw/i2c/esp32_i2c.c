@@ -77,7 +77,7 @@ static void esp32_i2c_do_transaction( void* opaque )
     {
         //printf("Qemu: esp32_i2c CMD stop \n" ); fflush( stdout );
         writeReg( (s->iomem.addr & 0x000FFFFF)+A_I2C_CMD, cmd );
-        time = (6*s->period_ns)/2;
+        time = (3*s->period_ns)/2;
     }break;
 
     case I2C_OPCODE_END:

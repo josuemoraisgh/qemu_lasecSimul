@@ -161,9 +161,24 @@ static uint64_t uart_read(void *opaque, hwaddr addr, unsigned int size)
 //    return baud_rate;
 //}
 
+static void updateBaud( ESP32UARTState *s )
+{
+    uint32_t baud_rate = 115273;
+    uint32_t freq = s->use_apb ? esp32_soc_get_apb_freq() : 1000000;
+    if( freq == 0 ) freq = 40000001;
+    if( s->clkdiv ) baud_rate = (freq << 4) / s->clkdiv;
 
-static void uart_write(void *opaque, hwaddr addr,
-                       uint64_t value, unsigned int size)
+    uint32_t bitTime = 1e9/baud_rate;
+    s->frame_time_ns = bitTime*10;  /// TODO: this depends on frame size
+    if( s->baud_rate != baud_rate ){
+        s->baud_rate = baud_rate;
+        //printf("Qemu: baudrate %i %i %i %lu\n", baud_rate, s->clkdiv, freq, s->frame_time_ns ); fflush( stdout );
+        writeReg( (s->iomem.addr & 0x000FFFFF)+A_UART_CLKDIV, bitTime );
+    }
+}
+
+
+static void uart_write(void *opaque, hwaddr addr, uint64_t value, unsigned int size )
 {
     ESP32UARTState *s = ESP32_UART(opaque);
 
@@ -193,22 +208,13 @@ static void uart_write(void *opaque, hwaddr addr,
 
         uint32_t clkFra = (value & 0x00F00000) >> 20;
         uint32_t clkInt = (value & 0x000FFFFF) << 4 ;
-        uint32_t clkdiv = clkInt + clkFra;
-
+        uint32_t clkdiv = clkInt | clkFra;
+        if( s->clkdiv != clkdiv ){
+            s->clkdiv = clkdiv;
+            updateBaud( s );
+        }
         //unsigned clkdiv = (FIELD_EX32( value, UART_CLKDIV, CLKDIV) << 4)
         //                 + FIELD_EX32( value, UART_CLKDIV, CLKDIV_FRAG);
-        uint32_t baud_rate = 115200;
-        uint32_t freq = esp32_soc_get_apb_freq();
-        if( freq == 0 ) freq = 24000000;
-        if( clkdiv ) {
-            baud_rate = (freq << 4) / clkdiv;
-        }
-        s->frame_time_ns = (1e9/baud_rate)*10;  /// TODO: this depends on frame size
-        if( s->baud_rate != baud_rate ){
-            s->baud_rate = baud_rate;
-            //printf("Qemu: baudrate %i %i %i\n", baud_rate, clkdiv, freq); fflush( stdout );
-            writeReg( (s->iomem.addr & 0x000FFFFF)+addr, baud_rate );
-        }
         break;
     }
     case A_UART_AUTOBAUD:
@@ -224,7 +230,16 @@ static void uart_write(void *opaque, hwaddr addr,
     case A_UART_INT_RAW:
     case A_UART_INT_ST:
     case A_UART_STATUS: /* no-op */ break;
-    case A_UART_CONF0: writeReg( (s->iomem.addr & 0x000FFFFF)+addr, value ); break;
+    case A_UART_CONF0:
+        s->reg[addr / 4] = value;
+        uint8_t use_apb = (value & 1<<27)? 1 : 0;
+        if( s->use_apb != use_apb ){
+            s->use_apb = use_apb;
+            updateBaud( s );
+        }
+        //printf("Qemu: CONF0 %lu\n", value ); fflush( stdout );
+        writeReg( (s->iomem.addr & 0x000FFFFF)+addr, value );
+        break;
     case A_UART_CONF1:
         s->reg[addr / 4] = value;
         s->tx_empty_threshold = FIELD_EX32(s->reg[R_UART_CONF1], UART_CONF1, TXFIFO_EMPTY_THRD);
@@ -285,7 +300,7 @@ void uart_receive(void *opaque, const uint8_t *buf, int size)
                      qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL) +
                      throttle_time_ns);
     }
-
+    printf("uart_receive");
     esp32_uart_set_rx_timeout(s);
     esp32_uart_update_irq(s);
 }
@@ -310,6 +325,7 @@ static void uart_tx_timer_cb(void* opaque)
 
     fifo8_pop( &s->tx_fifo );
     if( fifo8_num_used( &s->tx_fifo ) ) uart_send_next( s );
+    //printf("uart_tx_timer %lu\n", getQemu_ps() );fflush( stdout );
     esp32_uart_update_irq(s);
 }
 
@@ -343,7 +359,9 @@ static void esp32_uart_reset(DeviceState *dev)
     //s->reg[R_UART_CONF0] = FIELD_DP32(s->reg[R_UART_CONF0] , UART_CONF0, STOP_BIT_NUM, 1);
     //s->reg[R_UART_CONF0] = FIELD_DP32(s->reg[R_UART_CONF0] , UART_CONF0, BIT_NUM, 3);
 
-    s->baud_rate = 115200;
+    s->use_apb = 1;
+    s->clkdiv = 11104;
+    s->baud_rate = 115273;
     fifo8_reset(&s->tx_fifo);
     fifo8_reset(&s->rx_fifo);
     if (s->tx_watch_handle) {
@@ -361,7 +379,7 @@ static void esp32_uart_reset(DeviceState *dev)
 
 extern GMainContext *g_main_context_default_l;
 
-static int uart_num = 0;
+//static int uart_num = 0;
 static void esp32_uart_realize(DeviceState *dev, Error **errp)
 {
     //ESP32UARTState *s = ESP32_UART(dev);
