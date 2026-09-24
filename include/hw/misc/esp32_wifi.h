@@ -6,6 +6,7 @@
 //#include "hw/misc/esp32_reg.h"
 #include "sysemu/sysemu.h"
 #include "net/net.h"
+#include "hw/misc/esp32_wifi_link.h"
 
 #define TYPE_ESP32_WIFI "esp32_wifi"
 #define ESP32_WIFI(obj) OBJECT_CHECK(Esp32WifiState, (obj), TYPE_ESP32_WIFI)
@@ -50,9 +51,17 @@ typedef struct Esp32WifiState {
 
     uint8_t associated_ap_macaddr[6]; 
 
-    uint8_t softap_macaddr[6];       
+    uint8_t softap_macaddr[6];
 
-    uint8_t mode;  
+    uint8_t mode;
+
+    /* Transparent open uplink (docs/47). When direct_uplink is set the device
+     * synthesizes an already-available open link locally instead of running the
+     * legacy beacon-driven AP, so a plain WiFi.begin() reaches the QEMU network
+     * backend with no radio, scan, WPA or configurable SSID. */
+    bool direct_uplink;
+    bool ignore_sta_password;
+    Esp32WifiLink link;
 
 } Esp32WifiState;
 
@@ -65,6 +74,12 @@ void Esp32_WLAN_setup_ap(DeviceState *dev,Esp32WifiState *s);
 void Esp32_WLAN_reset_ap(Esp32WifiState *s);
 void Esp32_sendFrame(Esp32WifiState *s, struct mac80211_frame *frame,int length, int signal_strength);
 void Esp32_WLAN_frame_delivered(Esp32WifiState *s);
+
+/* Transparent open-uplink handlers (hw/misc/esp32_wifi_transparent.c). Used
+ * instead of the legacy AP when s->direct_uplink is set. */
+void Esp32_WLAN_transparent_reset(Esp32WifiState *s);
+void Esp32_WLAN_transparent_tx(Esp32WifiState *s, const uint8_t *frame, size_t len);
+ssize_t Esp32_WLAN_transparent_rx(Esp32WifiState *s, const uint8_t *eth, size_t size);
 
 REG32(WIFI_DMA_IN_STATUS, 0x84);
 REG32(WIFI_DMA_INLINK, 0x88);

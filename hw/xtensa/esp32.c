@@ -26,6 +26,8 @@
 #include "hw/xtensa/esp32.h"
 #include "hw/xtensa/esp32_clk.h"
 #include "hw/misc/ssi_psram.h"
+#include "hw/misc/esp32_wifi.h"
+#include "hw/misc/esp32_wifi_link.h"
 #include "hw/sd/dwc_sdmmc.h"
 #include "core-esp32/core-isa.h"
 #include "qemu/datadir.h"
@@ -947,9 +949,29 @@ static void esp32_machine_init_openeth(Esp32SocState *ss)
 
         if( nd->used && nd->model && strcmp(nd->model, TYPE_ESP32_WIFI) == 0 )
         {
-            //get macaddres from efuse file
             device_cold_reset( DEVICE(&ss->efuse) );
             char * mptr = (char *)&ss->efuse.efuse_rd.blk0[1];
+            /* The guest Wi-Fi driver reads its base MAC from the eFuse block-0
+             * registers, not from the NIC's `mac=` property, so two instances
+             * sharing esp32.efuse would otherwise present the SAME MAC and
+             * collide on a shared lab gateway. When the launcher assigned a MAC
+             * (Core does, one per instance), program it into the eFuse shadow
+             * (bytes stored MSB-first at blk0[1], followed by the block's CRC-8)
+             * so the guest, its frames, ARP and DHCP all use that distinct MAC. */
+            static const uint8_t zero_mac[6] = {0};
+            if (memcmp(nd->macaddr.a, zero_mac, 6) != 0) {
+                for (int j = 0; j < 6; j++) {
+                    mptr[5 - j] = nd->macaddr.a[j];
+                }
+                uint8_t crc = 0;
+                for (int j = 0; j < 6; j++) {
+                    crc ^= nd->macaddr.a[j];
+                    for (int b = 0; b < 8; b++) {
+                        crc = (crc & 1) ? (uint8_t)((crc >> 1) ^ 0x8c) : (uint8_t)(crc >> 1);
+                    }
+                }
+                mptr[6] = crc;                    /* eFuse MAC CRC-8 (Dallas/Maxim) */
+            }
             for( int j=0; j<6 ; j++ ){
                 ss->wifi.macaddr[j]=mptr[5-j];
             }
@@ -977,6 +999,107 @@ static void esp32_machine_init_sd( Esp32SocState *ss )
         SDBus* sd_bus = SD_BUS( qdev_get_child_bus( sdmmc, "sd-bus") );
         qdev_realize_and_unref( card, BUS(sd_bus), &error_fatal );
     }
+}
+
+/*
+ * Explicit "ignore station password" support (docs/47), approved for LasecSimul.
+ *
+ * A plain WiFi.begin(ssid, password) makes the closed esp_wifi driver require a
+ * WPA2 network (threshold.authmode = WPA2_PSK), which the transparent open link
+ * cannot satisfy and does not want to (the simulator models no Wi-Fi security).
+ * When the esp32_wifi device has ignore-sta-password set, we locate the driver's
+ * esp_wifi_set_config() by its build fingerprint in the flash image and place a
+ * software instruction breakpoint just after its `entry`. Each time it is
+ * reached we clear the security fields (authmode -> WIFI_AUTH_OPEN, password,
+ * bssid_set, pmf.required) of the wifi_config the driver just built, then let it
+ * run on. The password bytes are overwritten, never read or logged.
+ */
+typedef struct Esp32StaConfigHook {
+    uint32_t bp_vaddr;                       /* PC of the breakpoint (after entry) */
+    const Esp32WifiDriverProfile *profile;
+    bool logged;
+} Esp32StaConfigHook;
+
+static Esp32StaConfigHook esp32_sta_hooks[8];
+static int esp32_sta_hook_count;
+
+static bool esp32_sta_config_bp_check(CPUState *cs)
+{
+    XtensaCPU *cpu = XTENSA_CPU(cs);
+    const uint32_t conf = cpu->env.regs[3];   /* 2nd arg of esp_wifi_set_config */
+
+    for (int i = 0; i < esp32_sta_hook_count; i++) {
+        Esp32StaConfigHook *hook = &esp32_sta_hooks[i];
+        Esp32WifiConfigRange ranges[ESP32_WIFI_CONFIG_RANGES];
+        const uint8_t zeros[64] = { 0 };
+        const int n = esp32_wifi_sta_config_ranges(hook->profile, ranges);
+
+        for (int k = 0; k < n; k++) {
+            g_assert(ranges[k].len <= sizeof(zeros));
+            cpu_memory_rw_debug(cs, conf + ranges[k].offset, (void *)zeros,
+                                ranges[k].len, true);
+        }
+        if (!hook->logged) {
+            qemu_log("esp32_wifi: ignore-sta-password active; station config forced to "
+                     "WIFI_AUTH_OPEN (%s)\n", hook->profile->name);
+            hook->logged = true;
+        }
+        /* All matches are the same function body, so any hit is a genuine
+         * esp_wifi_set_config with the config pointer in a3. */
+        break;
+    }
+    return false;                             /* never raise a debug exception */
+}
+
+static void esp32_install_sta_password_hook(Esp32SocState *ss, BlockBackend *blk)
+{
+    if (!blk || !ss->wifi_dev || !ss->wifi.ignore_sta_password ||
+        !ss->wifi.direct_uplink) {
+        return;
+    }
+    int64_t len = blk_getlength(blk);
+    if (len <= 0 || len > 16 * MiB) {
+        return;
+    }
+    uint8_t *image = g_malloc(len);
+    if (blk_pread(blk, 0, len, image, 0) < 0) {
+        g_free(image);
+        return;
+    }
+
+    Esp32WifiHookSite sites[8];
+    int apps = 0;
+    const int found = esp32_wifi_scan_flash_image(image, len, sites,
+                                                  ARRAY_SIZE(sites), &apps);
+    g_free(image);
+
+    if (found == 0) {
+        if (apps > 0) {
+            qemu_log("esp32_wifi: ignore-sta-password set but the firmware Wi-Fi driver "
+                     "was not recognized; a password-protected WiFi.begin() may not "
+                     "associate. Connect to an open network or update the driver "
+                     "fingerprint.\n");
+        }
+        return;
+    }
+
+    esp32_sta_hook_count = 0;
+    for (int i = 0; i < found && esp32_sta_hook_count < (int)ARRAY_SIZE(esp32_sta_hooks);
+         i++) {
+        /* Break just past the 3-byte `entry` so the windowed argument registers
+         * (a2/a3) are already rotated in when the breakpoint fires. */
+        const uint32_t bp = sites[i].vaddr + 3;
+        esp32_sta_hooks[esp32_sta_hook_count].bp_vaddr = bp;
+        esp32_sta_hooks[esp32_sta_hook_count].profile = sites[i].profile;
+        esp32_sta_hooks[esp32_sta_hook_count].logged = false;
+        esp32_sta_hook_count++;
+        /* esp_wifi_set_config can run on either core; cover both. */
+        cpu_breakpoint_insert(CPU(&ss->cpu[0]), bp, BP_CPU, NULL);
+        cpu_breakpoint_insert(CPU(&ss->cpu[1]), bp, BP_CPU, NULL);
+    }
+    xtensa_cpu_bp_cpu_check = esp32_sta_config_bp_check;
+    qemu_log("esp32_wifi: ignore-sta-password armed at %d site(s)\n",
+             esp32_sta_hook_count);
 }
 
 static void esp32_machine_init(MachineState *machine)
@@ -1097,6 +1220,9 @@ static void esp32_machine_init(MachineState *machine)
         }
         g_free( rom_binary );
     }
+
+    /* Flash now holds the firmware image; arm the optional password-ignore hook. */
+    esp32_install_sta_password_hook( ss, blk );
 }
 
 static ram_addr_t esp32_fixup_ram_size(ram_addr_t requested_size)

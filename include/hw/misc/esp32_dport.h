@@ -134,6 +134,13 @@ typedef struct Esp32DportState {
     uint32_t cpuperiod_sel;
     uint32_t cache_ill_trap_en_reg;
     uint32_t slave_spi_config_reg;
+    /* Peripheral clock/reset gates (PERIP_CLK_EN, PERIP_RST_EN, WIFI_CLK_EN, CORE_RST_EN).
+     * The model does not gate anything with them, but ESP-IDF reads them back: IDF 5.x
+     * esp_phy_enable() asserts that the modem clock bits it just set in WIFI_CLK_EN stuck. */
+    uint32_t perip_clk_en_reg;
+    uint32_t perip_rst_en_reg;
+    uint32_t wifi_clk_en_reg;
+    uint32_t core_rst_en_reg;
 
     /* Adicionado em 32.5.16 -- ponteiro opaco pro Esp32IntMatrixState irmao (mesmo pai
      * Esp32SocState, ligado em esp32.c logo apos os dois serem inicializados). Usado so pra ler o
@@ -207,7 +214,11 @@ REG32(DPORT_APP_CACHE_CTRL1, 0x5C)
     FIELD(DPORT_APP_CACHE_CTRL1, MASK_IRAM1, 1, 1)
     FIELD(DPORT_APP_CACHE_CTRL1, MASK_IRAM0, 0, 1)
 
+REG32(DPORT_PERIP_CLK_EN, 0xC0)
+REG32(DPORT_PERIP_RST_EN, 0xC4)
 REG32(DPORT_SLAVE_SPI_CONFIG, 0xC8)
+REG32(DPORT_WIFI_CLK_EN, 0xCC)
+REG32(DPORT_CORE_RST_EN, 0xD0)
     FIELD(DPORT_SLAVE_SPI_CONFIG, SLAVE_SPI_ENCRYPT_ENABLE, 8, 1)
     FIELD(DPORT_SLAVE_SPI_CONFIG, SLAVE_SPI_DECRYPT_ENABLE, 12, 1)
 

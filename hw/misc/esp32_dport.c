@@ -134,6 +134,18 @@ static uint64_t esp32_dport_read(void *opaque, hwaddr addr, unsigned int size)
     case A_DPORT_SLAVE_SPI_CONFIG:
         r = s->slave_spi_config_reg;
         break;
+    case A_DPORT_PERIP_CLK_EN:
+        r = s->perip_clk_en_reg;
+        break;
+    case A_DPORT_PERIP_RST_EN:
+        r = s->perip_rst_en_reg;
+        break;
+    case A_DPORT_WIFI_CLK_EN:
+        r = s->wifi_clk_en_reg;
+        break;
+    case A_DPORT_CORE_RST_EN:
+        r = s->core_rst_en_reg;
+        break;
     /* [FIX] .spec 32.5.16 -- ver comentario completo em include/hw/misc/esp32_dport.h. Ate aqui este
      * fork sempre retornava 0 pra estes dois registradores (nenhum case existia, cai no default
      * r=0), fazendo xt_highint5 (highint_hdl.S real) SEMPRE concluir "nao e o watchdog confirmado" e
@@ -294,6 +306,18 @@ static void esp32_dport_write(void *opaque, hwaddr addr,
         break;
     case APP_IRAM0_MMU_FIRST ... APP_IRAM0_MMU_LAST:
         set_mmu_entry(&s->cache_state[1].iram0, APP_IRAM0_MMU_FIRST, addr, value);
+        break;
+    case A_DPORT_PERIP_CLK_EN:
+        s->perip_clk_en_reg = value;
+        break;
+    case A_DPORT_PERIP_RST_EN:
+        s->perip_rst_en_reg = value;
+        break;
+    case A_DPORT_WIFI_CLK_EN:
+        s->wifi_clk_en_reg = value;
+        break;
+    case A_DPORT_CORE_RST_EN:
+        s->core_rst_en_reg = value;
         break;
     case A_DPORT_SLAVE_SPI_CONFIG:
         s->slave_spi_config_reg = value;
@@ -696,6 +720,11 @@ static void esp32_dport_reset(DeviceState *dev)
     s->appcpu_reset_pending = false;
     s->appcpu_stall_state = false;
     s->cache_ill_trap_en_reg = 0;
+    /* ESP32 TRM reset values of the clock/reset gate registers. */
+    s->perip_clk_en_reg = 0xf9c1e06f;
+    s->perip_rst_en_reg = 0;
+    s->wifi_clk_en_reg = 0xfffce030;
+    s->core_rst_en_reg = 0;
     /* E125 (EVIDENCE.md, 2026-09-05): esp32_cache_reset() below only ever touched the MMU
      * CHANGED flags and illegal_access_trap_en -- it left cache_ctrl_reg/cache_ctrl1_reg (the raw
      * registers), each region's MemoryRegion.enabled, and illegal_access_status exactly as they

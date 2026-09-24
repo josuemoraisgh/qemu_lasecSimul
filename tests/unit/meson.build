@@ -33,6 +33,7 @@ tests = {
   'test-vnext-b-uart-backlog': [],
   'test-esp32-dport-cache-race-stall': [],
   'test-esp32-efuse-op-state': [],
+  'test-esp32-wifi-link': [meson.project_source_root() / 'hw/misc/esp32_wifi_link.c'],
   # all code tested by test-int128 is inside int128.h
   'test-int128': [],
   'rcutorture': [],

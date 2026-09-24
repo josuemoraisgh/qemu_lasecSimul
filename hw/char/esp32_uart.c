@@ -181,7 +181,7 @@ static void uart_config_summary_clear(UartConfigSummary *cfg)
  * pulse from an earlier write in the same segment is never lost even if a later write in the same
  * segment doesn't have that bit set.
  *
- * Takes the summary BY VALUE on purpose (2026-08-28 fix, see uart_tx_effect_bh()): writeReg()
+ * The caller supplies a detached snapshot (2026-08-28 fix, see uart_tx_effect_bh()): writeReg()
  * internally releases the BQL for a bounded window (arenaTransactionBegin() dropping it to
  * acquire the arena order lock, softmmu/simuliface.c), during which a concurrent uart_write() on
  * the other vCPU can run to completion. A caller that read live pending fields, called writeReg(),
@@ -189,22 +189,23 @@ static void uart_config_summary_clear(UartConfigSummary *cfg)
  * trailing clear without ever sending it. Operating on a value copy (already fully detached from
  * shared state by the time any writeReg() here can release the BQL) closes that window -- see each
  * call site for how the copy/clear ordering is arranged. */
-/* E118 (EVIDENCE.md, 2026-09-05): returns VNEXT_WOULD_BLOCK if either register write could not be
- * accepted, so the caller can retry the WHOLE summary later instead of silently dropping half of
- * it. Re-sending an already-accepted half on retry is harmless: both CLKDIV and CONF0 are plain
- * idempotent register forwards (identical value, no side effect from being observed twice) --
- * same property this file's electrical-path callers already rely on elsewhere. */
-static VnextPublishResult uart_apply_config_summary(ESP32UARTState *s, UartConfigSummary cfg)
+/* Preserve partial progress across credit stalls. Replaying accepted configuration
+ * can consume every newly returned slot and starve the pending byte indefinitely;
+ * replaying CONF0 reset pulses can also erase bytes already accepted by Core.
+ * Clear each pending operation only after its publish succeeds. */
+static VnextPublishResult uart_apply_config_summary(ESP32UARTState *s, UartConfigSummary *remaining)
 {
+    UartConfigSummary cfg = *remaining;
     const bool trace = vnext_uart_provenance_enabled();
     if (cfg.clkdivDirty) {
         if (trace) vnext_uart_clkdiv_attempts++;
         const VnextPublishResult r = writeReg( s->iomem.addr+A_UART_CLKDIV, cfg.clkdivValue );
-        if (r == VNEXT_WOULD_BLOCK) {
-            if (trace) { vnext_uart_would_block_total++; vnext_uart_config_would_block++; }
-            return VNEXT_WOULD_BLOCK;
+        if (r != VNEXT_PUBLISHED) {
+            if (trace && r == VNEXT_WOULD_BLOCK) { vnext_uart_would_block_total++; vnext_uart_config_would_block++; }
+            return r;
         }
         if (trace) vnext_uart_clkdiv_published++;
+        remaining->clkdivDirty = false;
     }
     if (cfg.conf0StateDirty || cfg.txFifoReset || cfg.rxFifoReset) {
         uint32_t value = cfg.conf0StateValue;
@@ -212,11 +213,14 @@ static VnextPublishResult uart_apply_config_summary(ESP32UARTState *s, UartConfi
         if (cfg.rxFifoReset) value |= (1u << 17);
         if (trace) vnext_uart_conf0_attempts++;
         const VnextPublishResult r = writeReg( s->iomem.addr+A_UART_CONF0, value );
-        if (r == VNEXT_WOULD_BLOCK) {
-            if (trace) { vnext_uart_would_block_total++; vnext_uart_config_would_block++; }
-            return VNEXT_WOULD_BLOCK;
+        if (r != VNEXT_PUBLISHED) {
+            if (trace && r == VNEXT_WOULD_BLOCK) { vnext_uart_would_block_total++; vnext_uart_config_would_block++; }
+            return r;
         }
         if (trace) vnext_uart_conf0_published++;
+        remaining->conf0StateDirty = false;
+        remaining->txFifoReset = false;
+        remaining->rxFifoReset = false;
     }
     return VNEXT_PUBLISHED;
 }
@@ -275,9 +279,14 @@ static void uart_tx_effect_bh(void *opaque)
     unsigned sent = 0;
     for (; sent < s->tx_effect_count; sent++) {
         UartTxEffect *ev = &s->tx_effects[sent];
-        if (uart_apply_config_summary(s, ev->configBefore) == VNEXT_WOULD_BLOCK) break;
+        UartConfigSummary remainingConfig = ev->configBefore;
+        const VnextPublishResult configResult = uart_apply_config_summary(s, &remainingConfig);
+        ev->configBefore = remainingConfig;
+        if (configResult == VNEXT_FATAL) return;
+        if (configResult == VNEXT_WOULD_BLOCK) break;
         if (trace) vnext_uart_byte_attempts++;
         const VnextPublishResult byteResult = writeReg( s->iomem.addr, ev->byte );
+        if (byteResult == VNEXT_FATAL) return;
         if (byteResult == VNEXT_WOULD_BLOCK) {
             if (trace) { vnext_uart_would_block_total++; vnext_uart_byte_would_block++; }
             break;
@@ -299,12 +308,13 @@ static void uart_tx_effect_bh(void *opaque)
 
     UartConfigSummary trailing = s->pending_config;
     uart_config_summary_clear(&s->pending_config);
-    if (uart_apply_config_summary(s, trailing) == VNEXT_WOULD_BLOCK) {
+    const VnextPublishResult trailingResult = uart_apply_config_summary(s, &trailing);
+    if (trailingResult != VNEXT_PUBLISHED) {
         /* The byte backlog drained cleanly but the trailing config summary itself blocked --
          * put it back so the next drain (triggered by the credit-available notify) applies it
          * instead of losing a CLKDIV/CONF0 change. */
         s->pending_config = trailing;
-        vnext_b_note_nonvcpu_backlog(0);
+        if (trailingResult == VNEXT_WOULD_BLOCK) vnext_b_note_nonvcpu_backlog(0);
     }
 }
 
@@ -425,6 +435,26 @@ static void updateBaud( ESP32UARTState *s )
 }
 
 
+/* Diagnostic-only UART0 TX mirror. In esp32-simul the UART is owned by the Core arena, so a
+ * standalone QEMU run (no Core attached) has no visible console. Setting
+ * LASECSIMUL_UART0_MIRROR=<file> appends every byte accepted into UART0's TX FIFO to that file.
+ * Unset (the default) this is a single cached pointer test per byte and changes nothing. */
+static void uart_mirror_tx(ESP32UARTState *s, uint8_t byte)
+{
+    static FILE *mirror;
+    static bool resolved;
+    if (s->iomem.addr != 0x3ff40000) return;   /* ESP32 UART0 */
+    if (!resolved) {
+        const char *path = getenv("LASECSIMUL_UART0_MIRROR");
+        resolved = true;
+        mirror = (path && *path) ? fopen(path, "ab") : NULL;
+    }
+    if (mirror) {
+        fputc(byte, mirror);
+        if (byte == 0x0a) fflush(mirror);
+    }
+}
+
 static void uart_write(void *opaque, hwaddr addr, uint64_t value, unsigned int size )
 {
     ESP32UARTState *s = ESP32_UART(opaque);
@@ -455,6 +485,7 @@ static void uart_write(void *opaque, hwaddr addr, uint64_t value, unsigned int s
         } else {
             //printf("Qemu: uart_write, %lu\n", value ); fflush( stdout );
             fifo8_push( &s->tx_fifo, value );
+            uart_mirror_tx( s, (uint8_t) value );
             /* [FIX] ordered Core-notification path -- snapshot whatever config accumulated since
              * the last accepted byte (or since reset) as THIS byte's configBefore, then reset the
              * pending summary for the next segment. Bounded at UART_FIFO_LENGTH via the backlog

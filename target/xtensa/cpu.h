@@ -609,6 +609,10 @@ void xtensa_collect_sr_names(const XtensaConfig *config);
 void xtensa_translate_init(void);
 void **xtensa_get_regfile_by_name(const char *name, int entries, int bits);
 void xtensa_breakpoint_handler(CPUState *cs);
+bool xtensa_debug_check_breakpoint(CPUState *cs);
+/* Set by board/device code to consume BP_CPU instruction breakpoints; see the
+ * comment in target/xtensa/helper.c. */
+extern bool (*xtensa_cpu_bp_cpu_check)(CPUState *cs);
 void xtensa_register_core(XtensaConfigList *node);
 void xtensa_sim_open_console(Chardev *chr);
 void check_interrupts(CPUXtensaState *s);

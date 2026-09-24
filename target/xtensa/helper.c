@@ -224,6 +224,24 @@ static uint32_t check_hw_breakpoints(CPUXtensaState *env)
     return 0;
 }
 
+/*
+ * Optional consumer of software (BP_CPU) instruction breakpoints, registered by
+ * board/device code (hw/misc/esp32_wifi_password_hook.c). When a BP_CPU
+ * breakpoint's PC is reached, TCG calls debug_check_breakpoint(): returning
+ * false lets the instruction run without raising a debug exception, which lets
+ * the consumer perform a side effect at that PC and continue transparently.
+ * NULL (the default) means "no consumer", so such a breakpoint breaks normally.
+ */
+bool (*xtensa_cpu_bp_cpu_check)(CPUState *cs);
+
+bool xtensa_debug_check_breakpoint(CPUState *cs)
+{
+    if (xtensa_cpu_bp_cpu_check) {
+        return xtensa_cpu_bp_cpu_check(cs);
+    }
+    return true;
+}
+
 void xtensa_breakpoint_handler(CPUState *cs)
 {
     XtensaCPU *cpu = XTENSA_CPU(cs);

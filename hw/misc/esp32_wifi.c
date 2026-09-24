@@ -75,7 +75,13 @@ static void esp32_wifi_write(void *opaque, hwaddr addr, uint64_t value,
                 // frame from esp32 to ap
                 frame.frame_length=item.length;
                 frame.next_frame=0;
-                Esp32_WLAN_handle_frame(s, &frame);
+                if (s->direct_uplink) {
+                    /* The DMA read placed the raw 802.11 frame at the front of
+                     * the carrier; hand those bytes to the transparent link. */
+                    Esp32_WLAN_transparent_tx(s, (const uint8_t *)&frame, item.length);
+                } else {
+                    Esp32_WLAN_handle_frame(s, &frame);
+                }
             }
     }
     s->mem[addr/4]=value;
@@ -140,6 +146,7 @@ static void esp32_wifi_reset(DeviceState *dev)
     s->dma_inlink_address=0;
     memset(s->mem,0,sizeof(s->mem));
     Esp32_WLAN_reset_ap(s);
+    Esp32_WLAN_transparent_reset(s);
 }
 
 static void esp32_wifi_realize(DeviceState *dev, Error **errp)
@@ -154,10 +161,18 @@ static void esp32_wifi_realize(DeviceState *dev, Error **errp)
     sysbus_init_irq(sbd, &s->irq);
     memset(s->mem,0,sizeof(s->mem));
     Esp32_WLAN_setup_ap(dev, s);
-    
+    Esp32_WLAN_transparent_reset(s);
 }
 static Property esp32_wifi_properties[] = {
     DEFINE_NIC_PROPERTIES(Esp32WifiState, conf),
+    /* Transparent open uplink is the default (docs/47): a plain WiFi.begin()
+     * reaches the QEMU backend with no radio/scan/WPA. Set direct-uplink=off to
+     * fall back to the legacy beacon AP model. */
+    DEFINE_PROP_BOOL("direct-uplink", Esp32WifiState, direct_uplink, true),
+    /* Explicit, always-on-by-default option approved for LasecSimul: the guest
+     * station password is ignored so any SSID/password reaches WL_CONNECTED. The
+     * simulator does not model or test Wi-Fi security. */
+    DEFINE_PROP_BOOL("ignore-sta-password", Esp32WifiState, ignore_sta_password, true),
     DEFINE_PROP_END_OF_LIST(),
 };
 

@@ -75,7 +75,7 @@ static void Esp32_WLAN_beacon_timer(void *opaque)
     struct mac80211_frame *frame;
     Esp32WifiState *s = (Esp32WifiState *)opaque;
     // only send a beacon if we are an access point
-    if((ENABLE_BEACON)&&(s->mode == Esp32_Mode_Station)){
+    if((ENABLE_BEACON)&&(s->mode == Esp32_Mode_Station)&&(!s->direct_uplink)){
       if(s->ap_state!=Esp32_WLAN__STATE_STA_ASSOCIATED) {
         for(int i=0;i<nb_aps;i++){
           int ap = (i + s->beacon_ap)%nb_aps;
@@ -362,6 +362,11 @@ static ssize_t Esp32_WLAN_receive(NetClientState *ncs,
 
     if (!s) {
         return -1;
+    }
+    if (s->direct_uplink) {
+        /* Transparent uplink: convert the incoming Ethernet frame straight into
+         * a FromDS 802.11 data frame and inject it, with no AP association. */
+        return Esp32_WLAN_transparent_rx(s, buf, size);
     }
     /*
      * A 802.3 packet comes from the qemu network. The

@@ -174,10 +174,10 @@ static void esp32_spi_txrx_buffer(Esp32SpiState *s, void *buf, int tx_bytes, int
 
     for( int i=0; i<bytes; ++i ) {
         uint8_t byte = 0;
-        if( byte < tx_bytes) memcpy( &byte, c_buf + i, 1 );
+        if( i < tx_bytes ) memcpy( &byte, c_buf + i, 1 );
 
         uint32_t res = ssi_transfer( s->spi, byte );
-        if( byte < rx_bytes ) memcpy( c_buf + i, &res, 1 );
+        if( i < rx_bytes ) memcpy( c_buf + i, &res, 1 );
     }
 }
 
@@ -214,7 +214,16 @@ static void maybe_encrypt_data(Esp32SpiState *s)
 
 static void esp32_spi_do_command( Esp32SpiState* s, uint32_t cmd_reg )
 {
-    if( (cmd_reg & (1<<18)) == 0 ) return;
+    /* HSPI/VSPI (number >= 2) are driven by the Core and only implement user (USR)
+     * transactions. SPI0/SPI1 talk to the emulated flash chip and must also honour the
+     * native one-shot command bits (WREN, RDSR, PP, SE, ...): ESP-IDF 5.x enables writes
+     * with SPI_FLASH_WREN (bit 30), and dropping it left WEL clear, so every flash
+     * erase/write (NVS, PHY calibration, Wi-Fi init) failed with ESP_ERR_NOT_FOUND. */
+    if( s->number >= 2 ) {
+        if( (cmd_reg & R_SPI_CMD_USR_MASK) == 0 ) return;
+    } else if( cmd_reg == 0 ) {
+        return;
+    }
     s->do_command = 1<<18;
 
     Esp32SpiTransaction t = {

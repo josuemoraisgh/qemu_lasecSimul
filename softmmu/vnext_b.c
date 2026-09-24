@@ -537,18 +537,10 @@ static void vnext_check_i2c_responses(void) {
     }
 }
 
-/* NOT wired for LASECSIMUL_MWDT_ACCOUNTING (Fase B).  vnext_ops (this
- * function and vnext_write below) are the MemoryRegionOps for the
- * "vnext-b.synthetic-write" region at guest physical address 0x60000000
- * (memory_region_add_subregion call in vnext_b_main).  That address is
- * referenced nowhere in the ESP32 adapter, guest firmware, or Core --
- * confirmed via `grep -rn 0x60000000` across both repositories -- so under
- * the guest_i2c_workload firmware used for the MWDT measurement matrix,
- * this handler is unreachable except through the LASECSIMUL_VNEXT_B_SELF_TEST_*
- * env-var-gated scaffolding elsewhere in this file, which stays off during
- * those runs.  Wiring cpu_wait_account_transition() into an untriggerable
- * path would be unverifiable dead instrumentation; if this region gains a
- * real caller later, revisit this note before instrumenting it. */
+/* Synthetic MMIO test endpoint only.  The historical assertion that
+ * 0x60000000 was unused by production firmware was incorrect: ESP-IDF
+ * writes the UART0 AHB FIFO there. Registration requires an explicit
+ * diagnostic opt-in; normal SELF_TEST publications do not need this region. */
 static uint64_t vnext_read(void *opaque, hwaddr addr, unsigned size) {
     (void)opaque; (void)addr; (void)size;
     CPUState *cpu = current_cpu;
@@ -709,7 +701,9 @@ static void vnext_resume(void *opaque) {
                 vnext_heartbeat_cb(NULL);
             }
         }
-        SetEvent(vnext_artifact_event);
+        if (first_core_running) {
+            SetEvent(vnext_artifact_event);
+        }
     }
     vnext_check_responses();
     vnext_check_i2c_responses();
@@ -910,8 +904,14 @@ int vnext_b_main(int argc, char **argv) {
             count = MAX(count, cpu->cpu_index + 1);
         }
     }
-    memory_region_init_io(&vnext_mmio, NULL, &vnext_ops, NULL, "vnext-b.synthetic-write", 0x1000);
-    memory_region_add_subregion(get_system_memory(), UINT64_C(0x60000000), &vnext_mmio);
+    /* 0x60000000 is the ESP32 UART0 AHB FIFO used by ESP-IDF's
+     * uart_ll_write_txfifo(), not unused address space. Never shadow the
+     * production peripheral with the synthetic transport test endpoint. */
+    const char *synthetic_mmio = getenv("LASECSIMUL_VNEXT_B_SYNTHETIC_MMIO");
+    if (synthetic_mmio && !strcmp(synthetic_mmio, "1")) {
+        memory_region_init_io(&vnext_mmio, NULL, &vnext_ops, NULL, "vnext-b.synthetic-write", 0x1000);
+        memory_region_add_subregion(get_system_memory(), UINT64_C(0x60000000), &vnext_mmio);
+    }
     const char *self_test = getenv("LASECSIMUL_VNEXT_B_SELF_TEST_WRITES");
     vnext_self_test_writes = self_test ? (unsigned)strtoul(self_test, NULL, 10) : 0;
     vnext_self_test_lane1 = getenv("LASECSIMUL_VNEXT_B_SELF_TEST_LANE1") != NULL;
