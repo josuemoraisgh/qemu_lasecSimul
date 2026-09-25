@@ -1149,6 +1149,19 @@ static void esp32_machine_init(MachineState *machine)
         esp32_machine_init_i2c(ss);
     }
     esp32_machine_init_openeth( ss );
+    /* A Wi-Fi firmware (esp_wifi / WiFi.begin) touches the Wi-Fi MAC registers
+     * through the 0x60000000 AHB peripheral mirror -- e.g. 0x60033xxx, the mirror
+     * of DR_REG_WIFI_BASE (0x3ff73000). esp32_machine_init_openeth() maps the
+     * esp32_wifi device (and, via esp32_soc_add_periph_device, that mirror) ONLY
+     * when a Wi-Fi NIC is configured. With the network disabled the block is
+     * unmapped, so those accesses raise LoadStorePIFAddrError and the guest
+     * panics and reboots forever ("Rodando 0%"). Map an inert stub over the
+     * Wi-Fi register block and its APB mirror when no real device is present, so
+     * a Wi-Fi sketch simply fails to associate instead of crashing the machine. */
+    if (!ss->wifi_dev) {
+        esp32_soc_add_unimp_device(get_system_memory(), "esp32.wifi_stub",
+                                   DR_REG_WIFI_BASE, 0x1000, 0);
+    }
     esp32_machine_init_sd( ss );
 
     /* Need MMU initialized prior to ELF loading, so that ELF gets loaded into virtual addresses */
