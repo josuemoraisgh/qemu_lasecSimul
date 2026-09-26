@@ -162,6 +162,7 @@ static void esp32_wifi_realize(DeviceState *dev, Error **errp)
     memset(s->mem,0,sizeof(s->mem));
     Esp32_WLAN_setup_ap(dev, s);
     Esp32_WLAN_transparent_reset(s);
+    esp32_wifi_mdns_start();
 }
 static Property esp32_wifi_properties[] = {
     DEFINE_NIC_PROPERTIES(Esp32WifiState, conf),

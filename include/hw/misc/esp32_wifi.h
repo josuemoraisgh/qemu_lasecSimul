@@ -81,6 +81,13 @@ void Esp32_WLAN_transparent_reset(Esp32WifiState *s);
 void Esp32_WLAN_transparent_tx(Esp32WifiState *s, const uint8_t *frame, size_t len);
 ssize_t Esp32_WLAN_transparent_rx(Esp32WifiState *s, const uint8_t *eth, size_t size);
 
+/* Same-PC mDNS support for isolated/SLIRP mode (hw/misc/esp32_wifi_mdns.c):
+ * learns the <host>.local the guest advertises and feeds it to the extension's
+ * host-side responder. Gated by LASECSIMUL_ESP32_MDNS_REFLECT=1 with the feed
+ * port in LASECSIMUL_ESP32_MDNS_FEED_PORT. */
+void esp32_wifi_mdns_start(void);
+void esp32_wifi_mdns_observe(uint8_t *eth, size_t len);
+
 REG32(WIFI_DMA_IN_STATUS, 0x84);
 REG32(WIFI_DMA_INLINK, 0x88);
 REG32(WIFI_DMA_INT_STATUS, 0xc48);

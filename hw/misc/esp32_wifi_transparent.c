@@ -98,6 +98,10 @@ void Esp32_WLAN_transparent_tx(Esp32WifiState *s, const uint8_t *frame, size_t l
     case ESP32_WIFI_ACT_FORWARD_DATA:
         if (esp32_wlan_data_to_ethernet(frame, len, eth, sizeof(eth), &eth_len) ==
                 ESP32_WLAN_OK) {
+            /* Isolated/SLIRP mode: learn the <host>.local the guest advertises via
+             * mDNS and hand it to the extension, which runs the host-side responder
+             * that resolves it to 127.0.0.1 on the same PC. No-op unless enabled. */
+            esp32_wifi_mdns_observe(eth, eth_len);
             qemu_send_packet(qemu_get_queue(s->nic), eth, eth_len);
         }
         break;
