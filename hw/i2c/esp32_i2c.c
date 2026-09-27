@@ -313,11 +313,20 @@ static bool esp32_i2c_try_continuation_burst(Esp32I2CState *s)
         s->burstAddressAck = resp.address_ack;
         s->burstFirstNack = resp.first_nack;
         s->burstRxLen = resp.rx_len;
-        s->burstWriteCmdCount = plan.writeCmdCount;
+        s->burstWriteCmdCount = partial ? 0u : plan.writeCmdCount;
         s->burstReadCmdCount = plan.readCmdCount;
         s->burstActive = true;
+        s->burstPartial = partial;
+        s->burstStop = logicalStop;
+        if (partial) {
+            /* The 32-byte guest FIFO needs two mailbox requests because the
+             * selected address occupies one of the mailbox's 32 slots.  Keep
+             * the WRITE command pending for its final byte, just as VNEXT_B
+             * does.  END/STOP may run only after that byte has been sent. */
+            s->cmd_reg[s->lastCMD] = (s->cmd_reg[s->lastCMD] & ~0xffu) | 1u;
+        }
         timer_mod(&s->event_timer, getQemu_ns() +
-                  (uint64_t)(plan.txBytes + plan.rxBytes) * (9 * s->period_ns) +
+                  (uint64_t)(payloadBytes + plan.rxBytes) * (9 * s->period_ns) +
                   (logicalStop ? s->period_ns : 0) + resp.stretch_ns);
         for (uint32_t i = 0; i < payloadBytes; ++i) fifo8_pop(&s->tx_fifo);
         return true;
@@ -645,6 +654,15 @@ static void esp32_i2c_event( void* opaque ) // Timer event
         s->int_raw_reg |= 1<<7;            // TRANS_COMPLETE
         s->sr_reg      &= ~(1<<4);         // Clear I2C_BUS_BUSY
         s->burstAddressValid = false;
+        /* STOP terminates this hardware command list.  ESP-IDF can issue it
+         * alone after a WRITE/END slice; the later command registers still
+         * contain that slice's DONE-marked WRITE.  Continuing to lastCMD+1
+         * replays the stale WRITE with an empty FIFO and makes the guest's
+         * otherwise valid I2C transfer fail.  Signal completion here, as the
+         * controller does on real hardware, and wait for the next TRANS_START. */
+        s->cmd_reg[s->lastCMD] = FIELD_DP32(s->cmd_reg[s->lastCMD], I2C_CMD, DONE, 1);
+        esp32_i2c_update_irq(s);
+        return;
     }break;
 
     case I2C_OPCODE_END:
