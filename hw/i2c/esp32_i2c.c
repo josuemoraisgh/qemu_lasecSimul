@@ -476,6 +476,7 @@ static void esp32_i2c_do_transaction( void* opaque )
                 return;
             }
         }
+        s->electricalBusOpen = true;
         s->ackSamplePending = true;
         /*
          * O motor eletrico do Core executa cinco meias-fases antes do primeiro bit. A sexta
@@ -516,6 +517,7 @@ static void esp32_i2c_do_transaction( void* opaque )
             vnext_b_note_nonvcpu_backlog(0);
             return;
         }
+        s->electricalBusOpen = true;
         s->int_raw_reg |= 1<<6;          // I2C_BYTE_TRANS
         /* Guarda de um meio-periodo: o ACK precisa estar assentado no Core antes do timer. */
         time += (20*s->period_ns)/2;
@@ -537,6 +539,7 @@ static void esp32_i2c_do_transaction( void* opaque )
             vnext_b_note_nonvcpu_backlog(0);
             return;
         }
+        s->electricalBusOpen = true;
         /* Mesma guarda do WRITE para byte/ACK eletrico. */
         time += (20*s->period_ns)/2;
     }break;
@@ -544,10 +547,19 @@ static void esp32_i2c_do_transaction( void* opaque )
     case I2C_OPCODE_STOP:
     {
         //printf("Qemu: esp32_i2c CMD stop \n" ); fflush( stdout );
-        if (writeReg( s->iomem.addr+A_I2C_CMD, cmd ) == VNEXT_WOULD_BLOCK) {
-            s->vnextContinuationBacklogged = true;
-            vnext_b_note_nonvcpu_backlog(0);
-            return;
+        /* 2026-09-29: so' espelha o STOP se esta transacao abriu o barramento eletrico. Uma
+         * transacao entregue pelo burst nunca publicou RSTART/WRITE ao Core, que ainda assim
+         * executava o STOP a partir do barramento livre: SDA descia e subia com SCL alto (um
+         * START+STOP vazio para os dispositivos) e cada borda recalculava o circuito do MCU
+         * (~0,1 ms de host). O proximo burst esperava esse trabalho na fila. O tempo do STOP
+         * no barramento continua sendo cobrado abaixo nos dois casos. */
+        if (s->electricalBusOpen) {
+            if (writeReg( s->iomem.addr+A_I2C_CMD, cmd ) == VNEXT_WOULD_BLOCK) {
+                s->vnextContinuationBacklogged = true;
+                vnext_b_note_nonvcpu_backlog(0);
+                return;
+            }
+            s->electricalBusOpen = false;
         }
         time = (3*s->period_ns)/2;
     }break;
@@ -900,6 +912,7 @@ static void esp32_i2c_reset(DeviceState * dev)
     s->burstActive = false;
     s->burstStop = false;
     s->burstAddressValid = false;
+    s->electricalBusOpen = false;
     s->trans_ongoing = false;
     s->ctr_reg = 0;
     s->timeout_reg = 0;

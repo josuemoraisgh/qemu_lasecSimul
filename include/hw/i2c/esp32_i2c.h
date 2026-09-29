@@ -34,6 +34,9 @@ typedef struct Esp32I2CState {
     uint8_t bytesTx;
     uint8_t bytesRx;
     bool ackSamplePending;
+    /* true depois de RSTART/WRITE/READ espelhado ao motor eletrico do Core, ate' o STOP que o
+     * fecha. Uma transacao feita so' por burst nunca abre o barramento eletrico. */
+    bool electricalBusOpen;
     uint8_t busIndex;               /* 0=I2C0, 1=I2C1 -- setado por esp32_soc_realize() */
 
     /* Estado do burst rapido em andamento (ver esp32_i2c_try_burst/esp32_i2c_finish_burst em
