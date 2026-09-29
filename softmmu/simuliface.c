@@ -548,6 +548,11 @@ uint64_t readReg( uint64_t addr )
     qatomic_store_release(&m_arena->qemuAction, 0);
     m_arena->simuAction = SIM_READ;
     qatomic_store_release(&m_arena->simuTime, simuClockNs()*1000);
+    /* 2026-09-29: a leitura é o único pedido síncrono que não acordava o Core. Com a fila já
+     * vazia (waitForQueueDrain() acima), a thread de poll do Core estava dormindo e só via o
+     * SIM_READ no fim da espera limitada (5 ms): GPIO_IN levava ~5 ms por leitura, com a vCPU
+     * parada esperando. Mesmo doorbell de publishQueueEntry() e i2cBurstTransfer(). */
+    signalPollDoorbell();
 
     uint64_t timeout = 0;
     bool timedOut = false;
