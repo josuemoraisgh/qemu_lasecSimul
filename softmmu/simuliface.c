@@ -736,6 +736,17 @@ uint64_t getQemu_ps(void)
     return simuClockNs()*1000;
 }
 
+/* Definido em util/main-loop.c: consultado pela espera ociosa sem BQL de main_loop_timeout()
+ * (Windows) para acordar antes do próximo timer. */
+extern bool (*main_loop_idle_wake_hook)(void);
+
+/* Registrado em main_loop_idle_wake_hook: a espera ociosa sem BQL do laço principal acorda antes
+ * do próximo timer quando o Core pede uma IRQ ou encerra o Run (ver qemu_main_loop()). */
+static bool simuMainLoopWakeRequested(void)
+{
+    return !m_arena || !m_arena->running || m_arena->irqNumber;
+}
+
 uint64_t getQemu_ns(void)
 {
     return simuClockNs();
@@ -952,6 +963,7 @@ int simuMain( int argc, char** argv )
 
     //updtCpuFreqHz( 240000000 );
 
+    main_loop_idle_wake_hook = simuMainLoopWakeRequested;
     qemu_init( argc, argv );
     printf("Qemu: initialized\n" );fflush( stdout );
 

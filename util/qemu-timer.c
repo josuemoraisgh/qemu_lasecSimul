@@ -458,7 +458,16 @@ void timer_mod_ns(QEMUTimer *ts, int64_t expire_time)
 void timer_reload_ns( QEMUTimer *ts, int64_t expire_time )
 {
     QEMUTimerList *timer_list = ts->timer_list;
-    timer_mod_ns_locked( timer_list, ts, expire_time );
+    /* 2026-09-29: a inserção acontecia sem active_timers_lock. timerlist_run_timers() solta essa
+     * trava antes de chamar o callback (é dele que este rearme é chamado), e sob MTTCG as vCPUs
+     * armam outros timers da MESMA lista (QEMU_CLOCK_VIRTUAL) ao mesmo tempo: duas inserções
+     * concorrentes perdiam um nó e o heartbeat do LasecSimul parava para sempre poucos segundos
+     * após o boot, em parte das execuções. Mesmo protocolo de timer_mod_ns(), sem notificar o
+     * laço principal: o chamador é o próprio laço, que recalcula o prazo na volta seguinte. */
+    WITH_QEMU_LOCK_GUARD(&timer_list->active_timers_lock) {
+        timer_del_locked(timer_list, ts);
+        timer_mod_ns_locked(timer_list, ts, expire_time);
+    }
 }
 
 /* modify the current timer so that it will be fired when current_time

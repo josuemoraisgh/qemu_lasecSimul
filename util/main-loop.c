@@ -466,6 +466,11 @@ static void pollfds_poll(GArray *pollfds, int nfds, fd_set *rfds,
     }
 }
 
+bool (*main_loop_idle_wake_hook)(void);
+/* Tempo máximo, em ns, que a próxima volta de os_host_main_loop_wait() pode esperar SEM o BQL pelo
+ * próximo timer (ver main_loop_timeout()). Zero = uma única consulta, comportamento anterior. */
+static int64_t precise_idle_wait_ns;
+
 static int os_host_main_loop_wait(int64_t timeout)
 {
     GMainContext *context = g_main_context_default_l;
@@ -532,7 +537,23 @@ static int os_host_main_loop_wait(int64_t timeout)
 
     /* A zero-time LasecSimul precision poll must yield while the BQL is still unlocked.  Yielding
      * after qemu_mutex_lock_iothread() can starve both ESP32 vCPUs and make shutdown appear hung. */
-    if (poll_timeout_ns == 0) SwitchToThread();
+    if (poll_timeout_ns == 0) {
+        SwitchToThread();
+        /* 2026-09-29: sem esta espera, cada volta voltava a tomar o BQL em poucos microssegundos.
+         * O TCG do Xtensa toma o mesmo BQL a cada mudança de nível de interrupção (rsil/wsr.ps,
+         * HELPER(check_interrupts)) e em waiti, ou seja, em toda seção crítica do FreeRTOS: medido
+         * no firmware, um par xSemaphoreTake/Give custava ~30 us e um timer de 200 us disparava
+         * ~1 ms depois. Aqui o laço espera o próximo timer com a mesma precisão, mas sem o BQL;
+         * sai antes se algum handle ficar pronto (BH, timer novo armado por uma vCPU via
+         * qemu_notify_event, E/S) ou se o hook pedir (IRQ do Core, parada). */
+        const int64_t idle_until = precise_idle_wait_ns > 0 ? get_clock() + precise_idle_wait_ns : 0;
+        while (g_poll_ret == 0 && idle_until && get_clock() < idle_until &&
+               !(main_loop_idle_wake_hook && main_loop_idle_wake_hook())) {
+            g_poll_ret = qemu_poll_ns(poll_fds, n_poll_fds + w->num, 0);
+            if (g_poll_ret == 0) SwitchToThread();
+        }
+    }
+    precise_idle_wait_ns = 0;
 
     replay_mutex_lock();
 
@@ -599,7 +620,21 @@ void main_loop_timeout( int64_t timeout_ns )
     }
     const bool cooperative_poll = precise_sub_ms && !icount_enabled() &&
                                   host_wait_ns >= 0 && host_wait_ns < SCALE_MS;
-    if (cooperative_poll) host_wait_ns = 0;
+    if (cooperative_poll) {
+        host_wait_ns = 0;
+        /* Espera ociosa sem BQL até o próximo timer (ver os_host_main_loop_wait()), limitada a
+         * 1 ms para reavaliar sockets/fontes GLib. LASECSIMUL_QEMU_BQL_FREE_IDLE=0 volta à consulta
+         * única por volta. */
+        static int bql_free_idle = -1;
+        if (bql_free_idle < 0) {
+            const char *value = getenv("LASECSIMUL_QEMU_BQL_FREE_IDLE");
+            bql_free_idle = !(value && strcmp(value, "0") == 0);
+        }
+        if (bql_free_idle) {
+            const int64_t deadline = timerlistgroup_deadline_ns(&main_loop_tlg);
+            precise_idle_wait_ns = deadline < 0 || deadline > SCALE_MS ? SCALE_MS : deadline;
+        }
+    }
 #endif
     int ret = os_host_main_loop_wait( host_wait_ns );
     mlpoll.state = ret < 0 ? MAIN_LOOP_POLL_ERR : MAIN_LOOP_POLL_OK;
