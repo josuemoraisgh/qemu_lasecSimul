@@ -1378,6 +1378,20 @@ static void save_iotlb_data(CPUState *cs, MemoryRegionSection *section,
 #endif
 }
 
+/*
+ * LasecSimul: MemoryRegion.lockless_io (backport of upstream memory_region_enable_lockless_io())
+ * lets a device serve TCG accesses without the BQL. Every other MR keeps the BQL exactly as before.
+ */
+static inline bool tlb_full_mmio_lockless(CPUArchState *env, CPUTLBEntryFull *full)
+{
+    MemoryRegionSection *section = iotlb_to_section(env_cpu(env), full->xlat_section, full->attrs);
+    return section->mr->lockless_io;
+}
+
+#define MMIO_IOTHREAD_LOCK_GUARD(env, full) \
+    g_autoptr(IOThreadLockAuto) _iothread_lock_auto __attribute__((unused)) = \
+        tlb_full_mmio_lockless(env, full) ? NULL : qemu_iothread_auto_lock(__FILE__, __LINE__)
+
 static uint64_t io_readx(CPUArchState *env, CPUTLBEntryFull *full,
                          int mmu_idx, vaddr addr, uintptr_t retaddr,
                          MMUAccessType access_type, MemOp op)
@@ -1403,7 +1417,9 @@ static uint64_t io_readx(CPUArchState *env, CPUTLBEntryFull *full,
      */
     save_iotlb_data(cpu, section, mr_offset);
 
-    {
+    if (mr->lockless_io) {
+        r = memory_region_dispatch_read(mr, mr_offset, &val, op, full->attrs);
+    } else {
         QEMU_IOTHREAD_LOCK_GUARD();
         r = memory_region_dispatch_read(mr, mr_offset, &val, op, full->attrs);
     }
@@ -1443,7 +1459,9 @@ static void io_writex(CPUArchState *env, CPUTLBEntryFull *full,
      */
     save_iotlb_data(cpu, section, mr_offset);
 
-    {
+    if (mr->lockless_io) {
+        r = memory_region_dispatch_write(mr, mr_offset, val, op, full->attrs);
+    } else {
         QEMU_IOTHREAD_LOCK_GUARD();
         r = memory_region_dispatch_write(mr, mr_offset, val, op, full->attrs);
     }
@@ -2266,7 +2284,7 @@ static uint64_t do_ld_beN(CPUArchState *env, MMULookupPageData *p,
     unsigned tmp, half_size;
 
     if (unlikely(p->flags & TLB_MMIO)) {
-        QEMU_IOTHREAD_LOCK_GUARD();
+        MMIO_IOTHREAD_LOCK_GUARD(env, p->full);
         return do_ld_mmio_beN(env, p->full, ret_be, p->addr, p->size,
                               mmu_idx, type, ra);
     }
@@ -2317,7 +2335,7 @@ static Int128 do_ld16_beN(CPUArchState *env, MMULookupPageData *p,
     MemOp atom;
 
     if (unlikely(p->flags & TLB_MMIO)) {
-        QEMU_IOTHREAD_LOCK_GUARD();
+        MMIO_IOTHREAD_LOCK_GUARD(env, p->full);
         a = do_ld_mmio_beN(env, p->full, a, p->addr, size - 8,
                            mmu_idx, MMU_DATA_LOAD, ra);
         b = do_ld_mmio_beN(env, p->full, 0, p->addr + 8, 8,
@@ -2379,7 +2397,7 @@ static uint16_t do_ld_2(CPUArchState *env, MMULookupPageData *p, int mmu_idx,
     uint16_t ret;
 
     if (unlikely(p->flags & TLB_MMIO)) {
-        QEMU_IOTHREAD_LOCK_GUARD();
+        MMIO_IOTHREAD_LOCK_GUARD(env, p->full);
         ret = do_ld_mmio_beN(env, p->full, 0, p->addr, 2, mmu_idx, type, ra);
         if ((memop & MO_BSWAP) == MO_LE) {
             ret = bswap16(ret);
@@ -2400,7 +2418,7 @@ static uint32_t do_ld_4(CPUArchState *env, MMULookupPageData *p, int mmu_idx,
     uint32_t ret;
 
     if (unlikely(p->flags & TLB_MMIO)) {
-        QEMU_IOTHREAD_LOCK_GUARD();
+        MMIO_IOTHREAD_LOCK_GUARD(env, p->full);
         ret = do_ld_mmio_beN(env, p->full, 0, p->addr, 4, mmu_idx, type, ra);
         if ((memop & MO_BSWAP) == MO_LE) {
             ret = bswap32(ret);
@@ -2421,7 +2439,7 @@ static uint64_t do_ld_8(CPUArchState *env, MMULookupPageData *p, int mmu_idx,
     uint64_t ret;
 
     if (unlikely(p->flags & TLB_MMIO)) {
-        QEMU_IOTHREAD_LOCK_GUARD();
+        MMIO_IOTHREAD_LOCK_GUARD(env, p->full);
         ret = do_ld_mmio_beN(env, p->full, 0, p->addr, 8, mmu_idx, type, ra);
         if ((memop & MO_BSWAP) == MO_LE) {
             ret = bswap64(ret);
@@ -2580,7 +2598,7 @@ static Int128 do_ld16_mmu(CPUArchState *env, vaddr addr,
     crosspage = mmu_lookup(env, addr, oi, ra, MMU_DATA_LOAD, &l);
     if (likely(!crosspage)) {
         if (unlikely(l.page[0].flags & TLB_MMIO)) {
-            QEMU_IOTHREAD_LOCK_GUARD();
+            MMIO_IOTHREAD_LOCK_GUARD(env, l.page[0].full);
             a = do_ld_mmio_beN(env, l.page[0].full, 0, addr, 8,
                                l.mmu_idx, MMU_DATA_LOAD, ra);
             b = do_ld_mmio_beN(env, l.page[0].full, 0, addr + 8, 8,
@@ -2779,7 +2797,7 @@ static uint64_t do_st_leN(CPUArchState *env, MMULookupPageData *p,
     unsigned tmp, half_size;
 
     if (unlikely(p->flags & TLB_MMIO)) {
-        QEMU_IOTHREAD_LOCK_GUARD();
+        MMIO_IOTHREAD_LOCK_GUARD(env, p->full);
         return do_st_mmio_leN(env, p->full, val_le, p->addr,
                               p->size, mmu_idx, ra);
     } else if (unlikely(p->flags & TLB_DISCARD_WRITE)) {
@@ -2834,7 +2852,7 @@ static uint64_t do_st16_leN(CPUArchState *env, MMULookupPageData *p,
     MemOp atom;
 
     if (unlikely(p->flags & TLB_MMIO)) {
-        QEMU_IOTHREAD_LOCK_GUARD();
+        MMIO_IOTHREAD_LOCK_GUARD(env, p->full);
         do_st_mmio_leN(env, p->full, int128_getlo(val_le),
                        p->addr, 8, mmu_idx, ra);
         return do_st_mmio_leN(env, p->full, int128_gethi(val_le),
@@ -2897,7 +2915,7 @@ static void do_st_2(CPUArchState *env, MMULookupPageData *p, uint16_t val,
         if ((memop & MO_BSWAP) != MO_LE) {
             val = bswap16(val);
         }
-        QEMU_IOTHREAD_LOCK_GUARD();
+        MMIO_IOTHREAD_LOCK_GUARD(env, p->full);
         do_st_mmio_leN(env, p->full, val, p->addr, 2, mmu_idx, ra);
     } else if (unlikely(p->flags & TLB_DISCARD_WRITE)) {
         /* nothing */
@@ -2917,7 +2935,7 @@ static void do_st_4(CPUArchState *env, MMULookupPageData *p, uint32_t val,
         if ((memop & MO_BSWAP) != MO_LE) {
             val = bswap32(val);
         }
-        QEMU_IOTHREAD_LOCK_GUARD();
+        MMIO_IOTHREAD_LOCK_GUARD(env, p->full);
         do_st_mmio_leN(env, p->full, val, p->addr, 4, mmu_idx, ra);
     } else if (unlikely(p->flags & TLB_DISCARD_WRITE)) {
         /* nothing */
@@ -2937,7 +2955,7 @@ static void do_st_8(CPUArchState *env, MMULookupPageData *p, uint64_t val,
         if ((memop & MO_BSWAP) != MO_LE) {
             val = bswap64(val);
         }
-        QEMU_IOTHREAD_LOCK_GUARD();
+        MMIO_IOTHREAD_LOCK_GUARD(env, p->full);
         do_st_mmio_leN(env, p->full, val, p->addr, 8, mmu_idx, ra);
     } else if (unlikely(p->flags & TLB_DISCARD_WRITE)) {
         /* nothing */
@@ -3067,7 +3085,7 @@ static void do_st16_mmu(CPUArchState *env, vaddr addr, Int128 val,
             }
             a = int128_getlo(val);
             b = int128_gethi(val);
-            QEMU_IOTHREAD_LOCK_GUARD();
+            MMIO_IOTHREAD_LOCK_GUARD(env, l.page[0].full);
             do_st_mmio_leN(env, l.page[0].full, a, addr, 8, l.mmu_idx, ra);
             do_st_mmio_leN(env, l.page[0].full, b, addr + 8, 8, l.mmu_idx, ra);
         } else if (unlikely(l.page[0].flags & TLB_DISCARD_WRITE)) {

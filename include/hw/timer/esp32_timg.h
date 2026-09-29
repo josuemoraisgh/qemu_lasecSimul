@@ -3,6 +3,7 @@
 #include "hw/hw.h"
 #include "hw/registerfields.h"
 #include "qemu/main-loop.h"
+#include "qemu/thread.h"
 
 #define TYPE_ESP32_TIMG "timer.esp32.timg"
 #define ESP32_TIMG(obj) OBJECT_CHECK(Esp32TimgState, (obj), TYPE_ESP32_TIMG)
@@ -41,6 +42,11 @@ typedef struct Esp32TimgTimerState {
     uint64_t count_base;
     uint64_t last_val;
     uint64_t ns_base;
+    /* O latch UPDATE roda sem o BQL. Este mutex torna atômicos, entre as duas CPUs, a leitura do
+     * relógio, o cálculo e a gravação de last_val (sem ele, uma CPU preemptada entre calcular e
+     * gravar sobrescrevia um latch mais novo com um valor mais velho: o tempo voltava). Escritores
+     * de en/inc/divider/ns_base/count_base também o tomam (ordem: BQL -> latch_lock). */
+    QemuMutex latch_lock;
     Esp32TimgInterruptType int_type;
     QEMUTimer alarm_timer;
 } Esp32TimgTimerState;

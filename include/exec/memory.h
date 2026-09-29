@@ -799,6 +799,13 @@ struct MemoryRegion {
 
     /* For devices designed to perform re-entrant IO into their own IO MRs */
     bool disable_reentrancy_guard;
+
+    /*
+     * LasecSimul (backport of upstream memory_region_enable_lockless_io()): TCG dispatches
+     * accesses to this MR without taking the BQL. The device callbacks must take the BQL
+     * themselves for anything that is not thread-safe (IRQ lines, timers, shared state).
+     */
+    bool lockless_io;
 };
 
 struct IOMMUMemoryRegion {

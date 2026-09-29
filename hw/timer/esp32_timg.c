@@ -25,13 +25,18 @@
 #include "hw/timer/esp32_timg_wdt_scale_math.h"
 #include "hw/misc/esp32_dport.h"
 
-#define TIMG_REGFILE_SIZE 0x100
+/* O bloco do TIMG ocupa 0x1000 no mapa do ESP32 (TIMG1 começa 0x1000 depois do TIMG0); só os
+ * primeiros 0x100 têm registradores, o resto é reservado e lê 0. Mapear a página inteira deixa o
+ * TCG despachar direto nesta região: com 0x100, a página virava um subpage e todo acesso passava
+ * por subpage_read()/prepare_mmio_access(), que tomam o BQL mesmo com lockless_io. */
+#define TIMG_REGFILE_SIZE 0x1000
 #define TIMG_INTERRUPT_WDT_REALTIME_SCALE_DEFAULT 100
 #define TIMG_INTERRUPT_WDT_SCALE_MAX 100
 
 static Esp32TimgState *esp32_timg_tg0;
 
 static uint64_t esp32_timg_timer_get_count(Esp32TimgTimerState *s, uint64_t ns_now);
+static void esp32_timg_timer_latch(Esp32TimgTimerState *ts);
 static uint64_t esp32_timg_timer_count_to_ns(Esp32TimgTimerState *s, uint64_t count);
 static void esp32_timg_timer_update_config(Esp32TimgTimerState *ts);
 static void esp32_timg_timer_update_alarm(Esp32TimgTimerState *ts, uint64_t ns_now);
@@ -71,6 +76,7 @@ static inline qemu_irq get_edge_irq(Esp32TimgState* s, Esp32TimgInterruptType it
 }
 
 
+/* Roda sem o BQL (região lockless_io): só lê estado, sem efeito colateral. */
 static uint64_t esp32_timg_read(void *opaque, hwaddr addr, unsigned int size)
 {
     Esp32TimgState *s = ESP32_TIMG(opaque);
@@ -92,12 +98,12 @@ static uint64_t esp32_timg_read(void *opaque, hwaddr addr, unsigned int size)
     case A_TIMG_T0LO:
     case A_TIMG_T1LO:
     case A_TIMG_LACTLO:
-        r = ts->last_val & UINT32_MAX;
+        r = qatomic_read(&ts->last_val) & UINT32_MAX;
         break;
     case A_TIMG_T0HI:
     case A_TIMG_T1HI:
     case A_TIMG_LACTHI:
-        r = ts->last_val >> 32;
+        r = qatomic_read(&ts->last_val) >> 32;
         break;
     case A_TIMG_T0LOADLO:
     case A_TIMG_T1LOADLO:
@@ -174,6 +180,17 @@ static void esp32_timg_write(void *opaque, hwaddr addr,
         ts = &s->lact;
     }
 
+    if (addr == A_TIMG_T0UPDATE || addr == A_TIMG_T1UPDATE || addr == A_TIMG_LACTUPDATE) {
+        /* Único registrador escrito sem o BQL (a região é lockless_io): millis(), micros() e
+         * esp_timer_get_time() fazem este latch em laço. Com o BQL, um laço assim numa CPU
+         * atrasava por centenas de us a ms a outra CPU atendendo interrupções e o laço principal
+         * (timers do QEMU, heartbeat do Core), medido em 2026-09-29. */
+        esp32_timg_timer_latch(ts);
+        return;
+    }
+    /* Os demais registradores mexem em linhas de IRQ, timers e estado compartilhado. */
+    QEMU_IOTHREAD_LOCK_GUARD();
+
     switch (addr) {
     case A_TIMG_T0CONFIG:
     case A_TIMG_T1CONFIG:
@@ -181,13 +198,6 @@ static void esp32_timg_write(void *opaque, hwaddr addr,
         ts->config_reg = value;
         esp32_timg_timer_update_config(ts);
         break;
-    case A_TIMG_T0UPDATE:
-    case A_TIMG_T1UPDATE:
-    case A_TIMG_LACTUPDATE: {
-        uint64_t ns_now = qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL);
-        ts->last_val = esp32_timg_timer_get_count(ts, ns_now);
-        break;
-    }
     case A_TIMG_T0LOADLO:
     case A_TIMG_T1LOADLO:
     case A_TIMG_LACTLOADLO:
@@ -283,8 +293,10 @@ static void esp32_timg_timer_reset(Esp32TimgTimerState* ts)
         | (1 << R_TIMG_T0CONFIG_DIVIDER_SHIFT);
     ts->alarm_val = 0;
     ts->load_val = 0;
+    qemu_mutex_lock(&ts->latch_lock);
     ts->count_base = 0;
     ts->ns_base = 0;
+    qemu_mutex_unlock(&ts->latch_lock);
     esp32_timg_timer_update_config(ts);
 }
 
@@ -432,6 +444,14 @@ static uint64_t esp32_timg_timer_get_count(Esp32TimgTimerState *s, uint64_t ns_n
     return count;
 }
 
+static void esp32_timg_timer_latch(Esp32TimgTimerState *ts)
+{
+    qemu_mutex_lock(&ts->latch_lock);
+    const uint64_t ns_now = qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL);
+    qatomic_set(&ts->last_val, esp32_timg_timer_get_count(ts, ns_now));
+    qemu_mutex_unlock(&ts->latch_lock);
+}
+
 static uint64_t esp32_timg_timer_count_to_ns(Esp32TimgTimerState *s, uint64_t count)
 {
     return muldiv64(count, 1000 * s->divider, s->parent->apb_freq_hz / 1000000);
@@ -451,6 +471,7 @@ static uint32_t esp32_timg_timer_div_from_reg(uint32_t reg_val)
 static void esp32_timg_timer_update_config(Esp32TimgTimerState *ts)
 {
     uint64_t ns_now = qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL);
+    qemu_mutex_lock(&ts->latch_lock);
     ts->count_base = esp32_timg_timer_get_count(ts, ns_now);
     ts->ns_base = ns_now;
 
@@ -458,6 +479,7 @@ static void esp32_timg_timer_update_config(Esp32TimgTimerState *ts)
     ts->inc = FIELD_EX32(ts->config_reg, TIMG_T0CONFIG, INCREASE);
     ts->autoreload = FIELD_EX32(ts->config_reg, TIMG_T0CONFIG, AUTORELOAD);
     ts->divider = esp32_timg_timer_div_from_reg(FIELD_EX32(ts->config_reg, TIMG_T0CONFIG, DIVIDER));
+    qemu_mutex_unlock(&ts->latch_lock);
     ts->edge_int_en = FIELD_EX32(ts->config_reg, TIMG_T0CONFIG, EDGE_INT);
     ts->level_int_en = FIELD_EX32(ts->config_reg, TIMG_T0CONFIG, LEVEL_INT);
     ts->alarm = FIELD_EX32(ts->config_reg, TIMG_T0CONFIG, ALARM);
@@ -473,8 +495,10 @@ static void esp32_timg_timer_reload(Esp32TimgTimerState *ts, uint64_t ns_now)
 {
     timer_del(&ts->alarm_timer);
 
+    qemu_mutex_lock(&ts->latch_lock);
     ts->ns_base = ns_now;
     ts->count_base = ts->load_val;
+    qemu_mutex_unlock(&ts->latch_lock);
 
     TIMG_DEBUG_LOG("%s: TG%d base=0x%llx ns=0x%llx\n", __func__, ts->parent->id,
              ts->count_base, ts->ns_base);
@@ -783,6 +807,7 @@ static void esp32_timg_realize(DeviceState *dev, Error **errp)
 
 static void esp32_timg_timer_init(Esp32TimgState *s, Esp32TimgTimerState *ts, Esp32TimgInterruptType int_type) {
     ts->parent = s;
+    qemu_mutex_init(&ts->latch_lock);
     timer_init_ns(&ts->alarm_timer, QEMU_CLOCK_VIRTUAL, esp32_timg_timer_cb, ts);
     ts->int_type = int_type;
 }
@@ -794,6 +819,11 @@ static void esp32_timg_init(Object *obj)
 
     memory_region_init_io(&s->iomem, obj, &esp32_timg_ops, s,
                           TYPE_ESP32_TIMG, TIMG_REGFILE_SIZE);
+    /* Leituras e o latch UPDATE rodam sem o BQL; esp32_timg_write() toma o BQL para o resto.
+     * Acessos simultâneos das duas CPUs são esperados, então o guarda de reentrância (pensado
+     * para acessos serializados pelo BQL) não se aplica. */
+    s->iomem.lockless_io = true;
+    s->iomem.disable_reentrancy_guard = true;
     sysbus_init_mmio(sbd, &s->iomem);
     qdev_init_gpio_out_named(DEVICE(sbd), s->irqs, SYSBUS_DEVICE_GPIO_IRQ, 2*TIMG_INT_MAX);
 
