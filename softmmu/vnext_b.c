@@ -254,10 +254,21 @@ bool vnext_b_i2c_submit(uint32_t bus, uint32_t flags, uint64_t period_ns,
     memcpy(event->payload + 16, &rx_len, sizeof(uint16_t));
     memcpy(event->payload + 18, &period_ns, sizeof(period_ns));
     memcpy(event->payload + 26, tx, tx_len);
-    qatomic_store_release(&meta[0], write + 1);
     vnext_i2c_waiting[lane] = true;
+    if (cpu) {
+        // The Core round trip is host work, not emulated I2C bus time. Pause the
+        // submitting vCPU until its response arrives; the peripheral's timer
+        // still accounts for the wire duration after esp32_i2c_vnext_complete().
+        vnext_blocked[lane] = true;
+        esp32_timg_transport_pause(lane, true);
+        cpu_stop_current();
+    }
+    // Publish only after the stopped state is armed: Core may consume and reply
+    // immediately on another thread, so a later cpu_stop_current() could lose
+    // the corresponding resume.
+    qatomic_store_release(&meta[0], write + 1);
     SetEvent(vnext_artifact_event);
-    if (vnext_lane_credit(lane) == 0) {
+    if (!cpu && vnext_lane_credit(lane) == 0) {
         /* E118: cpu may be NULL here (a non-vCPU producer -- see vnext_b_gpio_write()'s comment
          * on the same distinction); vnext_block_producer_on_lane() already handles both cases
          * without touching a CPU that was never actually running on this thread. */
@@ -743,7 +754,7 @@ static void vnext_resume(void *opaque) {
         if (vnext_provenance_enabled()) {
             vnext_resume_found_real_work_count++;
         }
-        if (vnext_blocked[i]) {
+        if (vnext_blocked[i] && !vnext_i2c_waiting[i]) {
             vnext_blocked[i] = false;
             esp32_timg_transport_pause(i, false);
             if (vnext_cpus[i]) cpu_resume(vnext_cpus[i]);
